@@ -1,0 +1,8 @@
+set (GBE_HEADERS ${GBE_HEADERS}
+    ${CMAKE_CURRENT_LIST_DIR}/IMemory.h
+    ${CMAKE_CURRENT_LIST_DIR}/MemoryMap.h
+)
+
+set(GBE_SOURCES ${GBE_SOURCES}
+    ${CMAKE_CURRENT_LIST_DIR}/IMemory.cpp
+)
