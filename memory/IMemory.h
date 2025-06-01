@@ -21,6 +21,9 @@ namespace GBE
         void Set16(uint16_t address, uint16_t value);
 
         // get value from adress
-        uint16_t Get16(uint16_t address) const;
+        uint16_t Get16(uint16_t address) const; 
+    
+        // copy buffer to memory
+        void CopyBuffer(uint16_t address, const void* data, uint16_t size);
     };
 } // namespace GBE

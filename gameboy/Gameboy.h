@@ -8,7 +8,9 @@ namespace GBE
     class Gameboy
     {
     public:
-        ~Gameboy();        
+        ~Gameboy();     
+
+        
     private:
         Cpu cpu{};
     };

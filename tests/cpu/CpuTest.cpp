@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <memory>
+#include <vector>
 
 #include "memory/IMemory.h"
 #include "cpu/InstructionResult.h"
@@ -640,7 +641,7 @@ GBE_TEST_SUITE(Cpu)
         cpu.SetImm8(13, memory);
 
         // act
-        cpu.JumpRelativeCC_Imm16(GBE::OperandCond::Z, memory, result);
+        cpu.JumpRelativeCC_Imm8(GBE::OperandCond::Z, memory, result);
 
         // assert
         CHECK_EQ(
@@ -664,7 +665,7 @@ GBE_TEST_SUITE(Cpu)
         cpu.SetImm8(13, memory);
 
         // act
-        cpu.JumpRelativeCC_Imm16(GBE::OperandCond::Z, memory, result);
+        cpu.JumpRelativeCC_Imm8(GBE::OperandCond::Z, memory, result);
 
         // assert
         CHECK_EQ(
@@ -744,6 +745,67 @@ GBE_TEST_SUITE(Cpu)
         CHECK(cpu.GetRegisters().GetFlag(GBE::CpuFlag::C));
         CHECK(!cpu.GetRegisters().GetFlag(GBE::CpuFlag::N));
         CHECK(!cpu.GetRegisters().GetFlag(GBE::CpuFlag::H));
+    }
+
+    TEST_CASE("Run")
+    {
+        // arrange
+        std::vector<uint8_t> program{};
+
+        // Add 5 and 3, store result in register A
+        // ld a, 5          ; Load 5 into register A
+        program.push_back(0x3E);
+        program.push_back(0x05);
+
+        // add a, 3         ; A = A + 3 => A now holds 8
+        program.push_back(0xC6);
+        program.push_back(0x03);
+
+        // Subtract 2 from A(8 - 2 = 6)
+        // sub 2            ; A = A - 2 => A now holds 6
+        program.push_back(0xD6);
+        program.push_back(0x02);
+
+        // ld b, a          ; Copy A into B (B = 6)
+        program.push_back(0x47);
+        // ld c, 4          ; C = multiplier
+        program.push_back(0x0E);
+        program.push_back(0x04);
+        // ld a, 0          ; Clear A for accumulation
+        program.push_back(0x3E);
+        program.push_back(0x0);
+
+        // MultiplyLoop:
+        uint16_t multiplyLoopAdress = program.size();
+        // add a, b         ; A += B
+        program.push_back(0x80);
+        // dec c
+        program.push_back(0x0D);
+        // jr nz, MultiplyLoop
+        program.push_back(0x20);
+        program.push_back(multiplyLoopAdress - program.size());
+        // nop
+        program.push_back(0x0);
+        // At this point, A = 24
+
+        // push program to memory
+        memory.CopyBuffer(0, program.data(), program.size());
+
+        cpu.GetRegisters().SetReg16(GBE::Reg16::PC, 0);
+        cpu.GetRegisters().SetReg16(GBE::Reg16::SP, 0xFFFF);
+        
+        // execute while pc is not at the end of the program
+        while (cpu.GetRegisters().GetReg16(GBE::Reg16::PC) < program.size())
+        {   
+            GBE::InstructionResult result{};
+            cpu.Run(memory, result);
+        }
+
+        // assert
+        CHECK_EQ(
+            cpu.GetRegisters().GetReg8(GBE::Reg8::A),
+            24
+        );
     }
 
 }

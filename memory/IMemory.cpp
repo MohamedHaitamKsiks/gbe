@@ -16,4 +16,12 @@ namespace GBE
         return little + (big << 8);
     }
 
+    void IMemory::CopyBuffer(uint16_t address, const void *data, uint16_t size)
+    {
+        for (uint16_t i = 0; i < size; i++)
+        {
+            Set(i + address, static_cast<const uint8_t*>(data)[i]);
+        }
+    }
+
 } // namespace GBE

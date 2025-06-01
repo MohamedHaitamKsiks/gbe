@@ -3,6 +3,7 @@
 #include "CpuRegistersSet.h"
 #include "Alu.h"
 #include "CpuOperand.h"
+#include "io/interrupts/InterruptFlag.h"
 
 namespace GBE
 {
@@ -17,14 +18,13 @@ namespace GBE
         ~Cpu();
 
         // run current instruction
-        uint16_t Run(IMemory &memory, InstructionResult& result);
-
+        void Run(IMemory &memory, InstructionResult& result);
 
         // get registers
         inline CpuRegistersSet& GetRegisters() 
         {
             return m_Regs;
-        }
+        }   
 
         /*
             Get/Set Instruction operands
@@ -71,6 +71,11 @@ namespace GBE
         void SetImm16(uint16_t imm16, IMemory &memory);
 
         /*
+            Nop
+        */
+       inline void Nop(InstructionResult& result) {}
+
+        /*
             Load Operations
         */
 
@@ -110,6 +115,12 @@ namespace GBE
         // ld a, [imm16]
         void LoadA_AdrImm16(IMemory &memory, InstructionResult &result);
 
+        // ld HL, sp + imm8
+        void LoadHL_SPImm8(IMemory& memory, InstructionResult& result);
+
+        // ld sp, hl
+        void LoadSP_HL(InstructionResult& result);
+
         /* 
             ALU Operations
         */ 
@@ -127,7 +138,7 @@ namespace GBE
         void ExecAluOpA_R8(Alu::OperationDestSrc8 op, OperandR8 r8, IMemory& memory, InstructionResult &result, bool addCarry = false);
 
         // op A, imm8
-        void ExecAluOpA_R8(Alu::OperationDestSrc8 op, IMemory &memory, InstructionResult &result, bool addCarry = false);
+        void ExecAluOpA_Imm8(Alu::OperationDestSrc8 op, IMemory &memory, InstructionResult &result, bool addCarry = false);
 
         // add SP, Imm8
         void AddSP_Imm8(IMemory &memory, InstructionResult &result);
@@ -199,10 +210,10 @@ namespace GBE
         void JumpCC_Imm16(OperandCond cc, IMemory& memory, InstructionResult& result);
 
         // jr imm16
-        void JumpRelativeImm16(IMemory& memory, InstructionResult& result);
+        void JumpRelativeImm8(IMemory& memory, InstructionResult& result);
 
         // jr cc, imm16
-        void JumpRelativeCC_Imm16(OperandCond cc, IMemory &memory, InstructionResult &result);
+        void JumpRelativeCC_Imm8(OperandCond cc, IMemory &memory, InstructionResult &result);
 
         // ret 
         void Return(IMemory& memory, InstructionResult& result);
@@ -223,13 +234,32 @@ namespace GBE
         void SetCarryFlag(InstructionResult &result);
 
         // di
-        void DisableInterrupts(IMemory& memory, InstructionResult& result);
+        void DisableInterrupts(InstructionResult& result);
 
         // ei
-        void EnableInterrupts(IMemory &memory, InstructionResult &result);
-        
+        void EnableInterrupts(InstructionResult &result);
+
+        // is IME flag active
+        inline bool GetIME() const
+        {
+            return m_IME;
+        }
+
     private: 
         CpuRegistersSet m_Regs;
+
+        // Flag to enable interrupts
+        bool m_IME = false; // Interrupt master enable flag [write only]
+        int32_t m_QueueIME = 0; // Are we queuing IME to be set in the next instruction
+
+        // handle IME flag
+        void _HandleIME();
+
+        // handle interrupt and return if interrupt found
+        bool _HandleInterrupts(IMemory &memory, InstructionResult &result);
+
+        // handle one interrupt flag and return if interrupt is found
+        bool _HandleInterruptFlag(InterruptFlag flag, IMemory &memory, InstructionResult &result);
 
         // add value to pc to move to next intruction
         inline void _AddPC(uint16_t bytes)
@@ -258,6 +288,25 @@ namespace GBE
         // jump relative
         void _JumpRelative(uint8_t offset8, InstructionResult& result);
     
-        // 
+        // offset SP with imm8 and load to register
+        void _AddToDestSP_Imm8(Reg16 dest, IMemory &memory, InstructionResult &result);
+
+        // Block 0
+        void _RunBlock0(uint8_t opcode, IMemory &memory, InstructionResult &result);
+
+        // Block 1 8-bit register-to-register loads
+        void _RunBlock1(uint8_t opcode, IMemory &memory, InstructionResult &result);
+
+        // Block 2: 8-bit arithmetic
+        void _RunBlock2(uint8_t opcode, IMemory &memory, InstructionResult &result);
+
+        // Block 3
+        void _RunBlock3(uint8_t opcode, IMemory &memory, InstructionResult &result);
+
+        // $CB prefix instructions
+        void _RunPrefixInstructions(IMemory &memory, InstructionResult &result);
+    
+        // invalid instruction
+        void _ThrowInvalidInstructtion();
     };
 } // namespace GBE

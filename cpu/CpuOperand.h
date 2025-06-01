@@ -1,4 +1,6 @@
+#pragma once
 
+#include <string>
 
 namespace GBE
 {
@@ -45,4 +47,5 @@ namespace GBE
         NC = 2,
         C = 3
     };
+
 } // namespace GBE

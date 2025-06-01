@@ -1,6 +1,8 @@
 #include "Alu.h"
 #include "AluResult.h"
 
+#include "util/Binary.h"
+
 #include "CpuFlags.h"
 
 #include <iostream>
@@ -60,27 +62,22 @@ namespace GBE
         result.Result8 = input;
 
         // set flags
-        uint8_t mask = 1 << bit;
         result.AffectedFlags = CpuFlag::Z | CpuFlag::N | CpuFlag::H;
         result.Flags = CpuFlag::H;
 
-        if ((input & mask) == 0)
+        if (!Binary::TestBit(input, bit))
             result.Flags |= CpuFlag::Z;
     }
 
     void Alu::SetBit(uint8_t bit, uint8_t input, AluResult &result)
     {
-        uint8_t mask = 1 << bit;
-        result.Result8 = input | mask;
-
+        result.Result8 = Binary::SetBit(input, bit);
         result.AffectedFlags = 0;
     }
 
     void Alu::ResetBit(uint8_t bit, uint8_t input, AluResult &result)
     {
-        uint8_t mask = 1 << bit;
-        result.Result8 = input & ~(input & mask);
-
+        result.Result8 = Binary::ResetBit(input, bit);
         result.AffectedFlags = 0;
     }
 
@@ -217,7 +214,7 @@ namespace GBE
         result.Result16 = static_cast<uint16_t>(a + e16);
 
         // set flags
-        result.AffectedFlags = CpuFlag::N | CpuFlag::H | CpuFlag::C;
+        result.AffectedFlags = CpuFlag::Z | CpuFlag::N | CpuFlag::H | CpuFlag::C;
         result.Flags = 0;
 
         // overflow 3

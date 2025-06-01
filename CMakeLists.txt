@@ -19,6 +19,7 @@ endif()
 
 #add debendencies
 add_subdirectory(dependencies/doctest)
+add_subdirectory(dependencies/magic_enum)
 
 #add modules
 if (TEST)
@@ -48,6 +49,7 @@ add_executable(gbe ${MAIN_SOURCE} ${GBE_TESTS_SOURCES})
 
 target_link_libraries(gbelib
     PRIVATE
+    magic_enum
     doctest
 )
 

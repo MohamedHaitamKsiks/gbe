@@ -5,19 +5,18 @@
 #include "Alu.h"
 
 #include "memory/IMemory.h"
+#include "util/Binary.h" 
+#include "io/IORegister.h"
 
 #include <iostream>
+#include <exception>
+
 
 namespace GBE
 {
     Cpu::~Cpu()
     {
         
-    }
-
-    uint16_t Cpu::Run(IMemory &memory, InstructionResult& result)
-    {
-        return 0;
     }
 
     uint8_t Cpu::GetReg16Adr(Reg16 adr, IMemory &memory) const
@@ -141,13 +140,13 @@ namespace GBE
         switch (cc)
         {
         case OperandCond::Z :
-            return (m_Regs.GetFlags() & CpuFlag::Z);
+            return m_Regs.GetFlag(CpuFlag::Z);
         case OperandCond::NZ:
-            return !(m_Regs.GetFlags() & CpuFlag::Z);
+            return !m_Regs.GetFlag(CpuFlag::Z);
         case OperandCond::C:
-            return (m_Regs.GetFlags() & CpuFlag::C);
+            return m_Regs.GetFlag(CpuFlag::C);
         case OperandCond::NC:
-            return !(m_Regs.GetFlags() & CpuFlag::C);
+            return !m_Regs.GetFlag(CpuFlag::C);
         }
 
         return false;
@@ -228,6 +227,7 @@ namespace GBE
 
         // execute
         SetOperandR8(r8, imm8, memory, result);
+
     }
 
     void Cpu::LoadR8_R8(OperandR8 src8, OperandR8 dest8, IMemory &memory, InstructionResult &result)
@@ -314,6 +314,23 @@ namespace GBE
         m_Regs.SetReg8(Reg8::A, src);
     }
 
+    void Cpu::LoadHL_SPImm8(IMemory &memory, InstructionResult &result)
+    {
+        _AddToDestSP_Imm8(Reg16::HL, memory, result);
+    }
+
+    void Cpu::LoadSP_HL(InstructionResult &result)
+    {
+        // fetch
+        uint16_t hl = m_Regs.GetReg16(Reg16::HL);
+
+        // execute
+        m_Regs.SetReg16(Reg16::SP, hl);
+
+        // result
+        result.Cycles++;
+    }
+
     void Cpu::ExecAluOpR16(Alu::OperationDest16 op, OperandR16 r16, InstructionResult &result)
     {
         // fetch
@@ -382,7 +399,7 @@ namespace GBE
         _ExecAluOpA(op, value, addCarry);
     }
 
-    void Cpu::ExecAluOpA_R8(Alu::OperationDestSrc8 op, IMemory &memory, InstructionResult &result, bool addCarry)
+    void Cpu::ExecAluOpA_Imm8(Alu::OperationDestSrc8 op, IMemory &memory, InstructionResult &result, bool addCarry)
     {
         // fetch
         uint8_t value = GetImm8(memory, result);
@@ -393,20 +410,7 @@ namespace GBE
 
     void Cpu::AddSP_Imm8(IMemory &memory, InstructionResult &result)
     {
-        // fetch
-        uint8_t imm8 = GetImm8(memory, result);
-
-        uint16_t a = m_Regs.GetReg16(Reg16::SP);
-        int8_t e = static_cast<int8_t>(imm8);
-
-        // execute
-        AluResult aluResult{};
-        Alu::Offset16(a, e, aluResult);
-        m_Regs.SetReg16(Reg16::SP, aluResult.Result16);
-
-        // result
-        m_Regs.SetFlags(aluResult.AffectedFlags, aluResult.Flags);
-        result.Cycles++;
+        _AddToDestSP_Imm8(Reg16::SP, memory, result);
     }
 
     void Cpu::ComplementA(InstructionResult &result)
@@ -644,16 +648,35 @@ namespace GBE
     void Cpu::_JumpRelative(uint8_t offset8, InstructionResult &result)
     {
         int8_t signedOffset8 = static_cast<int8_t>(offset8);
-        int16_t signedOffset16 = static_cast<int16_t>(offset8);
+        int16_t signedOffset16 = static_cast<int16_t>(signedOffset8);
         signedOffset16--;
-    
+
         // offset pc
         uint16_t pc = m_Regs.GetReg16(Reg16::PC) + signedOffset16;
         m_Regs.SetReg16(Reg16::PC, pc);
         result.Cycles++;
     }
 
-    void Cpu::JumpRelativeImm16(IMemory &memory, InstructionResult &result)
+    void Cpu::_AddToDestSP_Imm8(Reg16 dest, IMemory &memory, InstructionResult &result)
+    {
+        // fetch
+        uint8_t imm8 = GetImm8(memory, result);
+
+        uint16_t a = m_Regs.GetReg16(Reg16::SP);
+        int8_t e = static_cast<int8_t>(imm8);
+
+        // execute
+        AluResult aluResult{};
+        Alu::Offset16(a, e, aluResult);
+        m_Regs.SetReg16(dest, aluResult.Result16);
+
+        // result
+        m_Regs.SetFlags(aluResult.AffectedFlags, aluResult.Flags);
+        result.Cycles++;
+    }
+
+
+    void Cpu::JumpRelativeImm8(IMemory &memory, InstructionResult &result)
     {
         // fetch
         uint8_t offset = GetImm8(memory, result);
@@ -662,9 +685,9 @@ namespace GBE
         _JumpRelative(offset, result);
     }
     
-    void Cpu::JumpRelativeCC_Imm16(OperandCond cc, IMemory &memory, InstructionResult &result)
+    void Cpu::JumpRelativeCC_Imm8(OperandCond cc, IMemory &memory, InstructionResult &result)
     {
-        // fetch    
+        // fetch
         uint8_t offset = GetImm8(memory, result);
 
         // execute
@@ -693,6 +716,7 @@ namespace GBE
     void Cpu::ReturnAndEnableInterrupts(IMemory &memory, InstructionResult &result)
     {
         // TODO: Add enbale interrupts
+        EnableInterrupts(result);
         Return(memory, result);
     }
     
@@ -724,11 +748,83 @@ namespace GBE
         m_Regs.SetFlag(CpuFlag::C, true);
     }
 
-    void Cpu::DisableInterrupts(IMemory &memory, InstructionResult &result)
+    void Cpu::DisableInterrupts(InstructionResult &result)
     {
+        m_IME = false;
+        m_QueueIME = 0;
     }
 
-    void Cpu::EnableInterrupts(IMemory & memory, InstructionResult & result)
+    void Cpu::EnableInterrupts(InstructionResult & result)
     {
+        if (m_QueueIME == 0 && !m_IME)
+            m_QueueIME = 2;
+    }
+    
+    void Cpu::_HandleIME()
+    {
+        
+        if (m_IME || m_QueueIME <= 0)
+            return;
+
+        m_QueueIME--;
+        if (m_QueueIME == 0)
+            m_IME = true;
+    }
+
+    bool Cpu::_HandleInterrupts(IMemory &memory, InstructionResult &result)
+    {
+        if (!m_IME)
+            return false;
+
+        // list of interrupt flags ordered by priority
+        std::vector<InterruptFlag> flags = {
+            InterruptFlag::V_BLANK,
+            InterruptFlag::LCD,
+            InterruptFlag::TIMER,
+            InterruptFlag::SERIAL,
+            InterruptFlag::JOYPAD
+        };
+
+        for (auto flag: flags)
+        {
+            if (_HandleInterruptFlag(flag, memory, result))
+                return true;
+        }
+
+        return false;
+    }
+
+    bool Cpu::_HandleInterruptFlag(InterruptFlag flag, IMemory &memory, InstructionResult &result)
+    {
+        // cast flag to uint8_t
+        uint8_t flagBit = static_cast<uint8_t>(flag);
+
+        // get interrupt flags
+        uint8_t interruptEnable = memory.Get(static_cast<uint16_t>(IORegister::IE));
+        uint8_t interruptFlag = memory.Get(static_cast<uint16_t>(IORegister::IF));
+
+        // check interrupt enable
+        if (Binary::TestBit(interruptEnable, flagBit))
+            return false;
+
+        // check interrupt flag
+        if (Binary::TestBit(interruptFlag, flagBit))
+            return false;
+
+        // get handler address
+        uint16_t handler = 0x40 + 0x8 * static_cast<uint16_t>(flagBit);
+
+        // handle interrupt
+        m_IME = false; // disable IME flag
+        interruptFlag = Binary::ResetBit(interruptFlag, flagBit); // reset interrupt flag
+        memory.Set(static_cast<uint16_t>(IORegister::IF), interruptFlag);
+        _Call(handler, memory, result); // call interrupt
+
+        // result
+        result.Cycles = 5; // hard code 5 cycles it's easier that way
+        result.Asm.SetOperation("interrupt");
+        result.Asm.AddImm16(handler, true);
+
+        return true;
     }
 } // namespace GBE

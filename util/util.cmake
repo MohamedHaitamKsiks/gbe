@@ -1,5 +1,5 @@
 set (GBE_HEADERS ${GBE_HEADERS}
-
+    ${CMAKE_CURRENT_LIST_DIR}/Binary.h
 )
 
 set(GBE_SOURCES ${GBE_SOURCES}
