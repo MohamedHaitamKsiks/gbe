@@ -57,6 +57,7 @@ namespace GBE
             result.Flags |= CpuFlag::H;
     }
 
+
     void Alu::TestBit(uint8_t bit, uint8_t input, AluResult &result)
     {
         result.Result8 = input;

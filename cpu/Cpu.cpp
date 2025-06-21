@@ -759,7 +759,45 @@ namespace GBE
         if (m_QueueIME == 0 && !m_IME)
             m_QueueIME = 2;
     }
-    
+
+    void Cpu::DecimalAdjustAccumulator(InstructionResult &result)
+    {
+        // fetch
+        uint8_t a = m_Regs.GetReg8(Reg8::A);
+
+        // execute
+        uint8_t adjust = 0;
+
+        if (m_Regs.GetFlag(CpuFlag::N))
+        {
+            if (m_Regs.GetFlag(CpuFlag::H))
+                adjust += 0x6;
+
+            if (m_Regs.GetFlag(CpuFlag::C))
+                adjust += 0x60;
+
+            a -= adjust;
+        }
+        else
+        {
+            if (m_Regs.GetFlag(CpuFlag::H) || (a & 0xf) > 0x9)
+                adjust += 0x6;
+
+            if (m_Regs.GetFlag(CpuFlag::C) || a > 0x99)
+            {
+                adjust += 0x60;
+                m_Regs.SetFlag(CpuFlag::C, true);
+            }
+
+            a += adjust;
+        }
+
+        // result
+        m_Regs.SetReg8(Reg8::A, a);
+        m_Regs.SetFlag(CpuFlag::Z, a == 0);
+        m_Regs.SetFlag(CpuFlag::H, false);
+    }
+
     void Cpu::_HandleIME()
     {
         
@@ -804,11 +842,11 @@ namespace GBE
         uint8_t interruptFlag = memory.Get(static_cast<uint16_t>(IORegister::IF));
 
         // check interrupt enable
-        if (Binary::TestBit(interruptEnable, flagBit))
+        if (!Binary::TestBit(interruptEnable, flagBit))
             return false;
 
         // check interrupt flag
-        if (Binary::TestBit(interruptFlag, flagBit))
+        if (!Binary::TestBit(interruptFlag, flagBit))
             return false;
 
         // get handler address

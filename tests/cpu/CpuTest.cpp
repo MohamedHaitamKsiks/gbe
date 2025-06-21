@@ -8,6 +8,7 @@
 #include "cpu/InstructionResult.h"
 #include "cpu/Cpu.h"
 #include "cpu/Alu.h"
+#include "io/IORegister.h"
 
 namespace GBETest
 {
@@ -747,6 +748,52 @@ GBE_TEST_SUITE(Cpu)
         CHECK(!cpu.GetRegisters().GetFlag(GBE::CpuFlag::H));
     }
 
+    TEST_CASE("DecimalAdjustAccumulator")
+    {
+        // arrange
+        GBE::InstructionResult result{};
+
+        cpu.GetRegisters().SetReg8(GBE::Reg8::A, 0x18);
+        cpu.GetRegisters().SetReg8(GBE::Reg8::B, 0x24);
+        cpu.ExecAluOpA_R8(GBE::Alu::Add8, GBE::OperandR8::B, memory, result);
+
+        // act
+        cpu.DecimalAdjustAccumulator(result);
+
+        // assert
+        CHECK_EQ(
+            cpu.GetRegisters().GetReg8(GBE::Reg8::A),
+            0x42
+        );
+
+        CHECK(!cpu.GetRegisters().GetFlag(GBE::CpuFlag::Z));
+        CHECK(!cpu.GetRegisters().GetFlag(GBE::CpuFlag::H));
+        CHECK(!cpu.GetRegisters().GetFlag(GBE::CpuFlag::C));
+    }
+
+    TEST_CASE("DecimalAdjustAccumulator C flag")
+    {
+        // arrange
+        GBE::InstructionResult result{};
+
+        cpu.GetRegisters().SetReg8(GBE::Reg8::A, 0x90);
+        cpu.GetRegisters().SetReg8(GBE::Reg8::B, 0x12);
+        cpu.ExecAluOpA_R8(GBE::Alu::Add8, GBE::OperandR8::B, memory, result);
+
+        // act
+        cpu.DecimalAdjustAccumulator(result);
+
+        // assert
+        CHECK_EQ(
+            cpu.GetRegisters().GetReg8(GBE::Reg8::A),
+            0x02
+        );
+
+        CHECK(!cpu.GetRegisters().GetFlag(GBE::CpuFlag::Z));
+        CHECK(!cpu.GetRegisters().GetFlag(GBE::CpuFlag::H));
+        CHECK(cpu.GetRegisters().GetFlag(GBE::CpuFlag::C));
+    }
+
     TEST_CASE("Run")
     {
         // arrange
@@ -808,4 +855,138 @@ GBE_TEST_SUITE(Cpu)
         );
     }
 
+
+    TEST_CASE("Interrupts")
+    {
+        // arrange
+        // v_bank handeler
+        std::vector<uint8_t> vBlankHandler{};
+        // ld a, 5          ; Load 5 into register A
+        vBlankHandler.push_back(0x3E);
+        vBlankHandler.push_back(0x05);
+        // reti
+        vBlankHandler.push_back(0xD9);
+
+        // push handeler to memory
+        memory.CopyBuffer(0x40, vBlankHandler.data(), vBlankHandler.size());
+
+        // main program
+        std::vector<uint8_t> program{};
+        // ei
+        program.push_back(0xFB);
+        // nop
+        program.push_back(0x0);
+        program.push_back(0x0);
+        program.push_back(0x0);
+
+        // push program to memory
+        memory.CopyBuffer(0x100, program.data(), program.size());
+
+        // setup registers
+        cpu.GetRegisters().SetReg8(GBE::Reg8::A, 0);
+        cpu.GetRegisters().SetReg16(GBE::Reg16::PC, 0x100);
+        cpu.GetRegisters().SetReg16(GBE::Reg16::SP, 0xF000);
+
+        // set interrupts flag
+        memory.Set(static_cast<uint16_t>(GBE::IORegister::IF), 3);
+        memory.Set(static_cast<uint16_t>(GBE::IORegister::IE), 1);
+
+        // execute while pc is not at the end of the program
+        while (cpu.GetRegisters().GetReg16(GBE::Reg16::PC) < static_cast<uint16_t>(0x100) + program.size())
+        {   
+            GBE::InstructionResult result{};
+            cpu.Run(memory, result);
+
+            // std::cout << result.Asm.ToString() << "\n";
+        }
+
+        // assert
+        CHECK_EQ(
+            cpu.GetRegisters().GetReg8(GBE::Reg8::A),
+            5
+        );
+
+        CHECK_EQ(
+            memory.Get(static_cast<uint16_t>(GBE::IORegister::IF)),
+            2
+        );
+
+        CHECK(
+            cpu.GetIME()
+        );
+    }
+
+    TEST_CASE("Two Interrupts")
+    {
+        // arrange
+        // v_bank handeler
+        std::vector<uint8_t> vBlankHandler{};
+        // ld a, 5          ; Load 5 into register A
+        vBlankHandler.push_back(0x3E);
+        vBlankHandler.push_back(0x05);
+        // reti
+        vBlankHandler.push_back(0xD9);
+
+        // push handeler to memory
+        memory.CopyBuffer(0x40, vBlankHandler.data(), vBlankHandler.size());
+
+        // lcd handeler
+        std::vector<uint8_t> lcdHandler{};
+        // ld b, a           ; Load A into register B
+        lcdHandler.push_back(0x47);
+        // reti
+        lcdHandler.push_back(0xD9);
+
+        // push handeler to memory
+        memory.CopyBuffer(0x48, lcdHandler.data(), lcdHandler.size());
+
+        // main program
+        std::vector<uint8_t> program{};
+        // nop
+        program.push_back(0x0);
+        program.push_back(0x0);
+        program.push_back(0x0);
+
+        // push program to memory
+        memory.CopyBuffer(0x100, program.data(), program.size());
+
+        // setup registers
+        cpu.GetRegisters().SetReg8(GBE::Reg8::A, 0);
+        cpu.GetRegisters().SetReg8(GBE::Reg8::B, 0);
+        cpu.GetRegisters().SetReg16(GBE::Reg16::PC, 0x100);
+        cpu.GetRegisters().SetReg16(GBE::Reg16::SP, 0xF000);
+
+        // set interrupts flag
+        memory.Set(static_cast<uint16_t>(GBE::IORegister::IF), 3);
+        memory.Set(static_cast<uint16_t>(GBE::IORegister::IE), 3);
+
+        // execute while pc is not at the end of the program
+        while (cpu.GetRegisters().GetReg16(GBE::Reg16::PC) < static_cast<uint16_t>(0x100) + program.size())
+        {
+            GBE::InstructionResult result{};
+            cpu.Run(memory, result);
+
+            //std::cout << result.Asm.ToString() << "\n";
+        }
+
+        // assert
+        CHECK_EQ(
+            cpu.GetRegisters().GetReg8(GBE::Reg8::A),
+            5
+        );
+
+        CHECK_EQ(
+            cpu.GetRegisters().GetReg8(GBE::Reg8::B),
+            5
+        );
+
+        CHECK_EQ(
+            memory.Get(static_cast<uint16_t>(GBE::IORegister::IF)),
+            0
+        );
+
+        CHECK(
+            cpu.GetIME()
+        );
+    }
 }

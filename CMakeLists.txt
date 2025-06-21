@@ -29,6 +29,7 @@ endif()
 
 include(cpu/cpu.cmake)
 include(memory/memory.cmake)
+include(io/io.cmake)
 
 #create core library
 add_library(gbelib STATIC

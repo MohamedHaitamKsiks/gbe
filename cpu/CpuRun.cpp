@@ -15,15 +15,16 @@ namespace GBE
 
     void Cpu::Run(IMemory &memory, InstructionResult &result)
     {
+        result.Asm.SetAddress(m_Regs.GetReg16(Reg16::PC));
+        
         // check if interruption is pending
         if (_HandleInterrupts(memory, result))
             return;
 
         // handle instruction
         result.Cycles = 0;
-        uint8_t opcode = GetImm8(memory, result);
 
-        result.Asm.SetAddress(m_Regs.GetReg16(Reg16::PC));
+        uint8_t opcode = GetImm8(memory, result);
         result.Asm.SetOpcode(opcode);
 
         // read block instruction (inspired by: https://gbdev.io/pandocs/CPU_Instruction_Set.html)
@@ -85,8 +86,9 @@ namespace GBE
         case 0x1F:
             RotateR8(Alu::Rotate, ShiftDirection::RIGHT, OperandR8::A, memory, result, false);
             return;
-        // TODO daa
+        // daa
         case 0x27:
+            DecimalAdjustAccumulator(result);
             return;
         // cpl
         case 0x2F:

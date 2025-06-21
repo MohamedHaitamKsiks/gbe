@@ -38,3 +38,5 @@
 .vscode/
 .ropeproject/
 
+# tests
+Testing/

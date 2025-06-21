@@ -245,6 +245,11 @@ namespace GBE
             return m_IME;
         }
 
+        /* Others */
+
+        // daa
+        void DecimalAdjustAccumulator(InstructionResult& result);
+
     private: 
         CpuRegistersSet m_Regs;
 

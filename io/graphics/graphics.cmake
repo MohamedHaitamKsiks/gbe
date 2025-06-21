@@ -1,0 +1,10 @@
+
+set (GBE_HEADERS ${GBE_HEADERS}
+    ${CMAKE_CURRENT_LIST_DIR}/LcdPalette.h
+    ${CMAKE_CURRENT_LIST_DIR}/TileData.h
+)
+
+set(GBE_SOURCES ${GBE_SOURCES}
+    ${CMAKE_CURRENT_LIST_DIR}/LcdPalette.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/TileData.cpp
+)

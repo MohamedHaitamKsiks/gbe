@@ -28,7 +28,7 @@ namespace GBE
         static bool TestBit(T input, T bit)
         {
             T mask = 1 << bit;
-            return (input & mask) != 0;
+            return (input & mask);
         }
 
         template <typename T>
