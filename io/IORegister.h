@@ -58,22 +58,6 @@ namespace GBE
         WAVE_RAM_FROM = 0xFF30,
         WAVE_RAM_TO = 0xFF3F,
 
-        // LCD
-        LCDC = 0xFF40, // Control
-        STAT = 0xFF41, // Status
-        SCY = 0xFF42,  // Viewport Y
-        SCX = 0xFF43,  // Viewport X
-        LY = 0xFF44,   // Y coordinate
-        LYC = 0xFF45,  // LY compare
-        DMA = 0xFF46,  // OAM DMA
 
-        // Palettes (DMG)
-        BGP = 0xFF47,  // BG palette
-        OBP0 = 0xFF48, // OBJ palette 0
-        OBP1 = 0xFF49, // OBJ palette 1
-
-        // Window
-        WY = 0xFF4A, // Y position
-        WX = 0xFF4B, // X position + 7
     };
 } // namespace GBE

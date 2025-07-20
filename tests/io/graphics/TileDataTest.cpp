@@ -1,6 +1,6 @@
 #include "GBETestSuite.h"
 
-#include "io/graphics/TileData.h"
+#include "io/graphics/vram/TileData.h"
 
 GBE_TEST_SUITE(TileDataTest)
 {

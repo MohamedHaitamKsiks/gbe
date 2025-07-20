@@ -1,6 +1,6 @@
 #include "GBETestSuite.h"
 
-#include "io/graphics/LcdPalette.h"
+#include "io/graphics/lcd/LcdPalette.h"
 
 GBE_TEST_SUITE(LcdPalette)
 {
