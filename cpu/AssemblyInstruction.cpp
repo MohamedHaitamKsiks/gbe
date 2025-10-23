@@ -24,7 +24,7 @@ namespace GBE
         m_Operation = op;
     }
 
-    void AssemblyInstruction::AddOperand(std::string_view operand)
+    void AssemblyInstruction::_AddOperand(std::string_view operand)
     {
         m_Operands.push_back(std::string(operand));
     }

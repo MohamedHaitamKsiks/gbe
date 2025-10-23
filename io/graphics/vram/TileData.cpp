@@ -23,4 +23,5 @@ namespace GBE
 
         return color;
     }
+
 } // namespace GBE

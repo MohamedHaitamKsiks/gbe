@@ -1,13 +1,22 @@
 #pragma once
 
+#include "memory/MemoryMap.h"
+#include "memory/MemoryArea.h"
+
 #include "InterruptFlag.h"
 #include <cstdint>
 
 namespace GBE
 {
-    class InterruptManager
+
+    // Interrupt Enable register (IE)
+    static constexpr MemoryMap MMAP_IF(0xFF0F, 0xFF0F);
+    static constexpr MemoryMap MMAP_IE(0xFFFF, 0xFFFF);
+
+    class InterruptManager: public MemoryArea
     {
     public:
+        InterruptManager();
         ~InterruptManager();
         
         inline uint8_t GetInterruptFlag() const
@@ -36,6 +45,9 @@ namespace GBE
         
     private:
         uint8_t m_InterruptFlag = 0;
-        uint8_t m_InterruptEnabled = 0; 
+        uint8_t m_InterruptEnabled = 0;
+
+        void _SetImp(uint16_t address, uint8_t value) override;
+        uint8_t _GetImp(uint16_t address) const override;
     };
 } // namespace GBE

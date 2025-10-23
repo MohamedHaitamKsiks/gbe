@@ -3,6 +3,8 @@
 #include "cpu/AluResult.h"
 #include "cpu/Alu.h"
 
+#include <iostream>
+
 namespace GBE
 {
     Vram::Vram()
@@ -10,18 +12,18 @@ namespace GBE
         // create vram with 
         m_Maps.resize(TILE_MAP_COUNT);
         m_Tiles.resize(TILE_COUNT);
+        
+        SetReadWriteFlags(true);
+
     }
 
-    void Vram::Set(uint16_t address, uint8_t value)
+    void Vram::_SetImp(uint16_t address, uint8_t value)
     {
-        if (!m_isAccessible)
-            return;
-
         // 0x1800-0x1FFF
         if (address >= TILE_MAP_VRAM_ADDRESS)
         {
-            uint16_t mapIndex = address / TILE_MAP_VRAM_SIZE;
-            uint16_t mapLocalAddress = address % TILE_MAP_VRAM_SIZE;
+            uint16_t mapIndex = (address - TILE_MAP_VRAM_ADDRESS) / TILE_MAP_VRAM_SIZE;
+            uint16_t mapLocalAddress = (address - TILE_MAP_VRAM_ADDRESS) % TILE_MAP_VRAM_SIZE;
 
             TileMap& map = m_Maps.at(mapIndex);
             map.Set(mapLocalAddress, value);
@@ -31,22 +33,19 @@ namespace GBE
 
         // $0000–17FF
         uint16_t tileIndex = address / TILE_VRAM_SIZE;
-        uint16_t tileLocalAddress = address % TILE_MAP_SIZE;
+        uint16_t tileLocalAddress = address % TILE_VRAM_SIZE;
 
         TileData& tile = m_Tiles.at(tileIndex);
         tile.Set(tileLocalAddress, value);
     }
 
-    uint8_t Vram::Get(uint16_t address) const
+    uint8_t Vram::_GetImp(uint16_t address) const
     {
-        if (!m_isAccessible)
-            return 0xFF;
-
         // 0x1800-0x1FFF
         if (address >= TILE_MAP_VRAM_ADDRESS)
         {
-            uint16_t mapIndex = address / TILE_MAP_VRAM_SIZE;
-            uint16_t mapLocalAddress = address % TILE_MAP_VRAM_SIZE;
+            uint16_t mapIndex = (address - TILE_MAP_VRAM_ADDRESS) / TILE_MAP_VRAM_SIZE;
+            uint16_t mapLocalAddress = (address - TILE_MAP_VRAM_ADDRESS) % TILE_MAP_VRAM_SIZE;
 
             const TileMap &map = m_Maps.at(mapIndex);
 
@@ -55,7 +54,7 @@ namespace GBE
 
         // $0000–17FF
         uint16_t tileIndex = address / TILE_VRAM_SIZE;
-        uint16_t tileLocalAddress = address % TILE_MAP_SIZE;
+        uint16_t tileLocalAddress = address % TILE_VRAM_SIZE;
 
         const TileData &tile = m_Tiles.at(tileIndex);
         return tile.Get(tileLocalAddress);

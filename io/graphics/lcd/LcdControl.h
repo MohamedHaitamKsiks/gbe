@@ -5,6 +5,7 @@
 
 #include "LcdPalette.h"
 
+#include "memory/MemoryArea.h"
 #include "memory/MemoryMap.h"
 
 namespace GBE
@@ -35,23 +36,11 @@ namespace GBE
 
     enum class PpuMode;
 
-    class LcdControl
+    class LcdControl: public MemoryArea
     {
     public:
+        LcdControl();
         ~LcdControl() {}
-
-        void Set(uint16_t address, uint8_t value);
-        uint8_t Get(uint16_t address) const;
-
-        inline const LcdPalette& GetBackgroundPalette() const 
-        {
-            return m_BackgroundPalette;
-        }
-
-        inline const LcdPalette &GetObjectPalette(uint8_t paletteID) const
-        {
-            return m_ObjectPalettes.at(paletteID);
-        }
 
         bool GetControlFlag(LcdControlFlag flag) const;
 
@@ -112,10 +101,10 @@ namespace GBE
         uint8_t m_LcdYCoordinate = 0;
         uint8_t m_LcdYCompare = 0;
 
-        uint8_t m_DMA= 0;
+        uint8_t m_DMA = 0;
 
-        LcdPalette m_BackgroundPalette{};
-        std::array<LcdPalette, 2> m_ObjectPalettes{};
+        void _SetImp(uint16_t address, uint8_t value) override;
+        uint8_t _GetImp(uint16_t address) const override;
     };
 } // namespace GBE
 

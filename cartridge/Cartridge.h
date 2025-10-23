@@ -1,11 +1,13 @@
 #pragma once
 
+#include "memory/MemoryArea.h"
+
 #include <memory>
 #include <string_view>
 
 namespace GBE
 {
-    class Cartridge
+    class Cartridge: public MemoryArea
     {
     public:
         ~Cartridge() {}
@@ -13,5 +15,8 @@ namespace GBE
     private:
         std::unique_ptr<uint8_t[]> m_ROM = nullptr;
         std::unique_ptr<uint8_t[]> m_RAM = nullptr;
+
+        void _SetImp(uint16_t address, uint8_t value) override;
+        uint8_t _GetImp(uint16_t address) const override;
     };
 } // namespace GBE

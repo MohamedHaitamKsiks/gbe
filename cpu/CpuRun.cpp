@@ -65,6 +65,7 @@ namespace GBE
         // nop
         case 0x0:
             Nop(result);
+            GBE_ASM(result.Asm, "nop");
             return;
         // ld [imm16], sp
         case 0x8:
@@ -103,7 +104,7 @@ namespace GBE
             ComplementCarryFlag(result);
             return;
         // jr imm8
-        case 0x4F:
+        case 0x18:
             JumpRelativeImm8(memory, result);
             return;
         // TODO: stop
@@ -133,10 +134,12 @@ namespace GBE
         // inc r16
         case 0x3:
             ExecAluOpR16(Alu::Increment16, static_cast<OperandR16>(r16Operand), result);
+            GBE_ASM(result.Asm, "inc", static_cast<OperandR16>(r16Operand));
             return;
         // dec r16
         case 0xB:
             ExecAluOpR16(Alu::Decrement16, static_cast<OperandR16>(r16Operand), result);
+            GBE_ASM(result.Asm, "dec", static_cast<OperandR16>(r16Operand));
             return;
         // add hl, r16
         case 0x9:
@@ -230,14 +233,17 @@ namespace GBE
         // xor a, r8
         case 0x5:
             ExecAluOpA_R8(Alu::Xor8, r8, memory, result);
+            GBE_ASM(result.Asm, "xor", Reg8::A, r8);
             return;
         // or  a, r8
         case 0x6:
             ExecAluOpA_R8(Alu::Or8, r8, memory, result);
+            GBE_ASM(result.Asm, "or", Reg8::A, r8);
             return;
         // cp  a, r8
         case 0x7:
             ExecAluOpA_R8(Alu::Cmp8, r8, memory, result);
+            GBE_ASM(result.Asm, "cp", r8);
             return;
         }
 
@@ -281,6 +287,7 @@ namespace GBE
         // cp a, imm8
         case 0xFE:
             ExecAluOpA_Imm8(Alu::Cmp8, memory, result);
+            GBE_ASM(result.Asm, "cmp", Reg8::A, memory.Get(m_Regs.GetReg16(Reg16::PC) - 1));
             return;
         // ret
         case 0xC9:
@@ -301,6 +308,7 @@ namespace GBE
         // call imm16
         case 0xCD:
             CallImm16(memory, result);
+            return;
         // $CB prefix
         case 0xCB:
             _RunPrefixInstructions(memory, result);

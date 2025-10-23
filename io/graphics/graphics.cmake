@@ -1,6 +1,7 @@
 
 set (GBE_HEADERS ${GBE_HEADERS}
     ${CMAKE_CURRENT_LIST_DIR}/lcd/LcdPalette.h
+    ${CMAKE_CURRENT_LIST_DIR}/lcd/LcdPalettesMemory.h
     ${CMAKE_CURRENT_LIST_DIR}/lcd/LcdScreen.h
     ${CMAKE_CURRENT_LIST_DIR}/lcd/LcdControl.h
 
@@ -18,6 +19,7 @@ set (GBE_HEADERS ${GBE_HEADERS}
 
 set(GBE_SOURCES ${GBE_SOURCES}
     ${CMAKE_CURRENT_LIST_DIR}/lcd/LcdPalette.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/lcd/LcdPalettesMemory.cpp
     ${CMAKE_CURRENT_LIST_DIR}/lcd/LcdControl.cpp
 
     ${CMAKE_CURRENT_LIST_DIR}/oam/ObjectAttribute.cpp

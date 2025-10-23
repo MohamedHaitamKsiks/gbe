@@ -1,0 +1,11 @@
+set (GBE_HEADERS ${GBE_HEADERS}
+    ${CMAKE_CURRENT_LIST_DIR}/Window.h
+    #${CMAKE_CURRENT_LIST_DIR}/Texture.h
+    ${CMAKE_CURRENT_LIST_DIR}/Renderer.h
+)
+
+set(GBE_SOURCES ${GBE_SOURCES}
+    ${CMAKE_CURRENT_LIST_DIR}/Window.cpp
+    #${CMAKE_CURRENT_LIST_DIR}/Texture.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/Renderer.cpp
+)

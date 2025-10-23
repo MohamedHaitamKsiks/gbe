@@ -8,10 +8,11 @@ namespace GBE
 
     void PpuTaskManager::Start(TaskFunction taskFunc)
     {
-        m_Tasks.reserve(100);
+        m_Tasks.reserve(1000);
         
         auto task = _StartTask(taskFunc);
         m_Tasks.push_back(task);
+
         
         ProcessDot();
     }
@@ -59,9 +60,11 @@ namespace GBE
         while (m_Tasks.size() > 0)
         {
             auto task = m_Tasks.back();
-            auto &promise = task.promise();
-            if (promise.Done)
+
+            bool done = task.address() == nullptr || task.promise().Done;
+            if (done)
             {
+                auto promise = task.promise();
                 lastDots = promise.Dots;
                 m_Tasks.pop_back();
 
@@ -73,6 +76,8 @@ namespace GBE
             }
 
             task();
+            auto promise = task.promise();
+            
             if (!promise.Done)
                 break;
         }

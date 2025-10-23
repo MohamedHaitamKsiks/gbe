@@ -8,6 +8,7 @@
 #include "util/Binary.h" 
 #include "io/IORegister.h"
 
+#include <magic_enum.hpp>
 #include <iostream>
 #include <exception>
 
@@ -17,6 +18,24 @@ namespace GBE
     Cpu::~Cpu()
     {
         
+    }
+
+    void Cpu::Init()
+    {
+        m_Regs.SetReg8(Reg8::A, 0x01);
+        m_Regs.SetFlags(CpuFlag::C | CpuFlag::Z | CpuFlag::H | CpuFlag::N, 0x0);
+        
+        m_Regs.SetReg8(Reg8::B, 0xFF);
+        m_Regs.SetReg8(Reg8::C, 0x13);
+        
+        m_Regs.SetReg8(Reg8::D, 0x00);
+        m_Regs.SetReg8(Reg8::E, 0xC1);
+        
+        m_Regs.SetReg8(Reg8::H, 0x84);
+        m_Regs.SetReg8(Reg8::L, 0x03);
+
+        m_Regs.SetReg16(Reg16::PC, 0x0100);
+        m_Regs.SetReg16(Reg16::SP, 0xFFFE);
     }
 
     uint8_t Cpu::GetReg16Adr(Reg16 adr, IMemory &memory) const
@@ -185,10 +204,13 @@ namespace GBE
     void Cpu::LoadR16_Imm16(OperandR16 r16, IMemory &memory, InstructionResult &result)
     {
         // fetch
-        int16_t imm16 = GetImm16(memory, result);
+        uint16_t imm16 = GetImm16(memory, result);
 
         // execute
         SetOperandR16(r16, imm16, result);
+
+        // report
+        GBE_ASM(result.Asm, "ld", r16, imm16);
     }
     
     void Cpu::LoadR16Mem_A(OperandR16Mem r16mem, IMemory &memory, InstructionResult &result)
@@ -198,6 +220,9 @@ namespace GBE
 
         // execute
         SetOperandR16Mem(r16mem, value, memory, result);
+
+        // report
+        GBE_ASM(result.Asm, "ld", r16mem, OperandR8::A);
     }
 
     void Cpu::LoadA_R16Mem(OperandR16Mem r16mem, IMemory &memory, InstructionResult &result)
@@ -207,6 +232,9 @@ namespace GBE
     
         // execute
         SetOperandR8(OperandR8::A, value, memory, result);
+
+        // report
+        GBE_ASM(result.Asm, "ld", OperandR8::A, r16mem);
     }
 
     void Cpu::LoadAdrImm16_SP(IMemory &memory, InstructionResult &result)
@@ -223,10 +251,13 @@ namespace GBE
     void Cpu::LoadR8_Imm8(OperandR8 r8, IMemory &memory, InstructionResult &result)
     {
         // fetch
-        int8_t imm8 = GetImm8(memory, result);
+        uint8_t imm8 = GetImm8(memory, result);
 
         // execute
         SetOperandR8(r8, imm8, memory, result);
+
+        // 
+        GBE_ASM(result.Asm, "ld", r8, imm8);
 
     }
 
@@ -237,6 +268,9 @@ namespace GBE
 
         // execute
         SetOperandR8(dest8, value, memory, result);
+
+        // report
+        GBE_ASM(result.Asm, "ld", dest8, src8);
     }
 
     void Cpu::LoadHighC_A(IMemory &memory, InstructionResult &result)
@@ -268,7 +302,7 @@ namespace GBE
     {
         // fetch
         int8_t src = m_Regs.GetReg8(Reg8::A);
-        int16_t destAdr = 0xff00 + GetImm8(memory, result);
+        uint16_t destAdr = 0xff00 + GetImm8(memory, result);
 
         // execute
         memory.Set(
@@ -276,24 +310,30 @@ namespace GBE
             src
         );
         result.Cycles++;
+
+        // report
+        GBE_ASM(result.Asm, "ldh", destAdr, Reg8::A);
     }
 
     void Cpu::LoadA_HighImm8(IMemory &memory, InstructionResult &result)
     {
         // fetch
-        int16_t srcAdr = 0xff00 + GetImm8(memory, result);
-        int8_t src = memory.Get(srcAdr);
+        uint16_t srcAdr = 0xff00 + GetImm8(memory, result);
+        uint8_t src = memory.Get(srcAdr);
         result.Cycles++;
 
         // execute
         m_Regs.SetReg8(Reg8::A, src);
+
+        // report
+        GBE_ASM(result.Asm, "ldh", Reg8::A, srcAdr);
     }
 
     void Cpu::LoadAdrImm16_A(IMemory &memory, InstructionResult &result)
     {
         // fetch
-        int8_t src = m_Regs.GetReg8(Reg8::A);
-        int16_t destAdr = GetImm16(memory, result);
+        uint8_t src = m_Regs.GetReg8(Reg8::A);
+        uint16_t destAdr = GetImm16(memory, result);
 
         // execute
         memory.Set(
@@ -301,6 +341,9 @@ namespace GBE
             src
         );
         result.Cycles++;
+
+        // report
+        GBE_ASM(result.Asm, "ldh", destAdr, Reg8::A);
     }
 
     void Cpu::LoadA_AdrImm16(IMemory &memory, InstructionResult &result)
@@ -312,6 +355,9 @@ namespace GBE
 
         // execute
         m_Regs.SetReg8(Reg8::A, src);
+
+        // 
+        GBE_ASM(result.Asm, "ld", Reg8::A, srcAdr);
     }
 
     void Cpu::LoadHL_SPImm8(IMemory &memory, InstructionResult &result)
@@ -437,6 +483,9 @@ namespace GBE
         
         // result
         m_Regs.SetFlags(aluResult.AffectedFlags, aluResult.Flags);
+    
+        // report
+        GBE_ASM(result.Asm, "bit", bit, r8);
     }
 
     void Cpu::SetBitR8(uint8_t bit, OperandR8 r8, IMemory &memory, InstructionResult &result)
@@ -585,12 +634,15 @@ namespace GBE
 
     void Cpu::_Call(uint16_t adr16, IMemory &memory, InstructionResult &result)
     {
+        uint16_t de = m_Regs.GetReg16(Reg16::DE);
+
         // push pc to stack
         uint16_t pc = m_Regs.GetReg16(Reg16::PC);
         Push(pc, memory, result);
 
         // set pc to adr
         m_Regs.SetReg16(Reg16::PC, adr16);
+
     }
 
     void Cpu::CallImm16(IMemory &memory, InstructionResult &result)
@@ -600,6 +652,9 @@ namespace GBE
 
         // execute
         _Call(imm16, memory, result);
+
+        // report
+        GBE_ASM(result.Asm, "call", imm16);
     }
 
     void Cpu::CallCC_Imm16(OperandCond cc, IMemory &memory, InstructionResult &result)
@@ -610,6 +665,9 @@ namespace GBE
         // execute
         if (CheckOperandCond(cc))
             _Call(imm16, memory, result);
+
+        // report
+        GBE_ASM(result.Asm, "call", cc, imm16);
     }
 
 
@@ -630,6 +688,9 @@ namespace GBE
         // execute
         m_Regs.SetReg16(Reg16::PC, adr16);
         result.Cycles += 1;
+
+        // report
+        GBE_ASM(result.Asm, "jp", adr16);
     }
     
     void Cpu::JumpCC_Imm16(OperandCond cc, IMemory& memory, InstructionResult& result)
@@ -643,6 +704,9 @@ namespace GBE
             m_Regs.SetReg16(Reg16::PC, adr16);
             result.Cycles += 1;
         }
+
+        // report
+        GBE_ASM(result.Asm, "jp", cc, adr16);
     }
 
     void Cpu::_JumpRelative(uint8_t offset8, InstructionResult &result)
@@ -652,7 +716,7 @@ namespace GBE
         signedOffset16--;
 
         // offset pc
-        uint16_t pc = m_Regs.GetReg16(Reg16::PC) + signedOffset16;
+        uint16_t pc = m_Regs.GetReg16(Reg16::PC) + signedOffset16 + 1;
         m_Regs.SetReg16(Reg16::PC, pc);
         result.Cycles++;
     }
@@ -683,6 +747,9 @@ namespace GBE
 
         // execute
         _JumpRelative(offset, result);
+
+        // report
+        GBE_ASM(result.Asm, "jr", offset);
     }
     
     void Cpu::JumpRelativeCC_Imm8(OperandCond cc, IMemory &memory, InstructionResult &result)
@@ -693,6 +760,9 @@ namespace GBE
         // execute
         if (CheckOperandCond(cc))
             _JumpRelative(offset, result);
+
+        // report
+        GBE_ASM(result.Asm, "jr", cc, offset);
     }
 
     void Cpu::Return(IMemory &memory, InstructionResult &result)
@@ -703,6 +773,8 @@ namespace GBE
         // jump to adress
         m_Regs.SetReg16(Reg16::PC, topAdr16);
         result.Cycles++;
+
+        GBE_ASM(result.Asm, "ret");
     }
     
     void Cpu::ReturnCC(OperandCond cc, IMemory &memory, InstructionResult &result)
@@ -711,6 +783,8 @@ namespace GBE
 
         if (CheckOperandCond(cc))
             Return(memory, result);
+
+        GBE_ASM(result.Asm, "ret", cc);
     }
     
     void Cpu::ReturnAndEnableInterrupts(IMemory &memory, InstructionResult &result)
@@ -752,6 +826,8 @@ namespace GBE
     {
         m_IME = false;
         m_QueueIME = 0;
+
+        GBE_ASM(result.Asm, "di");
     }
 
     void Cpu::EnableInterrupts(InstructionResult & result)
@@ -814,6 +890,7 @@ namespace GBE
         if (!m_IME)
             return false;
 
+
         // list of interrupt flags ordered by priority
         std::vector<InterruptFlag> flags = {
             InterruptFlag::V_BLANK,
@@ -826,7 +903,10 @@ namespace GBE
         for (auto flag: flags)
         {
             if (_HandleInterruptFlag(flag, memory, result))
+            {
+                std::cout << "Exception: " << magic_enum::enum_name(flag) << "\n";
                 return true;
+            }
         }
 
         return false;
@@ -836,6 +916,7 @@ namespace GBE
     {
         // cast flag to uint8_t
         uint8_t flagBit = static_cast<uint8_t>(flag);
+
 
         // get interrupt flags
         uint8_t interruptEnable = memory.Get(static_cast<uint16_t>(IORegister::IE));
@@ -860,8 +941,8 @@ namespace GBE
 
         // result
         result.Cycles = 5; // hard code 5 cycles it's easier that way
-        result.Asm.SetOperation("interrupt");
-        result.Asm.AddImm16(handler, true);
+        
+        GBE_ASM(result.Asm, "interrupt", handler);
 
         return true;
     }

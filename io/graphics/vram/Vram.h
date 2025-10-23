@@ -6,6 +6,7 @@
 #include "TileMap.h"
 #include "TileData.h"
 
+#include "memory/MemoryArea.h"
 #include "memory/MemoryMap.h"
 
 namespace GBE
@@ -23,29 +24,11 @@ namespace GBE
     // video ram storing tile set and tile map
     // can read and write from like normal ram as long as it is accessible
     // 384 on 3 blocks with 128 tile 
-    class Vram
+    class Vram: public MemoryArea
     {
     public:
         Vram();
         ~Vram() {}
-
-        // set byte at vrame 
-        void Set(uint16_t address, uint8_t value);
-
-        // get byte from vram
-        uint8_t Get(uint16_t address) const;
-
-        // set accessible flag
-        inline void SetAccessible(bool isAccessible)
-        {
-            m_isAccessible = isAccessible;
-        }
-
-        // is accessible
-        inline bool IsAccessible() const
-        {
-            return m_isAccessible;
-        }
 
         // Get tile map
         inline const TileMap& GetTileMap(uint8_t tileMapID) const  
@@ -64,8 +47,12 @@ namespace GBE
         // else start from block 1
         const TileData& GetTileBGWin(uint8_t tileID, bool objetAddressMode) const;
     private:
-        // 8 KiB Video Ram
-        bool m_isAccessible = false;
+        // set byte at vrame
+        void _SetImp(uint16_t address, uint8_t value) override;
+
+        // get byte from vram
+        uint8_t _GetImp(uint16_t address) const override;
+
         std::vector<TileData> m_Tiles{};
         std::vector<TileMap> m_Maps{};
         

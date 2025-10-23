@@ -64,13 +64,14 @@ class GBEBuild:
     # run created build
     def run(self, arguments: list[str], debugger :bool) -> int:
         runCommand = []
-        
+
         if coverage:
             runCommand = [f"ctest -T test --test-dir {self.__buildDirectory}"]
             runCommand.append("&&")
             runCommand.append(f"ctest -T coverage --test-dir {self.__buildDirectory}")
         else:
-            runCommand = ["gdb" if debugger else ""] + [self.__executable] + arguments
+            os.chdir(self.__buildDirectory);
+            runCommand = ["gdb" if debugger else ""] + ["./gbe"] + arguments
 
         return os.system(' '.join(runCommand))
     

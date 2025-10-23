@@ -17,6 +17,9 @@ namespace GBE
     public:
         ~Cpu();
 
+        // init after boot load
+        void Init();
+
         // run current instruction
         void Run(IMemory &memory, InstructionResult& result);
 

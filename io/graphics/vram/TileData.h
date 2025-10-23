@@ -4,6 +4,8 @@
 #include <array>
 #include <vector>
 
+#include "memory/MemoryArea.h"
+
 namespace GBE
 {
     constexpr uint8_t TILE_SIZE = 8;
@@ -14,8 +16,9 @@ namespace GBE
     {
     public:
         ~TileData() {}
-
-        inline void Set(uint16_t address, uint8_t value) 
+        uint8_t GetPixel(uint8_t x, uint8_t y) const;
+        
+        inline void Set(uint16_t address, uint8_t value)
         {
             m_Data[address] = value;
         }
@@ -24,10 +27,8 @@ namespace GBE
         {
             return m_Data.at(address);
         }
-
-        uint8_t GetPixel(uint8_t x, uint8_t y) const;
-
     private:
+
         std::array<uint8_t, TILE_VRAM_SIZE> m_Data{};
     };
 } // namespace GBE

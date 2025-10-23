@@ -13,6 +13,8 @@ namespace GBE
         BLACK = 3
     };
 
+    constexpr uint8_t LCD_COLORS_NUMBER = 4;
+
     class LcdPalette
     {
     public:
@@ -31,6 +33,6 @@ namespace GBE
         };
     private:
         uint8_t m_Byte = 0x0;
-        std::array<LcdColor, 4> m_Colors{};
+        std::array<LcdColor, 4> m_Colors = {LcdColor::WHITE, LcdColor::LIGHT_GRAY, LcdColor::DARK_GRAY, LcdColor::BLACK};
     };
 } // namespace GBE

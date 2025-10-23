@@ -24,7 +24,7 @@ namespace GBE
         // get range size
         constexpr inline uint16_t GetSize() const
         {
-            return m_End - m_Start;
+            return m_End - m_Start + 1;
         }
 
         // check addr is inside range
@@ -32,6 +32,10 @@ namespace GBE
         {
             return address >= m_Start && address <= m_End;
         }
+
+        bool operator==(const MemoryMap& other) const;
+
+        bool operator<(const MemoryMap &other) const;
 
     private:
         uint16_t m_Start = 0;
@@ -64,8 +68,5 @@ namespace GBE
 
     // High RAM
     static constexpr MemoryMap MMAP_HRAM(0xFF80, 0xFFFE);
-
-    // Interrupt Enable register (IE)
-    static constexpr MemoryMap MMAP_INTERUPT(0xFFFF, 0xFFFF);
 
 } // namespace GBE

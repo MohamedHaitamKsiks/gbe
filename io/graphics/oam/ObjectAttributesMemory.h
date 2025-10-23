@@ -6,6 +6,7 @@
 #include "ObjectAttribute.h"
 
 #include "memory/MemoryMap.h"
+#include "memory/MemoryArea.h"
 
 namespace GBE
 {
@@ -15,14 +16,11 @@ namespace GBE
     // OAM memory map
     static constexpr MemoryMap MMAP_OAM(0xFE00, 0xFE9F);
 
-    class ObjectAttributesMemory
+    class ObjectAttributesMemory: public MemoryArea
     {
     public:
         ObjectAttributesMemory();
         ~ObjectAttributesMemory();
-
-        void Set(uint16_t address, uint8_t value);
-        uint8_t Get(uint16_t address) const;
 
         inline const ObjectAttribute& GetObject(uint8_t objectID) const
         {
@@ -31,6 +29,9 @@ namespace GBE
 
         
     private:
+        void _SetImp(uint16_t address, uint8_t value) override;
+        uint8_t _GetImp(uint16_t address) const override;
+
         std::vector<ObjectAttribute> m_Objects{};
     };
 

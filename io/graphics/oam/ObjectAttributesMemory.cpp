@@ -4,22 +4,23 @@ namespace GBE
 {
     ObjectAttributesMemory::ObjectAttributesMemory()
     {
+        m_Objects.resize(OBJECT_COUNT);
     }
 
     ObjectAttributesMemory::~ObjectAttributesMemory()
     {
     }
 
-    void ObjectAttributesMemory::Set(uint16_t address, uint8_t value)
+    void ObjectAttributesMemory::_SetImp(uint16_t address, uint8_t value)
     {
         uint16_t objectIndex = address / OBJECT_ATTRIBUTE_SIZE;
         uint16_t objectLocalAddress = address % OBJECT_ATTRIBUTE_SIZE;
 
-        ObjectAttribute& object = m_Objects.at(objectIndex);
+        ObjectAttribute &object = m_Objects.at(objectIndex);
         object.Set(objectLocalAddress, value);
     }
 
-    uint8_t ObjectAttributesMemory::Get(uint16_t address) const
+    uint8_t ObjectAttributesMemory::_GetImp(uint16_t address) const
     {
         uint16_t objectIndex = address / OBJECT_ATTRIBUTE_SIZE;
         uint16_t objectLocalAddress = address % OBJECT_ATTRIBUTE_SIZE;
@@ -27,5 +28,4 @@ namespace GBE
         const ObjectAttribute &object = m_Objects.at(objectIndex);
         return object.Get(objectLocalAddress);
     }
-
 } // namespace GBE
