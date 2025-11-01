@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <coroutine>
+#include <cstdint>
 
 
 namespace GBE
@@ -24,10 +25,9 @@ namespace GBE
 
         PpuTask get_return_object() { return {PpuTask::from_promise(*this)}; }
         std::suspend_never initial_suspend() { return {}; }
-        std::suspend_never final_suspend() noexcept {
 
-            return {}; 
-        }
+        std::suspend_never final_suspend() noexcept { return {}; }
+
         std::suspend_always yield_value(PpuTask value) 
         { 
             CurrentTask = value;
@@ -45,6 +45,7 @@ namespace GBE
         {
             Done = true;
         }
+        
         void unhandled_exception() {}
     };
 } // namespace GBE

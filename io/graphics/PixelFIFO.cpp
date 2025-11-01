@@ -6,7 +6,7 @@ namespace GBE
 {
     void PixelFIFO::PushBack(uint8_t pixel)
     {
-        assert(CanPush());
+        assert(m_CurrentSize < PIXEL_FIFO_SIZE);
 
         m_Pixels[m_PushIndex] = pixel;
         m_PushIndex = (m_PushIndex + 1) % PIXEL_FIFO_SIZE;

@@ -1,6 +1,7 @@
 #include "Ppu.h"
 
 #include <iostream>
+#include <magic_enum.hpp>
 
 namespace GBE
 {
@@ -21,30 +22,26 @@ namespace GBE
 
     void Ppu::Init()
     {
-        m_PpuMode = PpuMode::DRAW_PIXELS;
-        m_TaskManager.Start([this]() -> PpuTask{
-            return _Render();
-        });
+        m_DotsCounter = 0;
+        m_WaitDots = 0;
+        m_QueuePpuMode = PpuMode::OAM_SCAN;
+
+        m_BackgroundFIFO.Clear();
     }
 
     void Ppu::Tick(uint32_t dots)
     {
+        if (!m_LcdControl->GetControlFlag(LcdControlFlag::LCD_PPU_ENABLE))
+            return;
         for (uint32_t i = 0; i < dots; i++)
         {
-            m_TaskManager.ProcessDot();
-            /*m_LcdY++;
-            if (m_LcdY > 70224 - 4560)
-            {
-                m_PpuMode = PpuMode::V_BLANK;
-            }
+            if (m_WaitDots > 0)
+                m_WaitDots--;
 
-            if (m_LcdY > 70224)
-            {
-                m_LcdY -= 70224;
-                m_PpuMode = PpuMode::DRAW_PIXELS;
-            }*/
-
-
+            if (m_WaitDots > 0)
+                continue;
+            
+            _Render();
             m_LcdControl->UpdatePpuMode(m_PpuMode);
             m_LcdControl->UpdateLcdYCoordinate(m_LcdY);
         }
@@ -52,117 +49,118 @@ namespace GBE
 
 
 
-    PpuTask Ppu::_Render()
+    void Ppu::_Render()
     {
-        while (m_IsRendering)
+        m_PpuMode = m_QueuePpuMode;
+        switch (m_PpuMode)
         {
-            m_LcdY = 0;
-
-            for (uint32_t i = 0; i < LCD_SCREEN_HEIGHT; i++)
-            {
-                co_yield _RenderLine();
-                m_LcdY++;
-                m_LcdControl->UpdateLcdYCoordinate(m_LcdY);
-            }
-            co_yield _VerticalBlank();
-
-            m_FrameCounter++;
+        case PpuMode::OAM_SCAN:
+            _OAMScan();
+            break;
+        case PpuMode::DRAW_PIXELS:
+            _DrawingPixels();
+            break;
+        case PpuMode::H_BLANK:
+            _HorizontalBlank();
+            break;
+        case PpuMode::V_BLANK:
+            _VerticalBlank();
+            break;
+        default:
+            break;
         }
-
-        co_return;
     }
 
-    PpuTask Ppu::_RenderLine()
+    void Ppu::_OAMScan()
     {
-        uint32_t dots = 0;
+        m_LcdX = 0;
+        m_TileIndex = ((m_LcdY + 32) / TILE_SIZE) * TILE_MAP_SIZE;
+        m_BackgroundFIFO.Clear();
 
-        // OAM
-        auto scanTask = _OAMScan();
-        co_yield scanTask;
-        dots += scanTask.promise().Dots;
-
-        // DRAW PIXELS
-        auto drawTask = _DrawingPixels();
-        co_yield drawTask;
-        dots += drawTask.promise().Dots;
-
-        //H-BLANK
-        uint32_t hBlankDots = RENDER_LINE_DOTS - dots;
-        co_yield _HorizontalBlank(hBlankDots);
-        
-        co_return;
-    }
-
-    PpuTask Ppu::_OAMScan()
-    {
-        m_PpuMode = PpuMode::OAM_SCAN;
-
-        /*
         m_Vram->SetReadWriteFlags(true);
         m_Palettes->SetReadWriteFlags(true);
         m_Oam->SetReadWriteFlags(false);
-        */
-        co_yield PpuTask::Wait(OAM_SCAN_DOTS);
-
-        co_return;
+        
+        m_WaitDots = OAM_SCAN_DOTS;
+        m_QueuePpuMode = PpuMode::DRAW_PIXELS;
     }
 
-    PpuTask Ppu::_DrawingPixels()
+    void Ppu::_DrawingPixels()
     {
-        m_PpuMode = PpuMode::DRAW_PIXELS;
-
-        /*
         m_Vram->SetReadWriteFlags(false);
         m_Palettes->SetReadWriteFlags(false);
         m_Oam->SetReadWriteFlags(false);
-        */
+        
+        
+        // _DrawPixel();
+        while (m_BackgroundFIFO.CanPush())
+            _Fetch();
 
-        const auto bgMapID = m_LcdControl->GetBackgroundTileMapID();
-        const auto& bgMap = m_Vram->GetTileMap(0);
+        if (m_BackgroundFIFO.CanPopFront())
+            _DrawPixel();
 
-        m_LcdX = 0;
-        for (uint32_t i = 0; i < LCD_SCREEN_WIDTH; i++)
+
+        if (m_LcdX >= LCD_SCREEN_WIDTH)
         {
-            co_yield nullptr;
+            m_QueuePpuMode = PpuMode::H_BLANK;
+            m_HBlankWaitDots = 204; // fuck ?
+        }
+    }
 
-            uint32_t tileX = m_LcdX / TILE_SIZE;
-            uint32_t tileY = (m_LcdY / TILE_SIZE) + 4;
-            uint8_t tileID = bgMap.GetTile(tileX, tileY);
-            const auto &tile = m_Vram->GetTileBGWin(tileID, true) ;// (tileX + tileY * (LCD_SCREEN_WIDTH / TILE_SIZE)) % TILE_MAP_VRAM_SIZE, true);
+    void Ppu::_HorizontalBlank()
+    {
+        m_Vram->SetReadWriteFlags(true);
+        m_Palettes->SetReadWriteFlags(true);
+        m_Oam->SetReadWriteFlags(true);
 
-            uint8_t color = tile.GetPixel(m_LcdX % TILE_SIZE, m_LcdY % TILE_SIZE);
-            m_Screen.SetPixel(m_LcdX, m_LcdY, color % 4);
-            m_LcdX++;
+        m_WaitDots = m_HBlankWaitDots;
+        m_QueuePpuMode = PpuMode::OAM_SCAN;
+
+        m_LcdY++;
+        m_TileY = (m_TileY + 1) % TILE_SIZE;
+        if (m_LcdY >= LCD_SCREEN_HEIGHT)
+        {
+            m_QueuePpuMode = PpuMode::V_BLANK;
+        }
+    }
+    
+    void Ppu::_VerticalBlank()
+    {
+        m_InterruptManager->QueueInterrupt(InterruptFlag::V_BLANK);
+
+        m_Vram->SetReadWriteFlags(true);
+        m_Palettes->SetReadWriteFlags(true);
+        m_Oam->SetReadWriteFlags(true);
+
+        m_WaitDots = V_BLANK_DOTS;
+        m_QueuePpuMode = PpuMode::OAM_SCAN;
+        m_LcdY = 0;
+    }
+
+    void Ppu::_DrawPixel()
+    {
+        uint8_t color = m_BackgroundFIFO.PopFront();
+        m_Screen.SetPixel(m_LcdX, m_LcdY, color);
+        m_LcdX++;
+        m_WaitDots = 1;
+    }
+
+    void Ppu::_Fetch()
+    {
+        const auto bgMapID = m_LcdControl->GetBackgroundTileMapID();
+        const auto &bgMap = m_Vram->GetTileMap(bgMapID);
+        uint8_t tileID = bgMap.Get(m_TileIndex);
+
+        const auto &tile = m_Vram->GetTileBGWin(tileID, true);
+
+        uint8_t y = m_TileY;
+        for (uint8_t x = 0; x < TILE_SIZE; x++)
+        {
+            uint8_t color = tile.GetPixel(x, y);
+            m_BackgroundFIFO.PushBack(color);
         }
 
-        co_return;
-    }
-
-    PpuTask Ppu::_HorizontalBlank(uint32_t dots)
-    {
-        m_PpuMode = PpuMode::H_BLANK;
-
-        m_Vram->SetReadWriteFlags(true);
-        m_Palettes->SetReadWriteFlags(true);
-        m_Oam->SetReadWriteFlags(true);
-
-        co_yield PpuTask::Wait(dots);
-        co_return;
-    }
-
-    PpuTask Ppu::_VerticalBlank()
-    {
-        m_PpuMode = PpuMode::V_BLANK;
-        // m_InterruptManager->QueueInterrupt(InterruptFlag::LCD);
-        m_InterruptManager->QueueInterrupt(InterruptFlag::V_BLANK);
-        // m_VBlankSignal.Emit(m_Screen);
-
-        m_Vram->SetReadWriteFlags(true);
-        m_Palettes->SetReadWriteFlags(true);
-        m_Oam->SetReadWriteFlags(true);
-
-        co_yield PpuTask::Wait(V_BLANK_DOTS);
-        co_return;
+        m_TileIndex++;
     }
 
 } // namespace GBE

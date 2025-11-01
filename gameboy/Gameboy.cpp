@@ -36,7 +36,7 @@ namespace GBE
             InstructionResult result{};
             m_Cpu.Run(m_Memory, result);
 
-            std::cout << result.Asm.ToString() << "\n";
+            // std::cout << result.Asm.ToString() << "\n";
 
             uint32_t instructionDots = result.Cycles * 4;
             m_Ppu->Tick(instructionDots);

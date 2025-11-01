@@ -14,6 +14,7 @@
 
 #include "PpuTask.h"
 #include "PpuTaskManager.h"
+#include "PixelFIFO.h"
 
 #include "io/interrupts/InterruptManager.h"
 #include "util/Signal.h"
@@ -33,6 +34,7 @@ namespace GBE
     constexpr uint32_t RENDER_LINE_DOTS = 456;
     constexpr uint32_t OAM_SCAN_DOTS = 80;
     constexpr uint32_t FRAME_DOTS = 70224;
+    constexpr uint32_t FETCH_BG_DOTS = 6;
 
     // pixel processing unit
     class Ppu
@@ -94,9 +96,9 @@ namespace GBE
         // dot counter
         uint32_t m_FrameCounter = 0;
         uint32_t m_DotsCounter = 0;
+        uint32_t m_WaitDots = 0;
+        uint32_t m_HBlankWaitDots = 0;
 
-        int32_t m_LcdX = 0;
-        int32_t m_LcdY = 0;
 
         // 8 KiB Video Ram
         std::shared_ptr<Vram> m_Vram{nullptr};
@@ -109,27 +111,33 @@ namespace GBE
 
         // LCD Control
         std::shared_ptr<LcdControl> m_LcdControl{nullptr};
-        
         std::shared_ptr<InterruptManager> m_InterruptManager;
+
+        // ppu mode 
         PpuMode m_PpuMode;
+        PpuMode m_QueuePpuMode;
 
         // output screen
         LcdScreen m_Screen{};
-
-        // tick ppu one time 
-        // async function recalled each dot
-        PpuTaskManager m_TaskManager{};
+        int32_t m_LcdX = 0;
+        int32_t m_LcdY = 0;
         bool m_IsRendering = true;
         
-        PpuTask _Render();
-        PpuTask _RenderLine();
-         
-        PpuTask _OAMScan();
+        PixelFIFO m_ObjectFIFO{};
+        PixelFIFO m_BackgroundFIFO{};
 
-        PpuTask _DrawingPixels();
-        PpuTask _HorizontalBlank(uint32_t dots);
-        PpuTask _VerticalBlank();
+        // fetcher
+        uint16_t m_TileIndex = 0;
+        uint8_t m_TileY = 0;
 
-        
+        void _Render();
+        void _OAMScan();
+        void _DrawingPixels();
+        void _HorizontalBlank();
+        void _VerticalBlank();
+        void _DrawPixel();
+
+        void _Fetch();
+
     };
 } // namespace GBE

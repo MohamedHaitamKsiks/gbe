@@ -25,7 +25,7 @@ namespace GBE
 
         float delta = 0.0f;
 
-        // get time now
+        // get time now=
         m_Window = std::make_unique<Window>(m_GB.GetPpu(), 1280, 720);
         while (!m_Window->IsClosed())
         {

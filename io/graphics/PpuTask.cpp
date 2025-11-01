@@ -1,4 +1,5 @@
 #include "PpuTask.h"
+#include <cstdint>
 
 namespace GBE
 {
