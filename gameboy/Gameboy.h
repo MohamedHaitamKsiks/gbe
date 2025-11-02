@@ -4,7 +4,6 @@
 #include "io/interrupts/InterruptManager.h"
 
 #include "cpu/Cpu.h"
-#include "memory/IMemory.h"
 #include "memory/Memory.h"
 #include "memory/Ram.h"
 #include "cartridge/Cartridge.h"

@@ -1,5 +1,4 @@
 set (GBE_HEADERS ${GBE_HEADERS}
-    ${CMAKE_CURRENT_LIST_DIR}/IMemory.h
     ${CMAKE_CURRENT_LIST_DIR}/Memory.h
     ${CMAKE_CURRENT_LIST_DIR}/MemoryMap.h
     ${CMAKE_CURRENT_LIST_DIR}/MemoryArea.h
@@ -7,7 +6,6 @@ set (GBE_HEADERS ${GBE_HEADERS}
 )
 
 set(GBE_SOURCES ${GBE_SOURCES}
-    ${CMAKE_CURRENT_LIST_DIR}/IMemory.cpp
     ${CMAKE_CURRENT_LIST_DIR}/Memory.cpp
     ${CMAKE_CURRENT_LIST_DIR}/MemoryMap.cpp
     ${CMAKE_CURRENT_LIST_DIR}/MemoryArea.cpp

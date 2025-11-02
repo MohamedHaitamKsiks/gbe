@@ -4,7 +4,7 @@
 #include "AluResult.h"
 #include "Alu.h"
 
-#include "memory/IMemory.h"
+#include "memory/Memory.h"
 
 #include <iostream>
 #include <exception>
@@ -13,7 +13,7 @@
 namespace GBE
 {
 
-    void Cpu::Run(IMemory &memory, InstructionResult &result)
+    void Cpu::Run(Memory &memory, InstructionResult &result)
     {
         result.Asm.SetAddress(m_Regs.GetReg16(Reg16::PC));
         
@@ -57,7 +57,7 @@ namespace GBE
     }
 
     // Block 0
-    void Cpu::_RunBlock0(uint8_t opcode, IMemory &memory, InstructionResult &result)
+    void Cpu::_RunBlock0(uint8_t opcode, Memory &memory, InstructionResult &result)
     {
         // check defined opcodes
         switch (opcode)
@@ -182,7 +182,7 @@ namespace GBE
     }
 
     // Block 1 8-bit register-to-register loads
-    void Cpu::_RunBlock1(uint8_t opcode, IMemory &memory, InstructionResult &result)
+    void Cpu::_RunBlock1(uint8_t opcode, Memory &memory, InstructionResult &result)
     {
         // TODO halt 
         if (opcode == 0x76)
@@ -201,7 +201,7 @@ namespace GBE
     }
 
     // Block 2: 8-bit arithmetic
-    void Cpu::_RunBlock2(uint8_t opcode, IMemory &memory, InstructionResult &result)
+    void Cpu::_RunBlock2(uint8_t opcode, Memory &memory, InstructionResult &result)
     {
         // operand is first 3 bits
         // and opcode is retrieved from bits 5-3
@@ -251,7 +251,7 @@ namespace GBE
     }
 
     // Block 3
-    void Cpu::_RunBlock3(uint8_t opcode, IMemory &memory, InstructionResult &result)
+    void Cpu::_RunBlock3(uint8_t opcode, Memory &memory, InstructionResult &result)
     {
         // predefined opcodes
         switch (opcode)
@@ -402,7 +402,7 @@ namespace GBE
     }
 
     // $CB prefix instructions
-    void Cpu::_RunPrefixInstructions(IMemory &memory, InstructionResult &result)
+    void Cpu::_RunPrefixInstructions(Memory &memory, InstructionResult &result)
     {
         // retreive opcode 
         uint8_t opcode = GetImm8(memory, result);

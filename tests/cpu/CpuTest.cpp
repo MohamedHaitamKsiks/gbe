@@ -4,15 +4,18 @@
 #include <memory>
 #include <vector>
 
-#include "memory/IMemory.h"
+#include "memory/MemoryArea.h"
+#include "memory/Memory.h"
+
 #include "cpu/InstructionResult.h"
 #include "cpu/Cpu.h"
 #include "cpu/Alu.h"
+
 #include "io/IORegister.h"
 
 namespace GBETest
 {
-    class MemoryCpu : public GBE::IMemory
+    class MemoryCpu : public GBE::MemoryArea
     {
     public:
         MemoryCpu()
@@ -22,17 +25,17 @@ namespace GBETest
 
         ~MemoryCpu() {}
 
-        uint8_t Get(uint16_t address) const override
+    private:
+        uint8_t _GetImp(uint16_t address) const override
         {
             return m_MemoryData[address];
         }
 
-        void Set(uint16_t address, uint8_t value) override
+        void _SetImp(uint16_t address, uint8_t value) override
         {
             m_MemoryData[address] = value;
         }
 
-    private:
         std::unique_ptr<uint8_t[]> m_MemoryData = nullptr;
     };
 
@@ -42,9 +45,16 @@ namespace GBETest
 GBE_TEST_SUITE(Cpu)
 {
     // arrange
-    GBETest::MemoryCpu memory{};
+    auto memoryCpu = std::make_shared <GBETest::MemoryCpu>();
+    GBE::Memory memory{};
+    
     GBE::Cpu cpu{};
 
+    TEST_CASE("Init")
+    {
+        memory.MapMemoryArea({GBE::MemoryMap{0, UINT16_MAX + 1}}, memoryCpu);
+    }
+    
     TEST_CASE("SetImm8")
     {
         // act 

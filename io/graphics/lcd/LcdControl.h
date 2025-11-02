@@ -10,8 +10,8 @@
 
 namespace GBE
 {
-    constexpr MemoryMap MMAP_LCD_CONTROL(0xFF40, 0xFF4B);
-    constexpr uint16_t LCD_CONTROL_SIZE = MMAP_LCD_CONTROL.GetSize();
+    constexpr std::array<MemoryMap, 2> MMAP_LCD_CONTROL = {MemoryMap{0xFF40, 0xFF46}, MemoryMap{0xFF4A, 0xFF4B}};
+    constexpr uint16_t LCD_CONTROL_SIZE = MMAP_LCD_CONTROL[0].GetSize() + MMAP_LCD_CONTROL[1].GetSize();
 
     enum class LcdControlFlag
     {
@@ -83,10 +83,10 @@ namespace GBE
         bool GetStatusFlag(LcdStatusFlag flag) const;
 
         // update LY. shoud be called each tick 
-        void UpdateLcdYCoordinate(uint8_t y);
+        bool UpdateLcdYCoordinate(uint8_t y);
         
         // update ppu mode. soule be called each tick
-        void UpdatePpuMode(PpuMode mode);
+        bool UpdatePpuMode(PpuMode mode);
 
     private:
         uint8_t m_Control = 0;

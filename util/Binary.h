@@ -37,7 +37,7 @@ namespace GBE
         static T ResetBit(T input, T bit)
         {
             T mask = 1 << bit;
-            return input & ~(input & mask);
+            return input & ~(mask);
         }
     };
 } // namespace GBE

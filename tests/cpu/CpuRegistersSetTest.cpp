@@ -1,7 +1,7 @@
 #include "GBETestSuite.h"
 
 #include <iostream>
-#include "memory/IMemory.h"
+#include "memory/Memory.h"
 #include "cpu/CpuRegistersSet.h"
 
 

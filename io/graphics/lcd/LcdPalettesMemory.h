@@ -4,10 +4,15 @@
 #include <array>
 
 #include "LcdPalette.h"
+
+#include "memory/MemoryMap.h"
 #include "memory/MemoryArea.h"
 
 namespace GBE
 {
+
+    constexpr MemoryMap MMAP_LCD_PALETTES = {0xFF47, 0xFF49};
+
     class LcdPalettesMemory: public MemoryArea
     {   
     public: 

@@ -7,7 +7,7 @@
 
 namespace GBE
 {
-    class IMemory;
+    class Memory;
     class InstructionResult;
 
     // cpu of the game boy
@@ -21,7 +21,7 @@ namespace GBE
         void Init();
 
         // run current instruction
-        void Run(IMemory &memory, InstructionResult& result);
+        void Run(Memory &memory, InstructionResult& result);
 
         // get registers
         inline CpuRegistersSet& GetRegisters() 
@@ -34,16 +34,16 @@ namespace GBE
         */
 
         // get value at register address
-        uint8_t GetReg16Adr(Reg16 adr, IMemory& memory) const;
+        uint8_t GetReg16Adr(Reg16 adr, Memory& memory) const;
 
         // set value at register adress
-        void SetReg16Adr(Reg16 adr, uint8_t value, IMemory& memory);
+        void SetReg16Adr(Reg16 adr, uint8_t value, Memory& memory);
 
         /*
             Get/ Set operand
         */
-        uint8_t GetOperandR8(OperandR8 r8, IMemory& memory, InstructionResult& result);
-        void SetOperandR8(OperandR8 r8, uint8_t value, IMemory &memory, InstructionResult &result);
+        uint8_t GetOperandR8(OperandR8 r8, Memory& memory, InstructionResult& result);
+        void SetOperandR8(OperandR8 r8, uint8_t value, Memory &memory, InstructionResult &result);
 
         uint16_t GetOperandR16(OperandR16 r16, InstructionResult &result);
         void SetOperandR16(OperandR16 r16, uint16_t value, InstructionResult &result);
@@ -51,8 +51,8 @@ namespace GBE
         uint16_t GetOperandR16Stk(OperandR16Stk r16stk, InstructionResult &result);
         void SetOperandR16Stk(OperandR16Stk r16stk, uint16_t value, InstructionResult &result);
 
-        uint16_t GetOperandR16Mem(OperandR16Mem r16mem, IMemory &memory, InstructionResult &result);
-        void SetOperandR16Mem(OperandR16Mem r16mem, uint8_t value, IMemory &memory, InstructionResult &result);
+        uint16_t GetOperandR16Mem(OperandR16Mem r16mem, Memory &memory, InstructionResult &result);
+        void SetOperandR16Mem(OperandR16Mem r16mem, uint8_t value, Memory &memory, InstructionResult &result);
 
         // check operand is true relative to flags
         bool CheckOperandCond(OperandCond cc);
@@ -62,16 +62,16 @@ namespace GBE
         */
 
         // get immediate 8bits
-        uint8_t GetImm8(IMemory& memory, InstructionResult& result);
+        uint8_t GetImm8(Memory& memory, InstructionResult& result);
 
         // get immediate 16bits
-        uint16_t GetImm16(IMemory &memory, InstructionResult &result);
+        uint16_t GetImm16(Memory &memory, InstructionResult &result);
 
         // set immediate 8bits
-        void SetImm8(uint8_t imm8, IMemory &memory);
+        void SetImm8(uint8_t imm8, Memory &memory);
 
         // set immediate 16bits
-        void SetImm16(uint16_t imm16, IMemory &memory);
+        void SetImm16(uint16_t imm16, Memory &memory);
 
         /*
             Nop
@@ -83,43 +83,43 @@ namespace GBE
         */
 
         // ld r16, imm16
-        void LoadR16_Imm16(OperandR16 r16, IMemory &memory, InstructionResult &result);
+        void LoadR16_Imm16(OperandR16 r16, Memory &memory, InstructionResult &result);
 
         // ld [r16mem], a
-        void LoadR16Mem_A(OperandR16Mem r16mem, IMemory& memory, InstructionResult& result);
+        void LoadR16Mem_A(OperandR16Mem r16mem, Memory& memory, InstructionResult& result);
 
         // ld a, [r16mem]
-        void LoadA_R16Mem(OperandR16Mem r16mem, IMemory& memory, InstructionResult& result);
+        void LoadA_R16Mem(OperandR16Mem r16mem, Memory& memory, InstructionResult& result);
 
         // ld [imm16], sp
-        void LoadAdrImm16_SP(IMemory& memory, InstructionResult& result);
+        void LoadAdrImm16_SP(Memory& memory, InstructionResult& result);
 
         // ld r8, imm8
-        void LoadR8_Imm8(OperandR8 r8, IMemory& memory, InstructionResult& result);
+        void LoadR8_Imm8(OperandR8 r8, Memory& memory, InstructionResult& result);
 
         // ld r8, r8
-        void LoadR8_R8(OperandR8 src8, OperandR8 dest8, IMemory& memory, InstructionResult& result);
+        void LoadR8_R8(OperandR8 src8, OperandR8 dest8, Memory& memory, InstructionResult& result);
 
         // ld [$ff00 + c], a
-        void LoadHighC_A(IMemory &memory, InstructionResult &result);
+        void LoadHighC_A(Memory &memory, InstructionResult &result);
 
         // ld a, [$ff00 + c]
-        void LoadA_HighC(IMemory &memory, InstructionResult &result);
+        void LoadA_HighC(Memory &memory, InstructionResult &result);
 
         // ld [$ff00 + imm8], a
-        void LoadHighImm8_A(IMemory &memory, InstructionResult &result);
+        void LoadHighImm8_A(Memory &memory, InstructionResult &result);
 
         // ld a, [$ff00 + imm8]
-        void LoadA_HighImm8(IMemory &memory, InstructionResult &result);
+        void LoadA_HighImm8(Memory &memory, InstructionResult &result);
 
         // ld [imm16], a
-        void LoadAdrImm16_A(IMemory& memory, InstructionResult &result);
+        void LoadAdrImm16_A(Memory& memory, InstructionResult &result);
 
         // ld a, [imm16]
-        void LoadA_AdrImm16(IMemory &memory, InstructionResult &result);
+        void LoadA_AdrImm16(Memory &memory, InstructionResult &result);
 
         // ld HL, sp + imm8
-        void LoadHL_SPImm8(IMemory& memory, InstructionResult& result);
+        void LoadHL_SPImm8(Memory& memory, InstructionResult& result);
 
         // ld sp, hl
         void LoadSP_HL(InstructionResult& result);
@@ -135,16 +135,16 @@ namespace GBE
         void AddHL_R16(OperandR16 r16, InstructionResult &result);
 
         // op r8
-        void ExecAluOpR8(Alu::OperationDest8 op, OperandR8 r8, IMemory& memory, InstructionResult &result);
+        void ExecAluOpR8(Alu::OperationDest8 op, OperandR8 r8, Memory& memory, InstructionResult &result);
 
         // op A, r8
-        void ExecAluOpA_R8(Alu::OperationDestSrc8 op, OperandR8 r8, IMemory& memory, InstructionResult &result, bool addCarry = false);
+        void ExecAluOpA_R8(Alu::OperationDestSrc8 op, OperandR8 r8, Memory& memory, InstructionResult &result, bool addCarry = false);
 
         // op A, imm8
-        void ExecAluOpA_Imm8(Alu::OperationDestSrc8 op, IMemory &memory, InstructionResult &result, bool addCarry = false);
+        void ExecAluOpA_Imm8(Alu::OperationDestSrc8 op, Memory &memory, InstructionResult &result, bool addCarry = false);
 
         // add SP, Imm8
-        void AddSP_Imm8(IMemory &memory, InstructionResult &result);
+        void AddSP_Imm8(Memory &memory, InstructionResult &result);
 
         // cpl A
         void ComplementA(InstructionResult& result);
@@ -154,81 +154,81 @@ namespace GBE
         */
 
         // bit r3, r8
-        void TestBitR8(uint8_t bit, OperandR8 r8, IMemory& memory, InstructionResult &result);
+        void TestBitR8(uint8_t bit, OperandR8 r8, Memory& memory, InstructionResult &result);
 
         // set r3, r8
-        void SetBitR8(uint8_t bit, OperandR8 r8, IMemory &memory, InstructionResult &result);
+        void SetBitR8(uint8_t bit, OperandR8 r8, Memory &memory, InstructionResult &result);
 
         // res r3, r8
-        void ResetBitR8(uint8_t bit, OperandR8 r8, IMemory &memory, InstructionResult &result);
+        void ResetBitR8(uint8_t bit, OperandR8 r8, Memory &memory, InstructionResult &result);
 
         /*
             Shift operations 
         */
 
         // rl/rr/rlc/rrc R8
-        void RotateR8(Alu::OperationRotateSrc op, ShiftDirection direction, OperandR8 r8, IMemory& memory, InstructionResult& result, bool checkZero = true);
+        void RotateR8(Alu::OperationRotateSrc op, ShiftDirection direction, OperandR8 r8, Memory& memory, InstructionResult& result, bool checkZero = true);
 
         // sla/sra/srl R8
-        void ShiftR8(ShiftDirection direction, OperandR8 r8, IMemory &memory, InstructionResult &result, bool isLogical = false);
+        void ShiftR8(ShiftDirection direction, OperandR8 r8, Memory &memory, InstructionResult &result, bool isLogical = false);
 
         // swap r8
-        void SwapR8(OperandR8 r8, IMemory &memory, InstructionResult &result);
+        void SwapR8(OperandR8 r8, Memory &memory, InstructionResult &result);
 
         /*
             Stack manipulation
         */
 
         // push value to stack
-        void Push(uint16_t value, IMemory &memory, InstructionResult &result);
+        void Push(uint16_t value, Memory &memory, InstructionResult &result);
 
         // pop value from stack
-        uint16_t Pop(IMemory &memory, InstructionResult &result);
+        uint16_t Pop(Memory &memory, InstructionResult &result);
 
         // get top value of the stack
-        uint16_t Top(IMemory& memory);
+        uint16_t Top(Memory& memory);
 
         // push r16stk
-        void PushR16Stk(OperandR16Stk r16stk, IMemory& memory, InstructionResult& result);
+        void PushR16Stk(OperandR16Stk r16stk, Memory& memory, InstructionResult& result);
 
         // pop r16stk
-        void PopR16Stk(OperandR16Stk r16stk, IMemory &memory, InstructionResult &result);
+        void PopR16Stk(OperandR16Stk r16stk, Memory &memory, InstructionResult &result);
 
         /*
             Jumps and subroutine instructions
         */
         // call imm16
-        void CallImm16(IMemory& memory, InstructionResult& result);
+        void CallImm16(Memory& memory, InstructionResult& result);
 
         // call cc, imm16
-        void CallCC_Imm16(OperandCond cc, IMemory &memory, InstructionResult &result);
+        void CallCC_Imm16(OperandCond cc, Memory &memory, InstructionResult &result);
 
         // jp HL
         void JumpHL(InstructionResult& result);
 
         // jp imm16
-        void JumpImm16(IMemory& memory, InstructionResult& result);
+        void JumpImm16(Memory& memory, InstructionResult& result);
 
         // jp cc, imm16
-        void JumpCC_Imm16(OperandCond cc, IMemory& memory, InstructionResult& result);
+        void JumpCC_Imm16(OperandCond cc, Memory& memory, InstructionResult& result);
 
         // jr imm16
-        void JumpRelativeImm8(IMemory& memory, InstructionResult& result);
+        void JumpRelativeImm8(Memory& memory, InstructionResult& result);
 
         // jr cc, imm16
-        void JumpRelativeCC_Imm8(OperandCond cc, IMemory &memory, InstructionResult &result);
+        void JumpRelativeCC_Imm8(OperandCond cc, Memory &memory, InstructionResult &result);
 
         // ret 
-        void Return(IMemory& memory, InstructionResult& result);
+        void Return(Memory& memory, InstructionResult& result);
 
         // ret cc
-        void ReturnCC(OperandCond cc, IMemory &memory, InstructionResult &result);
+        void ReturnCC(OperandCond cc, Memory &memory, InstructionResult &result);
 
         // reti
-        void ReturnAndEnableInterrupts(IMemory& memory, InstructionResult& result);
+        void ReturnAndEnableInterrupts(Memory& memory, InstructionResult& result);
     
         // rst vec
-        void RstVec(uint8_t tgt3, IMemory& memory, InstructionResult& result);
+        void RstVec(uint8_t tgt3, Memory& memory, InstructionResult& result);
     
         // ccf
         void ComplementCarryFlag(InstructionResult &result);
@@ -264,10 +264,10 @@ namespace GBE
         void _HandleIME();
 
         // handle interrupt and return if interrupt found
-        bool _HandleInterrupts(IMemory &memory, InstructionResult &result);
+        bool _HandleInterrupts(Memory &memory, InstructionResult &result);
 
         // handle one interrupt flag and return if interrupt is found
-        bool _HandleInterruptFlag(InterruptFlag flag, IMemory &memory, InstructionResult &result);
+        bool _HandleInterruptFlag(InterruptFlag flag, Memory &memory, InstructionResult &result);
 
         // add value to pc to move to next intruction
         inline void _AddPC(uint16_t bytes)
@@ -291,28 +291,28 @@ namespace GBE
         void _ExecAluOpA(Alu::OperationDestSrc8 op, uint8_t v8, bool addCarry);
     
         // call to adr16
-        void _Call(uint16_t adr16, IMemory &memory, InstructionResult &result);
+        void _Call(uint16_t adr16, Memory &memory, InstructionResult &result);
     
         // jump relative
         void _JumpRelative(uint8_t offset8, InstructionResult& result);
     
         // offset SP with imm8 and load to register
-        void _AddToDestSP_Imm8(Reg16 dest, IMemory &memory, InstructionResult &result);
+        void _AddToDestSP_Imm8(Reg16 dest, Memory &memory, InstructionResult &result);
 
         // Block 0
-        void _RunBlock0(uint8_t opcode, IMemory &memory, InstructionResult &result);
+        void _RunBlock0(uint8_t opcode, Memory &memory, InstructionResult &result);
 
         // Block 1 8-bit register-to-register loads
-        void _RunBlock1(uint8_t opcode, IMemory &memory, InstructionResult &result);
+        void _RunBlock1(uint8_t opcode, Memory &memory, InstructionResult &result);
 
         // Block 2: 8-bit arithmetic
-        void _RunBlock2(uint8_t opcode, IMemory &memory, InstructionResult &result);
+        void _RunBlock2(uint8_t opcode, Memory &memory, InstructionResult &result);
 
         // Block 3
-        void _RunBlock3(uint8_t opcode, IMemory &memory, InstructionResult &result);
+        void _RunBlock3(uint8_t opcode, Memory &memory, InstructionResult &result);
 
         // $CB prefix instructions
-        void _RunPrefixInstructions(IMemory &memory, InstructionResult &result);
+        void _RunPrefixInstructions(Memory &memory, InstructionResult &result);
     
         // invalid instruction
         void _ThrowInvalidInstructtion();

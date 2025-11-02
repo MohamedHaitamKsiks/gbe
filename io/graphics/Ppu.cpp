@@ -12,7 +12,6 @@ namespace GBE
         m_Palettes = std::make_shared<LcdPalettesMemory>();
         m_LcdControl = std::make_shared<LcdControl>();
         m_InterruptManager = interruptManager;
-
     }
 
     Ppu::~Ppu()
@@ -35,6 +34,7 @@ namespace GBE
             return;
         for (uint32_t i = 0; i < dots; i++)
         {
+            m_LineDotsCounter++;
             if (m_WaitDots > 0)
                 m_WaitDots--;
 
@@ -42,8 +42,15 @@ namespace GBE
                 continue;
             
             _Render();
-            m_LcdControl->UpdatePpuMode(m_PpuMode);
-            m_LcdControl->UpdateLcdYCoordinate(m_LcdY);
+            
+            // update lcd control and manage interrupts  
+            bool intPpuMode = m_LcdControl->UpdatePpuMode(m_PpuMode);
+            bool intLYC = m_LcdControl->UpdateLcdYCoordinate(m_LcdY);
+
+            if (intLYC || intPpuMode)
+            {
+                m_InterruptManager->QueueInterrupt(InterruptFlag::LCD);
+            }
         }
     }
 
@@ -51,7 +58,14 @@ namespace GBE
 
     void Ppu::_Render()
     {
+        if (m_PpuMode == PpuMode::V_BLANK && m_QueuePpuMode == PpuMode::OAM_SCAN)
+        {
+            m_LcdY = 0;
+        }
+
+
         m_PpuMode = m_QueuePpuMode;
+
         switch (m_PpuMode)
         {
         case PpuMode::OAM_SCAN:
@@ -74,7 +88,10 @@ namespace GBE
     void Ppu::_OAMScan()
     {
         m_LcdX = 0;
-        m_TileIndex = ((m_LcdY + 32) / TILE_SIZE) * TILE_MAP_SIZE;
+
+        m_FetchWindow = false;
+        m_TileIndex = ((m_LcdY + m_LcdControl->GetViewportY()) / TILE_SIZE) * TILE_MAP_SIZE;
+
         m_BackgroundFIFO.Clear();
 
         m_Vram->SetReadWriteFlags(true);
@@ -83,6 +100,7 @@ namespace GBE
         
         m_WaitDots = OAM_SCAN_DOTS;
         m_QueuePpuMode = PpuMode::DRAW_PIXELS;
+        m_LineDotsCounter = 0;
     }
 
     void Ppu::_DrawingPixels()
@@ -91,19 +109,28 @@ namespace GBE
         m_Palettes->SetReadWriteFlags(false);
         m_Oam->SetReadWriteFlags(false);
         
+        // check window
+        if (!m_FetchWindow 
+            && m_LcdControl->GetControlFlag(LcdControlFlag::WINDOW_ENABLE)
+            && m_LcdX + 7 > m_LcdControl->GetWindowX()
+            && m_LcdY >= m_LcdControl->GetWindowY()
+        )
+        {
+            m_BackgroundFIFO.Clear();
+            m_FetchWindow = true;
+        }
         
-        // _DrawPixel();
+
         while (m_BackgroundFIFO.CanPush())
             _Fetch();
 
         if (m_BackgroundFIFO.CanPopFront())
             _DrawPixel();
 
-
         if (m_LcdX >= LCD_SCREEN_WIDTH)
         {
             m_QueuePpuMode = PpuMode::H_BLANK;
-            m_HBlankWaitDots = 204; // fuck ?
+            m_HBlankWaitDots = RENDER_LINE_DOTS - m_LineDotsCounter;
         }
     }
 
@@ -134,12 +161,16 @@ namespace GBE
 
         m_WaitDots = V_BLANK_DOTS;
         m_QueuePpuMode = PpuMode::OAM_SCAN;
-        m_LcdY = 0;
     }
 
     void Ppu::_DrawPixel()
     {
-        uint8_t color = m_BackgroundFIFO.PopFront();
+        uint8_t color = 0;
+        color = m_BackgroundFIFO.PopFront();
+
+        if (!m_LcdControl->GetControlFlag(LcdControlFlag::BG_WINDOW_ENABLE))
+            color = 0;
+
         m_Screen.SetPixel(m_LcdX, m_LcdY, color);
         m_LcdX++;
         m_WaitDots = 1;
@@ -147,16 +178,27 @@ namespace GBE
 
     void Ppu::_Fetch()
     {
-        const auto bgMapID = m_LcdControl->GetBackgroundTileMapID();
-        const auto &bgMap = m_Vram->GetTileMap(bgMapID);
+        uint8_t bgMapID = m_LcdControl->GetBackgroundTileMapID();
+        if (m_FetchWindow)
+        {
+            bgMapID = m_LcdControl->GetWindowTileMapID();
+        }
+        
+        const TileMap &bgMap = m_Vram->GetTileMap(bgMapID);
         uint8_t tileID = bgMap.Get(m_TileIndex);
-
-        const auto &tile = m_Vram->GetTileBGWin(tileID, true);
+        
+        bool addressMode = m_LcdControl->GetControlFlag(LcdControlFlag::BG_WINDOW_TILES);
+        const auto &tile = m_Vram->GetTileBGWin(tileID, addressMode);
 
         uint8_t y = m_TileY;
         for (uint8_t x = 0; x < TILE_SIZE; x++)
         {
-            uint8_t color = tile.GetPixel(x, y);
+            uint8_t colorIndex = tile.GetPixel(x, y);
+
+            // apply color pallette
+            const auto& bgPalette = m_Palettes->GetBackgroundPalette();
+            uint8_t color = static_cast<uint8_t>(bgPalette.GetColor(colorIndex));
+
             m_BackgroundFIFO.PushBack(color);
         }
 

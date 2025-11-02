@@ -1,5 +1,4 @@
 #include "CpuRegistersSet.h"
-#include "memory/IMemory.h"
 
 namespace GBE
 {

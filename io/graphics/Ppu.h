@@ -69,6 +69,12 @@ namespace GBE
             return m_LcdControl;
         }
 
+        // get lcd palettes
+        inline std::shared_ptr<LcdPalettesMemory> GetLcdPalettes()
+        {
+            return m_Palettes;
+        }
+
         // get screen
         inline const LcdScreen& GetLcdScreen() const
         {
@@ -96,6 +102,7 @@ namespace GBE
         // dot counter
         uint32_t m_FrameCounter = 0;
         uint32_t m_DotsCounter = 0;
+        uint32_t m_LineDotsCounter = 0;
         uint32_t m_WaitDots = 0;
         uint32_t m_HBlankWaitDots = 0;
 
@@ -129,6 +136,7 @@ namespace GBE
         // fetcher
         uint16_t m_TileIndex = 0;
         uint8_t m_TileY = 0;
+        bool m_FetchWindow = false;
 
         void _Render();
         void _OAMScan();

@@ -52,26 +52,46 @@ namespace GBE
         return Binary::TestBit(m_Status, static_cast<uint8_t>(flag));
     }
 
-    void LcdControl::UpdateLcdYCoordinate(uint8_t y)
+    bool LcdControl::UpdateLcdYCoordinate(uint8_t y)
     {
+        bool currentEq = Binary::TestBit(m_Status, static_cast<uint8_t>(LcdStatusFlag::LYC_EQ_LY));
+
         m_LcdYCoordinate = y;
 
         // LYC == LY
         if (m_LcdYCoordinate == m_LcdYCompare)
-            Binary::SetBit(m_Status, static_cast<uint8_t>(LcdStatusFlag::LYC_EQ_LY));
-        else
-            Binary::ResetBit(m_Status, static_cast<uint8_t>(LcdStatusFlag::LYC_EQ_LY));
+        {
+            m_Status = Binary::SetBit(m_Status, static_cast<uint8_t>(LcdStatusFlag::LYC_EQ_LY));
+            return !currentEq && GetStatusFlag(LcdStatusFlag::LYC);
+        }
+        
+        m_Status = Binary::ResetBit(m_Status, static_cast<uint8_t>(LcdStatusFlag::LYC_EQ_LY));
+        return false;
     }
 
-    void LcdControl::UpdatePpuMode(PpuMode mode)
+    bool LcdControl::UpdatePpuMode(PpuMode mode)
     {
         uint8_t ppuModeInt2 = 0;
+        uint8_t oldPpuModeInt2 = 0;
+
+        uint8_t ppuModeBit = 7;
         constexpr uint8_t PPU_MODE_MASK = 0b11111100;
 
         if (GetControlFlag(LcdControlFlag::LCD_PPU_ENABLE))
+        {
             ppuModeInt2 = static_cast<uint8_t>(mode); // to bites
+            
+            if (mode != PpuMode::DRAW_PIXELS)
+                ppuModeBit = 1 << (ppuModeInt2 + 3);
+        }
 
+        oldPpuModeInt2 = m_Status & ~(PPU_MODE_MASK);
         m_Status = (m_Status & PPU_MODE_MASK) | ppuModeInt2;
+
+        if (ppuModeBit == 7)
+            return false;
+
+        return oldPpuModeInt2 != ppuModeBit && Binary::TestBit(m_Status, ppuModeBit);
     }
     
     void LcdControl::_SetImp(uint16_t address, uint8_t value)
@@ -82,7 +102,7 @@ namespace GBE
             m_Control = value;
             break;
         case LcdAddress::STAT:
-            m_Status = value;
+            m_Status = (value & LYC_WRITABLE_MASK) | (m_Status & ~LYC_WRITABLE_MASK);
             break;
         case LcdAddress::SCY:
             m_ViewportY = value;
@@ -95,7 +115,7 @@ namespace GBE
             break;
         // BITS 0 - 2 READ ONLY //
         case LcdAddress::LYC:
-            m_LcdYCompare = (value & LYC_WRITABLE_MASK) | m_LcdYCompare;
+            m_LcdYCompare = value;
             break;
         case LcdAddress::DMA:
             m_DMA = value;

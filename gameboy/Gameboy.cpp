@@ -52,7 +52,7 @@ namespace GBE
     {
         // ROM
         m_Memory.MapMemoryArea(
-            {MMAP_ROM_BANK_0, MMAP_ROM_BANK_1_N },
+            std::vector<MemoryMap>{MMAP_ROM_BANK_0, MMAP_ROM_BANK_1_N },
             m_Cartridge
         );
 
@@ -70,8 +70,14 @@ namespace GBE
 
         // LCD Control
         m_Memory.MapMemoryArea(
-            {MMAP_LCD_CONTROL},
+            MMAP_LCD_CONTROL,
             m_Ppu->GetLcdControl()
+        );
+
+        // 
+        m_Memory.MapMemoryArea(
+            {MMAP_LCD_PALETTES},
+            m_Ppu->GetLcdPalettes()
         );
 
         // WRAM

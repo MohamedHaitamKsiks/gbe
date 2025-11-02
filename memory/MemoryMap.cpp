@@ -27,4 +27,9 @@ namespace GBE
     {
         return m_Start < other.m_Start;
     }
+
+    bool MemoryMap::operator>(const MemoryMap &other) const
+    {
+        return m_Start > other.m_Start;
+    }
 } // namespace GBE

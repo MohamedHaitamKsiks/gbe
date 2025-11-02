@@ -37,6 +37,8 @@ namespace GBE
 
         bool operator<(const MemoryMap &other) const;
 
+        bool operator>(const MemoryMap &other) const;
+
     private:
         uint16_t m_Start = 0;
         uint16_t m_End = 0;
