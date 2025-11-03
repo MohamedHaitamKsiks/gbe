@@ -216,7 +216,7 @@ namespace GBE
     void Cpu::LoadR16Mem_A(OperandR16Mem r16mem, Memory &memory, InstructionResult &result)
     {
         // fetch
-        int8_t value = GetOperandR8(OperandR8::A, memory, result);
+        uint8_t value = GetOperandR8(OperandR8::A, memory, result);
 
         // execute
         SetOperandR16Mem(r16mem, value, memory, result);
@@ -228,7 +228,7 @@ namespace GBE
     void Cpu::LoadA_R16Mem(OperandR16Mem r16mem, Memory &memory, InstructionResult &result)
     {
         // fetch
-        int8_t value = GetOperandR16Mem(r16mem, memory, result);
+        uint8_t value = GetOperandR16Mem(r16mem, memory, result);
     
         // execute
         SetOperandR8(OperandR8::A, value, memory, result);
@@ -264,7 +264,7 @@ namespace GBE
     void Cpu::LoadR8_R8(OperandR8 src8, OperandR8 dest8, Memory &memory, InstructionResult &result)
     {
         // fetch
-        int8_t value = GetOperandR8(src8, memory, result);
+        uint8_t value = GetOperandR8(src8, memory, result);
 
         // execute
         SetOperandR8(dest8, value, memory, result);
@@ -276,8 +276,8 @@ namespace GBE
     void Cpu::LoadHighC_A(Memory &memory, InstructionResult &result)
     {
         // fetch
-        int8_t src = m_Regs.GetReg8(Reg8::A);
-        int16_t destAdr = 0xff00 + m_Regs.GetReg8(Reg8::C);
+        uint8_t src = m_Regs.GetReg8(Reg8::A);
+        uint16_t destAdr = 0xff00 + m_Regs.GetReg8(Reg8::C);
 
         // execute
         memory.Set(
@@ -285,23 +285,27 @@ namespace GBE
             src
         );
         result.Cycles++;
+
+        GBE_ASM(result.Asm, "ldh", Reg8::C, Reg8::A);
     }
 
     void Cpu::LoadA_HighC(Memory &memory, InstructionResult &result)
     {
         // fetch
-        int16_t srcAdr = 0xff00 + m_Regs.GetReg8(Reg8::C);
-        int8_t src = memory.Get(srcAdr);
+        uint16_t srcAdr = 0xff00 + m_Regs.GetReg8(Reg8::C);
+        uint8_t src = memory.Get(srcAdr);
         result.Cycles++;
 
         // execute
         m_Regs.SetReg8(Reg8::A, src);
+
+        GBE_ASM(result.Asm, "ldh", Reg8::A, Reg8::C);
     }
 
     void Cpu::LoadHighImm8_A(Memory &memory, InstructionResult &result)
     {
         // fetch
-        int8_t src = m_Regs.GetReg8(Reg8::A);
+        uint8_t src = m_Regs.GetReg8(Reg8::A);
         uint16_t destAdr = 0xff00 + GetImm8(memory, result);
 
         // execute
@@ -343,14 +347,14 @@ namespace GBE
         result.Cycles++;
 
         // report
-        GBE_ASM(result.Asm, "ldh", destAdr, Reg8::A);
+        GBE_ASM(result.Asm, "ld", destAdr, Reg8::A);
     }
 
     void Cpu::LoadA_AdrImm16(Memory &memory, InstructionResult &result)
     {
         // fetch
-        int16_t srcAdr = GetImm16(memory, result);
-        int8_t src = memory.Get(srcAdr);
+        uint16_t srcAdr = GetImm16(memory, result);
+        uint8_t src = memory.Get(srcAdr);
         result.Cycles++;
 
         // execute
@@ -375,6 +379,8 @@ namespace GBE
 
         // result
         result.Cycles++;
+
+        GBE_ASM(result.Asm, "ld", Reg16::SP, Reg16::HL);
     }
 
     void Cpu::ExecAluOpR16(Alu::OperationDest16 op, OperandR16 r16, InstructionResult &result)
@@ -808,6 +814,8 @@ namespace GBE
         uint16_t adr16 = static_cast<uint16_t>(tgt3) * 8;
 
         _Call(adr16, memory, result);
+
+        GBE_ASM(result.Asm, "rst", tgt3);
     }
     
     void Cpu::ComplementCarryFlag(InstructionResult &result)

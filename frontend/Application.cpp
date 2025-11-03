@@ -19,8 +19,9 @@ namespace GBE
     {
         // load cartridge
         std::shared_ptr<Cartridge> catridge = std::make_shared<Cartridge>();
-        catridge->Load("/home/ksiks_wa3r/Documents/workspace/gbe/assets/games/game.gb");
+        // catridge->Load("/home/ksiks_wa3r/Documents/workspace/gbe/assets/games/game.gb");
         // catridge->Load("/home/ksiks_wa3r/Documents/workspace/gbe/assets/test_roms/dmg-acid2.gb");
+        catridge->Load("/home/ksiks_wa3r/Documents/workspace/gbe/assets/test_roms/m3_window_timing.gb");
 
         m_GB.Start(std::move(catridge));
 

@@ -129,6 +129,7 @@ namespace GBE
         m_Oam->SetReadWriteFlags(false);
         
         // check window
+        m_WaitDots = 0;
         if (!m_IsOnWindow 
             && m_LcdControl->GetControlFlag(LcdControlFlag::WINDOW_ENABLE)
             && m_LcdX + 7 >= m_LcdControl->GetWindowX()
@@ -142,6 +143,8 @@ namespace GBE
 
             m_BackgroundFIFO.Clear();
             m_IsOnWindow = true;
+
+            m_WaitDots += 6;
         }
         
 
@@ -242,7 +245,7 @@ namespace GBE
 
         m_Screen.SetPixel(m_LcdX, m_LcdY, color);
         m_LcdX++;
-        m_WaitDots = 1;
+        m_WaitDots += 1;
     }
 
     void Ppu::_FetchBackgroundFIFO()
@@ -335,6 +338,7 @@ namespace GBE
                 m_ObjectFIFO.Set(x, color);
             }
 
+            m_WaitDots += 6;
             return;
         }
     }
