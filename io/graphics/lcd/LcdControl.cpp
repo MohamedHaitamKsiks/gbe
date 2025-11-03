@@ -1,7 +1,12 @@
 #include "LcdControl.h"
-#include "io/graphics/Ppu.h"
 
+#include "io/graphics/Ppu.h"
+#include "io/graphics/oam/ObjectAttributesMemory.h"
+
+#include "memory/Memory.h"
 #include "util/Binary.h"
+
+#include <memory>
 
 namespace GBE
 {
@@ -93,7 +98,29 @@ namespace GBE
 
         return oldPpuModeInt2 != ppuModeBit && Binary::TestBit(m_Status, ppuModeBit);
     }
-    
+
+    void LcdControl::Tick(const Memory &memory, const std::shared_ptr<ObjectAttributesMemory> &oam, uint32_t dots)
+    {
+        if (!m_StartDMATransfer)
+            return;
+
+        if (m_DMADots < DMA_TRANSFER_DOTS)
+        {
+            m_DMADots++;
+            return;
+        }
+        
+        // do the transfert
+        for (uint16_t address = 0; address < MMAP_OAM.GetSize(); address++)
+        {
+            uint8_t byte = memory.Get(address + m_DMA);
+            oam->Set(address, byte);
+        }
+
+        // done
+        m_StartDMATransfer = false;
+    }
+
     void LcdControl::_SetImp(uint16_t address, uint8_t value)
     {
         switch (static_cast<LcdAddress>(address))
@@ -119,6 +146,8 @@ namespace GBE
             break;
         case LcdAddress::DMA:
             m_DMA = value;
+            m_StartDMATransfer = true;
+            m_DMADots = 0;
             break;
         case LcdAddress::WY:
             m_WindowY = value;

@@ -53,22 +53,9 @@ namespace GBE
     // From cartridge, switchable bank via mapper (if any)
     static constexpr MemoryMap MMAP_ROM_BANK_1_N(0x4000, 0x7FFF);
 
-    // From cartridge, switchable bank if any
-    static constexpr MemoryMap MMAP_EXTERNAL_RAM(0xA000, 0xBFFF);
-
-    // Work RAM
-    static constexpr MemoryMap MMAP_WRAM(0xC000, 0xDFFF);
-
-    // Nintendo says use of this area is prohibited.
-    static constexpr MemoryMap MMAP_ECHO_RAM(0xE000, 0xFDFF);
 
     // Nintendo says use of this area is prohibited.
     static constexpr MemoryMap MMAP_NOT_USABLE(0xFEA0, 0xFEFF);
 
-    // I/O Registers
-    static constexpr MemoryMap MMAP_IO_REGISTERS(0xFF00, 0xFF7F);
-
-    // High RAM
-    static constexpr MemoryMap MMAP_HRAM(0xFF80, 0xFFFE);
 
 } // namespace GBE

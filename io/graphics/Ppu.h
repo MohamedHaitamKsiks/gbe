@@ -30,8 +30,9 @@ namespace GBE
     };
 
     constexpr uint32_t DOT_TO_M_CYCLE = 4;  
-    constexpr uint32_t V_BLANK_DOTS = 4560;
+    constexpr uint32_t V_BLANK_LINE_COUNT = 10;
     constexpr uint32_t RENDER_LINE_DOTS = 456;
+    constexpr uint32_t LCD_SCREEN_FULL_HEIGHT = LCD_SCREEN_HEIGHT + V_BLANK_LINE_COUNT;
     constexpr uint32_t OAM_SCAN_DOTS = 80;
     constexpr uint32_t FRAME_DOTS = 70224;
     constexpr uint32_t FETCH_BG_DOTS = 6;
@@ -52,26 +53,25 @@ namespace GBE
         void Tick(uint32_t dots);
 
         // get vram
-        inline std::shared_ptr<Vram> GetVram()
+        inline const std::shared_ptr<Vram>& GetVram() const
         {
             return m_Vram;
         }
 
         // get oam
-        inline std::shared_ptr<ObjectAttributesMemory> GetOam()
+        inline const std::shared_ptr<ObjectAttributesMemory>& GetOam() const
         {
             return m_Oam;
         }
 
         // get lcd control register
-        inline std::shared_ptr<LcdControl> GetLcdControl()
+        inline const std::shared_ptr<LcdControl>& GetLcdControl() const
         {
             return m_LcdControl;
         }
 
         // get lcd palettes
-        inline std::shared_ptr<LcdPalettesMemory> GetLcdPalettes()
-        {
+        inline const std::shared_ptr<LcdPalettesMemory>& GetLcdPalettes() const        {
             return m_Palettes;
         }
 
@@ -126,17 +126,29 @@ namespace GBE
 
         // output screen
         LcdScreen m_Screen{};
-        int32_t m_LcdX = 0;
-        int32_t m_LcdY = 0;
+        uint32_t m_LcdX = 0;
+        uint32_t m_LcdY = 0;
         bool m_IsRendering = true;
-        
+
         PixelFIFO m_ObjectFIFO{};
         PixelFIFO m_BackgroundFIFO{};
 
-        // fetcher
-        uint16_t m_TileIndex = 0;
+        // tile
         uint8_t m_TileY = 0;
-        bool m_FetchWindow = false;
+        uint8_t m_TileX = 0;
+
+        uint8_t m_TileOffsetY = 0;
+        uint8_t m_TileOffsetX = 0;
+        
+        // window
+        uint8_t m_WindowInternalY = 0;
+        bool m_IsOnWindow = false;
+
+        // queue interrupt
+        bool m_VBlankInterrupt = false;
+
+        // objects
+        std::vector<uint8_t> m_LineObjects{};
 
         void _Render();
         void _OAMScan();
@@ -145,6 +157,8 @@ namespace GBE
         void _VerticalBlank();
         void _DrawPixel();
 
+        void _FetchBackgroundFIFO();
+        void _FetchObjectsFIFO();
         void _Fetch();
 
     };

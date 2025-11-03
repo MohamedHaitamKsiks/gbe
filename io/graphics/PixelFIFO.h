@@ -33,6 +33,18 @@ namespace GBE
             return m_CurrentSize <= TILE_SIZE;
         }
 
+        inline void Set(uint8_t index, uint8_t pixel)
+        {
+            m_Pixels[(m_PopIndex + index) % PIXEL_FIFO_SIZE] = pixel;
+        }
+
+        uint8_t Get(uint8_t index) const
+        {
+            return m_Pixels[(m_PopIndex + index) % PIXEL_FIFO_SIZE];
+        }
+
+        void Resize(uint32_t size, uint8_t pixel);
+
         void Clear();
 
     private:

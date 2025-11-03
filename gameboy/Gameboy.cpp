@@ -8,22 +8,27 @@ namespace GBE
         m_InterruptManager = std::make_shared<InterruptManager>();
         m_Ppu = std::make_shared<Ppu>(m_InterruptManager);
         m_WorkRam = std::make_shared<Ram>(MMAP_WRAM.GetSize());
+        m_HighRam = std::make_shared<Ram>(MMAP_HRAM.GetSize());
     }
 
     Gameboy::~Gameboy()
     {
     }
 
-    void Gameboy::Start(std::shared_ptr<Cartridge>&& cartridge)
+    void Gameboy::Start(std::shared_ptr<Cartridge> cartridge)
     {
         m_Cartridge = cartridge;
         m_Cartridge->SetReadFlag(true);
 
         m_WorkRam->SetReadWriteFlags(true);
+        m_HighRam->SetReadWriteFlags(true);
 
         m_Ppu->Init();
 
         m_Cpu.Init();
+
+        m_InterruptManager->SetInterruptFlag(0xE1);
+        m_InterruptManager->SetInterruptEnabled(0x00);
 
         _InitMemoryMapping();
     }
@@ -55,10 +60,10 @@ namespace GBE
             std::vector<MemoryMap>{MMAP_ROM_BANK_0, MMAP_ROM_BANK_1_N },
             m_Cartridge
         );
-
+        
         // VRAM
         m_Memory.MapMemoryArea(
-            {MMAP_VRAM, MMAP_ECHO_RAM},
+            {MMAP_VRAM},
             m_Ppu->GetVram()
         );
 
@@ -74,7 +79,7 @@ namespace GBE
             m_Ppu->GetLcdControl()
         );
 
-        // 
+        // palettes
         m_Memory.MapMemoryArea(
             {MMAP_LCD_PALETTES},
             m_Ppu->GetLcdPalettes()
@@ -86,14 +91,17 @@ namespace GBE
             m_WorkRam
         );
 
+        // HRAM
+        m_Memory.MapMemoryArea(
+            {MMAP_HRAM},
+            m_HighRam
+        );
+
         // interrupts
         m_Memory.MapMemoryArea(
             {MMAP_IF, MMAP_IE},
             m_InterruptManager
         );
-
-        m_InterruptManager->SetInterruptFlag(0xE1);
-        m_InterruptManager->SetInterruptEnabled(0x00);
     }
 
     void Gameboy::_CpuTick()
@@ -102,8 +110,17 @@ namespace GBE
         m_Cpu.Run(m_Memory, result);
 
         // std::cout << result.Asm.ToString() << "\n";
+        
+        uint32_t dots = result.Cycles * 4;
+        
+        // tick ppu
+        m_Ppu->Tick(dots);
 
-        m_Ppu->Tick(result.Cycles * 4);
+        // manage oam transfer
+        const auto& oam = m_Ppu->GetOam();
+        const auto& lcdControl = m_Ppu->GetLcdControl();
+        lcdControl->Tick(m_Memory, oam, dots);
+
     }
 
 } // namespace GBE

@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <array>
+#include <memory>
 
 #include "LcdPalette.h"
 
@@ -12,6 +13,7 @@ namespace GBE
 {
     constexpr std::array<MemoryMap, 2> MMAP_LCD_CONTROL = {MemoryMap{0xFF40, 0xFF46}, MemoryMap{0xFF4A, 0xFF4B}};
     constexpr uint16_t LCD_CONTROL_SIZE = MMAP_LCD_CONTROL[0].GetSize() + MMAP_LCD_CONTROL[1].GetSize();
+    constexpr uint32_t DMA_TRANSFER_DOTS = 640;
 
     enum class LcdControlFlag
     {
@@ -36,7 +38,10 @@ namespace GBE
 
     enum class PpuMode;
 
-    class LcdControl: public MemoryArea
+    class Memory;
+    class ObjectAttributesMemory;
+
+    class LcdControl : public MemoryArea
     {
     public:
         LcdControl();
@@ -80,6 +85,11 @@ namespace GBE
             return m_LcdYCompare;
         }
 
+        inline uint8_t GetObjectSize() const
+        {
+            return GetControlFlag(LcdControlFlag::OBJ_SIZE)? 2: 1;
+        }
+
         bool GetStatusFlag(LcdStatusFlag flag) const;
 
         // update LY. shoud be called each tick 
@@ -87,6 +97,10 @@ namespace GBE
         
         // update ppu mode. soule be called each tick
         bool UpdatePpuMode(PpuMode mode);
+
+
+        // do the transfer of DMA from memory to oam memory
+        void Tick(const Memory& memory, const std::shared_ptr<ObjectAttributesMemory>& oam, uint32_t dots);
 
     private:
         uint8_t m_Control = 0;
@@ -102,6 +116,8 @@ namespace GBE
         uint8_t m_LcdYCompare = 0;
 
         uint8_t m_DMA = 0;
+        bool m_StartDMATransfer = true;
+        uint32_t m_DMADots = 0; 
 
         void _SetImp(uint16_t address, uint8_t value) override;
         uint8_t _GetImp(uint16_t address) const override;

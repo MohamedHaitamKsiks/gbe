@@ -1,10 +1,24 @@
 #pragma once
 
+#include "MemoryMap.h"
 #include "MemoryArea.h"
 #include <vector>
 
 namespace GBE
 {
+
+    // From cartridge, switchable bank if any
+    static constexpr MemoryMap MMAP_EXTERNAL_RAM(0xA000, 0xBFFF);
+
+    // Work RAM
+    static constexpr MemoryMap MMAP_WRAM(0xC000, 0xDFFF);
+
+    // Nintendo says use of this area is prohibited.
+    static constexpr MemoryMap MMAP_ECHO_RAM(0xE000, 0xFDFF);
+
+    // High RAM
+    static constexpr MemoryMap MMAP_HRAM(0xFF80, 0xFFFE);
+
     class Ram: public MemoryArea
     {
     public: 

@@ -18,7 +18,7 @@ namespace GBE
         Gameboy();
         ~Gameboy();     
 
-        void Start(std::shared_ptr<Cartridge>&& cartridge);
+        void Start(std::shared_ptr<Cartridge> cartridge);
 
         void Tick();
 
@@ -40,7 +40,8 @@ namespace GBE
         std::shared_ptr<Ppu> m_Ppu = nullptr;
         std::shared_ptr<Cartridge> m_Cartridge = nullptr;
         std::shared_ptr<InterruptManager> m_InterruptManager = nullptr;
-        std::shared_ptr<Ram> m_WorkRam{};
+        std::shared_ptr<Ram> m_WorkRam = nullptr;
+        std::shared_ptr<Ram> m_HighRam = nullptr;
 
         void _InitMemoryMapping();
         void _CpuTick();
