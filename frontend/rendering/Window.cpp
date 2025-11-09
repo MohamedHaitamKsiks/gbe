@@ -4,7 +4,7 @@
 
 namespace GBE
 {
-    Window::Window(std::shared_ptr<Ppu> ppu, int32_t width, int32_t height)
+    Window::Window(const std::shared_ptr<Ppu>& ppu, const std::shared_ptr<Joypad>& joypad, int32_t width, int32_t height)
     {
         m_Width = width;
         m_Height = height;
@@ -13,6 +13,7 @@ namespace GBE
         m_Window = SDL_CreateWindow("GBE", width, height, SDL_WINDOW_RESIZABLE);
 
         m_Renderer = std::make_unique<Renderer>(m_Window, ppu);
+        m_Joypad = joypad;
     }
 
 
@@ -37,7 +38,46 @@ namespace GBE
             if (event.type == SDL_EVENT_QUIT)
             {
                 m_IsClosed = true;
+                break;
             }
+
+            if (event.type != SDL_EventType::SDL_EVENT_KEY_DOWN && event.type != SDL_EventType::SDL_EVENT_KEY_UP)
+                continue;
+
+            JoypadEvent joypadEvent;
+            joypadEvent.Pressed = event.key.down;
+
+            switch (event.key.key)
+            {
+            case SDLK_LEFT:
+                joypadEvent.Button = JoypadButton::LEFT;
+                break;
+            case SDLK_RIGHT:
+                joypadEvent.Button = JoypadButton::RIGHT;
+                break;
+            case SDLK_UP:
+                joypadEvent.Button = JoypadButton::UP;
+                break;
+            case SDLK_DOWN:
+                joypadEvent.Button = JoypadButton::DOWN;
+                break;
+            case SDLK_S:
+                joypadEvent.Button = JoypadButton::A;
+                break;
+            case SDLK_D:
+                joypadEvent.Button = JoypadButton::B;
+                break;
+            case SDLK_SPACE:
+                joypadEvent.Button = JoypadButton::SELECT;
+                break;
+            case SDLK_RETURN:
+                joypadEvent.Button = JoypadButton::START;
+                break;
+            default:
+                break;
+            }
+
+            m_Joypad->QueueJoypadEvent(joypadEvent);
         }
 
 

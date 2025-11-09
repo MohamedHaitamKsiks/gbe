@@ -27,7 +27,7 @@ namespace GBE
         uint16_t localAddress = _FindMemoryArea(address, marea);
 
         if (!marea)
-            return 0x0;
+            return 0xFF;
 
         return marea->Get(localAddress);
     }

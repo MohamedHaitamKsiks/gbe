@@ -3,10 +3,11 @@
 #include <chrono>
 #include <thread>
 
-#define SEC_TO_MICRO 1000000.0f
 
 namespace GBE
 {
+    constexpr float SEC_TO_MICRO = 1000000.0f;
+    
     Application::Application()
     {
     }
@@ -19,14 +20,14 @@ namespace GBE
     {
         // load cartridge
         std::shared_ptr<Cartridge> catridge = std::make_shared<Cartridge>();
-        // catridge->Load("assets/test_roms/dmg-acid2.gb");
+        catridge->Load("/home/ksiks_wa3r/Documents/workspace/gbe/assets/games/game.gb");
 
         m_GB.Start(std::move(catridge));
 
         float delta = 0.0f;
 
         // get time now=
-        m_Window = std::make_unique<Window>(m_GB.GetPpu(), 1280, 720);
+        m_Window = std::make_unique<Window>(m_GB.GetPpu(), m_GB.GetJoypad(), 1280, 720);
         while (!m_Window->IsClosed())
         {
             const auto pastTime = std::chrono::high_resolution_clock::now();

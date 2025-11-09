@@ -2,6 +2,7 @@
 
 #include "io/graphics/Ppu.h"
 #include "io/interrupts/InterruptManager.h"
+#include "io/joypad/Joypad.h"
 
 #include "cpu/Cpu.h"
 #include "memory/Memory.h"
@@ -24,15 +25,20 @@ namespace GBE
 
         void Stop();
 
-        inline std::shared_ptr<Ppu> GetPpu() const
+        inline const std::shared_ptr<Ppu>& GetPpu() const
         {
             return m_Ppu;
         }
 
-        inline std::shared_ptr<InterruptManager> GetInterruptManager() const
+        inline const std::shared_ptr<InterruptManager>& GetInterruptManager() const
         {
             return m_InterruptManager;
         }
+
+        inline const std::shared_ptr<Joypad>& GetJoypad() const
+        {
+            return m_Joypad;
+        };
     private:
         Cpu m_Cpu{};
         Memory m_Memory{};
@@ -42,6 +48,7 @@ namespace GBE
         std::shared_ptr<InterruptManager> m_InterruptManager = nullptr;
         std::shared_ptr<Ram> m_WorkRam = nullptr;
         std::shared_ptr<Ram> m_HighRam = nullptr;
+        std::shared_ptr<Joypad> m_Joypad = nullptr;
 
         void _InitMemoryMapping();
         void _CpuTick();

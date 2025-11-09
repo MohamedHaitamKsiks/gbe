@@ -9,6 +9,7 @@ namespace GBE
         m_Ppu = std::make_shared<Ppu>(m_InterruptManager);
         m_WorkRam = std::make_shared<Ram>(MMAP_WRAM.GetSize());
         m_HighRam = std::make_shared<Ram>(MMAP_HRAM.GetSize());
+        m_Joypad = std::make_shared<Joypad>(m_InterruptManager);
     }
 
     Gameboy::~Gameboy()
@@ -38,9 +39,11 @@ namespace GBE
         uint32_t dots = 0;
         while (dots < FRAME_DOTS)
         {
+            m_Joypad->Tick();
+
             InstructionResult result{};
             m_Cpu.Run(m_Memory, result);
-
+            
             uint32_t instructionDots = result.Cycles * 4;
             m_Ppu->Tick(instructionDots);
             dots += instructionDots;
@@ -99,6 +102,12 @@ namespace GBE
         m_Memory.MapMemoryArea(
             {MMAP_IF, MMAP_IE},
             m_InterruptManager
+        );
+
+        // joypad
+        m_Memory.MapMemoryArea(
+            {MMAP_P1_JOYP},
+            m_Joypad
         );
     }
 

@@ -4,6 +4,8 @@
 #include <SDL3/SDL.h>
 #include "Renderer.h"
 
+#include "io/joypad/Joypad.h"
+
 namespace GBE
 {
     class Ppu;
@@ -11,7 +13,7 @@ namespace GBE
     class Window
     {
     public:
-        Window(std::shared_ptr<Ppu> ppu, int32_t width, int32_t height);
+        Window(const std::shared_ptr<Ppu>& ppu, const std::shared_ptr<Joypad>& joypad, int32_t width, int32_t height);
         ~Window();
 
         bool IsClosed() const;
@@ -26,5 +28,6 @@ namespace GBE
         bool m_IsClosed = false;
 
         std::unique_ptr<Renderer> m_Renderer = nullptr;
+        std::shared_ptr<Joypad> m_Joypad = nullptr;
     };
 } // namespace GBE
