@@ -3,6 +3,7 @@
 #include "io/graphics/Ppu.h"
 #include "io/interrupts/InterruptManager.h"
 #include "io/joypad/Joypad.h"
+#include "io/timer/Timer.h"
 
 #include "cpu/Cpu.h"
 #include "memory/Memory.h"
@@ -49,6 +50,7 @@ namespace GBE
         std::shared_ptr<Ram> m_WorkRam = nullptr;
         std::shared_ptr<Ram> m_HighRam = nullptr;
         std::shared_ptr<Joypad> m_Joypad = nullptr;
+        std::shared_ptr<Timer> m_Timer = nullptr;
 
         void _InitMemoryMapping();
         void _CpuTick();

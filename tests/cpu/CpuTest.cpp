@@ -21,6 +21,7 @@ namespace GBETest
         MemoryCpu()
         {
             m_MemoryData = std::make_unique<uint8_t[]>(UINT16_MAX + 1);
+            SetReadWriteFlags(true);
         }
 
         ~MemoryCpu() {}
@@ -52,7 +53,7 @@ GBE_TEST_SUITE(Cpu)
 
     TEST_CASE("Init")
     {
-        memory.MapMemoryArea({GBE::MemoryMap{0, UINT16_MAX + 1}}, memoryCpu);
+        memory.MapMemoryArea({GBE::MemoryMap{0, 0xFFFF}}, memoryCpu);
     }
     
     TEST_CASE("SetImm8")
@@ -657,7 +658,7 @@ GBE_TEST_SUITE(Cpu)
         // assert
         CHECK_EQ(
             cpu.GetRegisters().GetReg16(GBE::Reg16::PC),
-            113
+            114
         );
 
         CHECK_EQ(
@@ -840,7 +841,7 @@ GBE_TEST_SUITE(Cpu)
         program.push_back(0x0D);
         // jr nz, MultiplyLoop
         program.push_back(0x20);
-        program.push_back(multiplyLoopAdress - program.size());
+        program.push_back(multiplyLoopAdress - program.size() - 1);
         // nop
         program.push_back(0x0);
         // At this point, A = 24

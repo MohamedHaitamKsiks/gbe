@@ -727,10 +727,9 @@ namespace GBE
     {
         int8_t signedOffset8 = static_cast<int8_t>(offset8);
         int16_t signedOffset16 = static_cast<int16_t>(signedOffset8);
-        signedOffset16--;
 
         // offset pc
-        uint16_t pc = m_Regs.GetReg16(Reg16::PC) + signedOffset16 + 1;
+        uint16_t pc = m_Regs.GetReg16(Reg16::PC) + signedOffset16 ;
         m_Regs.SetReg16(Reg16::PC, pc);
         result.Cycles++;
     }

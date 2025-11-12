@@ -187,6 +187,7 @@ namespace GBE
         // TODO halt 
         if (opcode == 0x76)
         {
+            GBE_ASM(result.Asm, "halt");
             return;
         }
 

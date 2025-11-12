@@ -10,6 +10,7 @@ namespace GBE
         m_WorkRam = std::make_shared<Ram>(MMAP_WRAM.GetSize());
         m_HighRam = std::make_shared<Ram>(MMAP_HRAM.GetSize());
         m_Joypad = std::make_shared<Joypad>(m_InterruptManager);
+        m_Timer = std::make_shared<Timer>(m_InterruptManager);
     }
 
     Gameboy::~Gameboy()
@@ -109,10 +110,18 @@ namespace GBE
             {MMAP_P1_JOYP},
             m_Joypad
         );
+
+        // timer
+        m_Memory.MapMemoryArea(
+            {MMAP_TIMER},
+            m_Timer
+        );
     }
 
     void Gameboy::_CpuTick()
     {   
+        m_Timer->Tick();
+
         InstructionResult result{};
         m_Cpu.Run(m_Memory, result);
 

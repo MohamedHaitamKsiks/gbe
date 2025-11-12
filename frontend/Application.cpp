@@ -20,7 +20,7 @@ namespace GBE
     {
         // load cartridge
         std::shared_ptr<Cartridge> catridge = std::make_shared<Cartridge>();
-        catridge->Load("/home/ksiks_wa3r/Documents/workspace/gbe/assets/games/game.gb");
+        catridge->LoadFromAssets("./test_roms/cpu_instrs.gb");
 
         m_GB.Start(std::move(catridge));
 
@@ -34,11 +34,9 @@ namespace GBE
             
             auto ppu = m_GB.GetPpu();
 
-            // tick until we reach vblank
+            // ticks for one frame
             m_GB.Tick();
-
             m_Window->Update(delta);
-
 
             // compute delta
             const auto currentTime = std::chrono::high_resolution_clock::now();
