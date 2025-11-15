@@ -20,7 +20,7 @@ namespace GBE
     {
         // load cartridge
         std::shared_ptr<Cartridge> catridge = std::make_shared<Cartridge>();
-        catridge->LoadFromAssets("./test_roms/cpu_instrs.gb");
+        catridge->LoadFromAssets("assets/test_roms/cpu_instrs.gb");
 
         m_GB.Start(std::move(catridge));
 

@@ -104,7 +104,7 @@ namespace GBE
             {
                 static bool show_demo = false;
                 ImGui::MenuItem("ImGui Demo", nullptr, &show_demo);
-                if (show_demo) ImGui::ShowDemoWindow(&show_demo);
+                // Demo window not linked (imgui_demo.cpp not compiled). Toggle kept without action.
                 ImGui::EndMenu();
             }
             ImGui::EndMainMenuBar();
@@ -117,7 +117,7 @@ namespace GBE
 
         // Render ImGui over the SDL scene
         ImGui::Render();
-        ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData());
+        ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), m_SDLRenderer);
 
         // show fps
         SDL_SetRenderDrawColor(m_SDLRenderer, 255, 255, 255, SDL_ALPHA_OPAQUE);

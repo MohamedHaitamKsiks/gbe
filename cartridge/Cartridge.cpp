@@ -1,10 +1,13 @@
 #include "Cartridge.h"
 #include <cassert>
 #include <fstream>
+#include <string>
+#include <algorithm>
 
 #ifdef _WIN32
+#include <SDL3/SDL.h>
 #else
-#include <sys/param.h>
+#include <unistd.h>
 #endif
 
 
@@ -45,19 +48,32 @@ namespace GBE
 
     std::string Cartridge::_GetExeFullPath()
     {
+    #ifdef _WIN32
+        const char* base = SDL_GetBasePath();
+        if (base)
+        {
+            std::string path(base);
+            SDL_free((void*)base);
+            if (!path.empty() && (path.back() == '/' || path.back() == '\\'))
+                path.pop_back();
+            return path;
+        }
+        return ".";
+    #else
         // get exe path
         char buff[10000];
         size_t len = sizeof(buff);
 
-        int bytes = MIN(readlink("/proc/self/exe", buff, len), len - 1);
+        ssize_t bytes = readlink("/proc/self/exe", buff, len - 1);
         if (bytes >= 0)
             buff[bytes] = '\0';
 
         std::string exePath = buff;
         
         // erase exe from path (we only want folder)
-        size_t exeStartIndex = exePath.find_last_of("/");
+        size_t exeStartIndex = exePath.find_last_of('/');
         return exePath.substr(0, exeStartIndex);
+    #endif
     }
 
 } // namespace GBE
