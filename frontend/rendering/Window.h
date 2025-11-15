@@ -2,6 +2,8 @@
 
 #include <cstdint>
 #include <SDL3/SDL.h>
+#include <functional>
+#include <string>
 #include "Renderer.h"
 
 #include "io/joypad/Joypad.h"
@@ -19,6 +21,7 @@ namespace GBE
         bool IsClosed() const;
 
         void Update(float delta);
+        void SetOpenRomCallback(std::function<void(const std::string&)> cb);
 
     private:
         int32_t m_Width = -1;

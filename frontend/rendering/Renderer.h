@@ -5,6 +5,8 @@
 #include <vector>
 #include <memory>
 #include <cstdint>
+#include <functional>
+#include <string>
 #include "io/graphics/Ppu.h"
 
 namespace GBE
@@ -25,6 +27,7 @@ namespace GBE
         ~Renderer();
 
         void Render(float delta, int32_t width, int32_t height);
+        void SetOpenRomCallback(std::function<void(const std::string&)> cb);
 
     private:
         std::shared_ptr<Ppu> m_Ppu = nullptr;
@@ -34,6 +37,11 @@ namespace GBE
 
         std::array<ColorRGB32, LCD_SCREEN_WIDTH * LCD_SCREEN_HEIGHT> m_Pixels;
         std::vector<ColorRGB32> m_ColorPalette; 
+
+        // GUI: ROM loading
+        std::function<void(const std::string&)> m_OnOpenRom;
+        bool m_ShowOpenRom = false;
+        char m_OpenRomPath[512] = "";
 
         void _UpdateTexture();
     };

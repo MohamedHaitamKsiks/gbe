@@ -40,6 +40,11 @@ namespace GBE
         ImGui_ImplSDLRenderer3_Init(m_SDLRenderer);
     }
 
+    void Renderer::SetOpenRomCallback(std::function<void(const std::string&)> cb)
+    {
+        m_OnOpenRom = std::move(cb);
+    }
+
     Renderer::~Renderer()
     {
         // Shutdown Dear ImGui
@@ -96,7 +101,10 @@ namespace GBE
         {
             if (ImGui::BeginMenu("File"))
             {
-                ImGui::MenuItem("Open ROM...", nullptr, false, false); // placeholder
+                if (ImGui::MenuItem("Open ROM..."))
+                {
+                    m_ShowOpenRom = true;
+                }
                 ImGui::MenuItem("Exit", nullptr, false, false);        // handled via SDL event
                 ImGui::EndMenu();
             }
@@ -108,6 +116,27 @@ namespace GBE
                 ImGui::EndMenu();
             }
             ImGui::EndMainMenuBar();
+        }
+
+        // Open ROM popup
+        if (m_ShowOpenRom)
+            ImGui::OpenPopup("Open ROM");
+        if (ImGui::BeginPopupModal("Open ROM", &m_ShowOpenRom, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::InputText("Path", m_OpenRomPath, sizeof(m_OpenRomPath));
+            if (ImGui::Button("Load"))
+            {
+                if (m_OnOpenRom) m_OnOpenRom(std::string(m_OpenRomPath));
+                m_ShowOpenRom = false;
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel"))
+            {
+                m_ShowOpenRom = false;
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
         }
 
         ImGui::Begin("GBE");

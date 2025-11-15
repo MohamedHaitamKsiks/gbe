@@ -85,4 +85,10 @@ namespace GBE
         SDL_GetWindowSize(m_Window, &m_Width, &m_Height);
         m_Renderer->Render(delta, m_Width, m_Height);
     }
+
+    void Window::SetOpenRomCallback(std::function<void(const std::string&)> cb)
+    {
+        if (m_Renderer)
+            m_Renderer->SetOpenRomCallback(std::move(cb));
+    }
 } // namespace GBE
