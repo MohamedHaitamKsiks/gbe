@@ -1,3 +1,6 @@
 [submodule "dependencies/SDL3"]
 	path = dependencies/SDL3
 	url = https://github.com/libsdl-org/SDL.git
+[submodule "dependencies/imgui"]
+	path = dependencies/imgui
+	url = https://github.com/ocornut/imgui

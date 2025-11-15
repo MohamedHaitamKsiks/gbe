@@ -1,5 +1,8 @@
 #include "Renderer.h"
 #include <cassert>
+#include "imgui.h"
+#include "backends/imgui_impl_sdl3.h"
+#include "backends/imgui_impl_sdlrenderer3.h"
 
 namespace GBE
 {
@@ -28,10 +31,22 @@ namespace GBE
         );
         SDL_SetTextureScaleMode(m_SDLTexture, SDL_SCALEMODE_NEAREST);
 
+        // Initialize Dear ImGui
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGui::StyleColorsDark();
+        // SDL3 + SDL_Renderer3 backends
+        ImGui_ImplSDL3_InitForSDLRenderer(sdlWindow, m_SDLRenderer);
+        ImGui_ImplSDLRenderer3_Init(m_SDLRenderer);
     }
 
     Renderer::~Renderer()
     {
+        // Shutdown Dear ImGui
+        ImGui_ImplSDLRenderer3_Shutdown();
+        ImGui_ImplSDL3_Shutdown();
+        ImGui::DestroyContext();
+
         SDL_DestroyTexture(m_SDLTexture);
         SDL_DestroyRenderer(m_SDLRenderer);
     }
@@ -70,6 +85,39 @@ namespace GBE
 
         // draw 
         SDL_RenderTexture(m_SDLRenderer, m_SDLTexture, nullptr, &rect);
+
+        // ImGui frame
+        ImGui_ImplSDLRenderer3_NewFrame();
+        ImGui_ImplSDL3_NewFrame();
+        ImGui::NewFrame();
+
+        // Basic UI
+        if (ImGui::BeginMainMenuBar())
+        {
+            if (ImGui::BeginMenu("File"))
+            {
+                ImGui::MenuItem("Open ROM...", nullptr, false, false); // placeholder
+                ImGui::MenuItem("Exit", nullptr, false, false);        // handled via SDL event
+                ImGui::EndMenu();
+            }
+            if (ImGui::BeginMenu("View"))
+            {
+                static bool show_demo = false;
+                ImGui::MenuItem("ImGui Demo", nullptr, &show_demo);
+                if (show_demo) ImGui::ShowDemoWindow(&show_demo);
+                ImGui::EndMenu();
+            }
+            ImGui::EndMainMenuBar();
+        }
+
+        ImGui::Begin("GBE");
+        float fps_imgui = (delta > 0.0f) ? (1.0f / delta) : 0.0f;
+        ImGui::Text("FPS: %.1f", fps_imgui);
+        ImGui::End();
+
+        // Render ImGui over the SDL scene
+        ImGui::Render();
+        ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData());
 
         // show fps
         SDL_SetRenderDrawColor(m_SDLRenderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
