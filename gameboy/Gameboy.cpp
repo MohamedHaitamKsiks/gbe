@@ -47,7 +47,6 @@ namespace GBE
         while (dots < FRAME_DOTS)
         {
             m_Joypad->Tick();
-
             
             uint16_t pc = m_Cpu.GetRegisters().GetReg16(Reg16::PC);
             //if (m_Memory.Get(pc) == 0x27)
