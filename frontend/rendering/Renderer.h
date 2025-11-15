@@ -32,13 +32,13 @@ namespace GBE
     private:
         std::shared_ptr<Ppu> m_Ppu = nullptr;
 
+        SDL_Window*  m_SDLWindow  = nullptr;
         SDL_Renderer* m_SDLRenderer = nullptr;
         SDL_Texture * m_SDLTexture = nullptr;
 
         std::array<ColorRGB32, LCD_SCREEN_WIDTH * LCD_SCREEN_HEIGHT> m_Pixels;
         std::vector<ColorRGB32> m_ColorPalette; 
 
-        // GUI: ROM loading
         std::function<void(const std::string&)> m_OnOpenRom;
         bool m_ShowOpenRom = false;
         char m_OpenRomPath[512] = "";

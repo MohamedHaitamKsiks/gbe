@@ -30,10 +30,9 @@ namespace GBE
         // get time now=
         m_Window = std::make_unique<Window>(m_GB.GetPpu(), m_GB.GetJoypad(), 1280, 720);
 
-        // GUI: hook File -> Open ROM... to load a new cartridge at runtime
         m_Window->SetOpenRomCallback([this](const std::string &romPath) {
             auto cartridge = std::make_shared<Cartridge>();
-            cartridge->Load(romPath);   // expects absolute or relative filesystem path
+            cartridge->Load(romPath);
             m_GB.Stop();
             m_GB.Start(std::move(cartridge));
         });

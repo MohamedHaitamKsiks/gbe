@@ -9,6 +9,7 @@ namespace GBE
     Renderer::Renderer(SDL_Window *sdlWindow, std::shared_ptr<Ppu> ppu)
     {
         m_Ppu = ppu;
+        m_SDLWindow = sdlWindow;
 
         // create sdl renderer
         m_SDLRenderer = SDL_CreateRenderer(sdlWindow, nullptr);
@@ -31,11 +32,9 @@ namespace GBE
         );
         SDL_SetTextureScaleMode(m_SDLTexture, SDL_SCALEMODE_NEAREST);
 
-        // Initialize Dear ImGui
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
         ImGui::StyleColorsDark();
-        // SDL3 + SDL_Renderer3 backends
         ImGui_ImplSDL3_InitForSDLRenderer(sdlWindow, m_SDLRenderer);
         ImGui_ImplSDLRenderer3_Init(m_SDLRenderer);
     }
@@ -47,7 +46,6 @@ namespace GBE
 
     Renderer::~Renderer()
     {
-        // Shutdown Dear ImGui
         ImGui_ImplSDLRenderer3_Shutdown();
         ImGui_ImplSDL3_Shutdown();
         ImGui::DestroyContext();
@@ -91,34 +89,40 @@ namespace GBE
         // draw 
         SDL_RenderTexture(m_SDLRenderer, m_SDLTexture, nullptr, &rect);
 
-        // ImGui frame
         ImGui_ImplSDLRenderer3_NewFrame();
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
 
-        // Basic UI
         if (ImGui::BeginMainMenuBar())
         {
             if (ImGui::BeginMenu("File"))
             {
                 if (ImGui::MenuItem("Open ROM..."))
                 {
-                    m_ShowOpenRom = true;
+                {
+                    auto file_callback = [](void* userdata, const char* const* filelist, int numfiles)
+                    {
+                        Renderer* self = static_cast<Renderer*>(userdata);
+                        if (self && numfiles > 0 && self->m_OnOpenRom)
+                        {
+                            self->m_OnOpenRom(std::string(filelist[0]));
+                        }
+                    };
+                    SDL_ShowOpenFileDialog(file_callback, this, m_SDLWindow, nullptr, 0, nullptr, false);
                 }
-                ImGui::MenuItem("Exit", nullptr, false, false);        // handled via SDL event
+                }
+                ImGui::MenuItem("Exit", nullptr, false, false);
                 ImGui::EndMenu();
             }
             if (ImGui::BeginMenu("View"))
             {
                 static bool show_demo = false;
                 ImGui::MenuItem("ImGui Demo", nullptr, &show_demo);
-                // Demo window not linked (imgui_demo.cpp not compiled). Toggle kept without action.
                 ImGui::EndMenu();
             }
             ImGui::EndMainMenuBar();
         }
 
-        // Open ROM popup
         if (m_ShowOpenRom)
             ImGui::OpenPopup("Open ROM");
         if (ImGui::BeginPopupModal("Open ROM", &m_ShowOpenRom, ImGuiWindowFlags_AlwaysAutoResize))
@@ -144,7 +148,6 @@ namespace GBE
         ImGui::Text("FPS: %.1f", fps_imgui);
         ImGui::End();
 
-        // Render ImGui over the SDL scene
         ImGui::Render();
         ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), m_SDLRenderer);
 

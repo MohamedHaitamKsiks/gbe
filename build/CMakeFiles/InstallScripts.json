@@ -1,0 +1,10 @@
+{
+	"InstallScripts" : 
+	[
+		"C:/Users/user/Desktop/gbe/build/cmake_install.cmake",
+		"C:/Users/user/Desktop/gbe/build/dependencies/doctest/cmake_install.cmake",
+		"C:/Users/user/Desktop/gbe/build/dependencies/magic_enum/cmake_install.cmake",
+		"C:/Users/user/Desktop/gbe/build/dependencies/SDL3/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

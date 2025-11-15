@@ -1,5 +1,7 @@
 #include "Window.h"
 #include <cassert>
+#include "imgui.h"
+#include "backends/imgui_impl_sdl3.h"
 
 
 namespace GBE
@@ -33,16 +35,21 @@ namespace GBE
     void Window::Update(float delta)
     {
         SDL_Event event;
-        while (SDL_PollEvent(&event))
-        {
-            if (event.type == SDL_EVENT_QUIT)
-            {
-                m_IsClosed = true;
-                break;
-            }
+    while (SDL_PollEvent(&event))
+    {
+        ImGui_ImplSDL3_ProcessEvent(&event);
 
-            if (event.type != SDL_EventType::SDL_EVENT_KEY_DOWN && event.type != SDL_EventType::SDL_EVENT_KEY_UP)
-                continue;
+        if (event.type == SDL_EVENT_QUIT)
+        {
+            m_IsClosed = true;
+            break;
+        }
+
+        if (event.type != SDL_EventType::SDL_EVENT_KEY_DOWN && event.type != SDL_EventType::SDL_EVENT_KEY_UP)
+            continue;
+
+        if (ImGui::GetIO().WantCaptureKeyboard)
+            continue;
 
             JoypadEvent joypadEvent;
             joypadEvent.Pressed = event.key.down;

@@ -36,7 +36,6 @@ else()
     # Disable SDL3 tests, examples, and other unnecessary components
     add_subdirectory(dependencies/SDL3 EXCLUDE_FROM_ALL)
 
-    # Dear ImGui (SDL3 + SDL_Renderer3 backends)
     set(IMGUI_DIR ${CMAKE_CURRENT_LIST_DIR}/dependencies/imgui)
     add_library(imgui STATIC
         ${IMGUI_DIR}/imgui.cpp
