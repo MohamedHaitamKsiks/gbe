@@ -1,6 +1,10 @@
 #pragma once
 
 #include <SDL3/SDL.h>
+#include <array>
+#include <vector>
+#include <memory>
+#include <cstdint>
 #include "io/graphics/Ppu.h"
 
 namespace GBE
