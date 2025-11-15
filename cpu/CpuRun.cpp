@@ -96,11 +96,11 @@ namespace GBE
             ComplementA(result);
             return;
         // scf
-        case 0x3F:
+        case 0x37:
             SetCarryFlag(result);
             return;
         // ccf
-        case 0x47:
+        case 0x3F:
             ComplementCarryFlag(result);
             return;
         // jr imm8

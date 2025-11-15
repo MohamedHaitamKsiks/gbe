@@ -281,7 +281,7 @@ namespace GBE
         // get carry flag
         inline uint8_t _GetCarry() const 
         {
-            return (m_Regs.GetFlags() & CpuFlag::C) ? 1: 0;
+            return (m_Regs.GetFlag(CpuFlag::C)) ? 1: 0;
         } 
 
         // hli/hld

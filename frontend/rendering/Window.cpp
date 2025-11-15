@@ -44,8 +44,9 @@ namespace GBE
             if (event.type != SDL_EventType::SDL_EVENT_KEY_DOWN && event.type != SDL_EventType::SDL_EVENT_KEY_UP)
                 continue;
 
-            JoypadEvent joypadEvent;
+            JoypadEvent joypadEvent{};
             joypadEvent.Pressed = event.key.down;
+            bool doQueueEvent = true;
 
             switch (event.key.key)
             {
@@ -74,10 +75,12 @@ namespace GBE
                 joypadEvent.Button = JoypadButton::START;
                 break;
             default:
+                doQueueEvent = false;
                 break;
             }
-
-            m_Joypad->QueueJoypadEvent(joypadEvent);
+            
+            if (doQueueEvent)
+                m_Joypad->QueueJoypadEvent(joypadEvent);
         }
 
 

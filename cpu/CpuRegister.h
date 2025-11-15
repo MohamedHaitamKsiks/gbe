@@ -1,6 +1,8 @@
 #pragma once
 
+#include <string>
 #include <cstdint>
+#include <string_view>
 
 namespace GBE
 {
@@ -8,7 +10,7 @@ namespace GBE
     class CpuRegister
     {
     public:
-    
+        CpuRegister() = default;
         ~CpuRegister();
 
         // set full 16 bits 
@@ -20,7 +22,7 @@ namespace GBE
         // set high 8bits
         inline void SetHigh(uint8_t value)
         {
-            m_High = value;
+            m_High = value & m_HighMask;
         }
 
         // get high 8bits
@@ -32,7 +34,7 @@ namespace GBE
         // set low 8 bits
         inline void SetLow(uint8_t value)
         {
-            m_Low = value;
+            m_Low = value & m_LowMask;
         }
 
         // get low 8bits
@@ -41,9 +43,23 @@ namespace GBE
             return m_Low;
         }
 
+        std::string ToString(std::string_view name, bool showHighLow = true) const;
+
+        inline void SetHightMask(uint8_t mask)
+        {
+            m_HighMask = mask;
+        }
+
+        inline void SetLowMask(uint8_t mask)
+        {
+            m_LowMask = mask;
+        }
+
     private:
         uint8_t m_High = 0;
-        uint8_t m_Low = 0;
+        uint8_t m_HighMask = 0xFF;
 
+        uint8_t m_Low = 0;
+        uint8_t m_LowMask = 0xFF;
     };
 } // namespace GBE

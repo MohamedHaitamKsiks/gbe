@@ -1,7 +1,19 @@
 #include "CpuRegistersSet.h"
 
+#include <sstream>
+#include <array>
+
+#include <magic_enum.hpp>
+
+#include "util/Binary.h"
+
 namespace GBE
 {
+    CpuRegistersSet::CpuRegistersSet()
+    {
+        m_AF.SetLowMask(0xF0);
+    }
+
     uint8_t CpuRegistersSet::GetReg8(Reg8 r8) const
     {
         switch (r8)
@@ -128,6 +140,38 @@ namespace GBE
         uint8_t newValue = (oldValue & mask) | (values);
 
         m_AF.SetLow(newValue);
+    }
+
+    std::string CpuRegistersSet::ToString() const
+    {
+        std::stringstream ss;
+        ss << "==== CPU REGISTERS ====\n";
+        ss << m_AF.ToString("AF") << "\n";
+        ss << m_BC.ToString("BC") << "\n";
+        ss << m_DE.ToString("DE") << "\n";
+        ss << m_HL.ToString("HL") << "\n";
+        ss << "\n";
+        
+        ss << "PC: " << Binary::ToHex(m_PC) << "\n";
+        ss << "SP: " << Binary::ToHex(m_SP) << "\n";
+        ss << "\n";
+
+        ss << _FlagsToString() << "\n";
+        ss << "=======================\n";
+
+        return ss.str();
+    }
+
+    std::string CpuRegistersSet::_FlagsToString() const
+    {
+        std::stringstream ss;
+        ss << "Flags: ["
+           << (GetFlag(CpuFlag::Z) ? "Z" : "-")
+           << (GetFlag(CpuFlag::N) ? "N" : "-")
+           << (GetFlag(CpuFlag::H) ? "H" : "-")
+           << (GetFlag(CpuFlag::C) ? "C" : "-")
+           << "]";
+        return ss.str();
     }
 
 } // namespace GBE

@@ -485,8 +485,8 @@ namespace GBE
 
         // execute
         AluResult aluResult{};
-        Alu::TestBit(bit, value, aluResult);
-        
+        Alu::TestBit(bit, aluResult.Result8, aluResult);
+
         // result
         m_Regs.SetFlags(aluResult.AffectedFlags, aluResult.Flags);
     
@@ -545,7 +545,7 @@ namespace GBE
         );
 
         // save result
-        SetOperandR8(r8, value, memory, result);
+        SetOperandR8(r8, aluResult.Result8, memory, result);
         m_Regs.SetFlags(aluResult.AffectedFlags, aluResult.Flags);
     }
 
@@ -565,7 +565,7 @@ namespace GBE
         );
 
         // save result
-        SetOperandR8(r8, value, memory, result);
+        SetOperandR8(r8, aluResult.Result8, memory, result);
         m_Regs.SetFlags(aluResult.AffectedFlags, aluResult.Flags);
     }
     
@@ -582,7 +582,7 @@ namespace GBE
         );
 
         // save result
-        SetOperandR8(r8, value, memory, result);
+        SetOperandR8(r8, aluResult.Result8, memory, result);
         m_Regs.SetFlags(aluResult.AffectedFlags, aluResult.Flags);
     }
 
@@ -632,7 +632,8 @@ namespace GBE
         Push(value, memory, result);
 
         // result
-        SetOperandR16Stk(r16stk, value, result);
+
+        GBE_ASM(result.Asm, "push", r16stk);
     }
     
     void Cpu::PopR16Stk(OperandR16Stk r16stk, Memory &memory, InstructionResult &result)
@@ -642,6 +643,8 @@ namespace GBE
 
         // result
         SetOperandR16Stk(r16stk, top, result);
+
+        GBE_ASM(result.Asm, "pop", r16stk);
     }
 
     void Cpu::_Call(uint16_t adr16, Memory &memory, InstructionResult &result)
@@ -864,15 +867,16 @@ namespace GBE
         {
             if (m_Regs.GetFlag(CpuFlag::H))
                 adjust += 0x6;
-
+            
             if (m_Regs.GetFlag(CpuFlag::C))
                 adjust += 0x60;
-
+            // std::cout << "adjust: " <<Binary::ToHex(adjust) << "\n";
+        
             a -= adjust;
         }
         else
         {
-            if (m_Regs.GetFlag(CpuFlag::H) || (a & 0xf) > 0x9)
+            if (m_Regs.GetFlag(CpuFlag::H) || (a & 0x0f) > 0x9)
                 adjust += 0x6;
 
             if (m_Regs.GetFlag(CpuFlag::C) || a > 0x99)

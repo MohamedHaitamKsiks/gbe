@@ -15,11 +15,24 @@ namespace GBE
     {
     }
 
+    void Timer::Init()
+    {
+        _SetRegister(TimerRegister::DIV, 0x18);
+        _SetRegister(TimerRegister::TIMA, 0x00);
+        _SetRegister(TimerRegister::TMA, 0x00);
+        _SetRegister(TimerRegister::TAC, 0xF8);
+    }
+
     void Timer::Tick()
     {
-        uint8_t div = _GetRegister(TimerRegister::DIV);
-        div++;
-        _SetRegister(TimerRegister::DIV, div);
+        m_DIVClock++;
+        if (m_DIVClock == 64)
+        {
+            m_DIVClock = 0;
+            uint8_t div = _GetRegister(TimerRegister::DIV);
+            div++;
+            _SetRegister(TimerRegister::DIV, div);
+        }
         
         if (_IsTimerControlEnabled())
         {
@@ -29,13 +42,13 @@ namespace GBE
                 m_Clock = 0;
                 uint16_t tima = static_cast<uint16_t>(_GetRegister(TimerRegister::TIMA));
                 tima++;
-                if (tima == 0xFF)
+                if (tima > 0xFF)
                 {
                     uint16_t tma = static_cast<uint16_t>(_GetRegister(TimerRegister::TMA));
                     tima = tma;
                     m_InterruptManager->QueueInterrupt(InterruptFlag::TIMER);
-                    _SetRegister(TimerRegister::TIMA, static_cast<uint8_t>(tima & 0xFF));
                 }
+                _SetRegister(TimerRegister::TIMA, static_cast<uint8_t>(tima & 0xFF));
                 
             }
         }
@@ -52,6 +65,13 @@ namespace GBE
         if (reg == TimerRegister::DIV)
         {
             ResetDIV();
+            return;
+        }
+
+        if (reg == TimerRegister::TAC)
+        {
+            uint8_t mask = 0b0111;
+            _SetRegister(reg, value & mask);
             return;
         }
 

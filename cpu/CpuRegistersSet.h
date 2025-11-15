@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "CpuFlags.h"
 #include "CpuRegister.h"
 
@@ -32,7 +34,7 @@ namespace GBE
     class CpuRegistersSet
     {
     public:
-        CpuRegistersSet() {}
+        CpuRegistersSet();
         ~CpuRegistersSet() {}
 
         // get Reg8
@@ -59,6 +61,9 @@ namespace GBE
         // set multiple flags
         void SetFlags(uint8_t flags, uint8_t values);
 
+        // to string
+        std::string ToString() const;
+
     private:
         CpuRegister m_AF{};
         CpuRegister m_BC{};
@@ -67,6 +72,8 @@ namespace GBE
 
         uint16_t m_SP = 0;
         uint16_t m_PC = 0;
+
+        std::string _FlagsToString() const;
     };
 
 } // namespace GBE

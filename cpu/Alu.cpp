@@ -86,9 +86,9 @@ namespace GBE
     {
         // compute result
         if (direction == ShiftDirection::LEFT)
-            result.Result8 = (input << 1) + carry;
+            result.Result8 = (input << 1) | carry;
         else 
-            result.Result8 = (input >> 1) + (carry << 7);
+            result.Result8 = (input >> 1) | (carry << 7);
 
         // check flags
         result.AffectedFlags = CpuFlag::Z | CpuFlag::N | CpuFlag::H | CpuFlag::C;
@@ -107,9 +107,9 @@ namespace GBE
         uint8_t carryBit = _GetCarryBit(input, direction);
 
         if (direction == ShiftDirection::LEFT)
-            result.Result8 = (input << 1) + carryBit;
+            result.Result8 = (input << 1) | carryBit;
         else
-            result.Result8 = (input >> 1) + (carryBit << 7);
+            result.Result8 = (input >> 1) | (carryBit << 7);
 
         // check flags
         result.AffectedFlags = CpuFlag::Z | CpuFlag::N | CpuFlag::H | CpuFlag::C;

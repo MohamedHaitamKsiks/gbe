@@ -17,8 +17,11 @@ namespace GBE
     {
     }
 
+    static bool s_DoDebug = false;
+
     void Gameboy::Start(std::shared_ptr<Cartridge> cartridge)
     {
+        s_DoDebug = false;
         m_Cartridge = cartridge;
         m_Cartridge->SetReadFlag(true);
 
@@ -32,8 +35,11 @@ namespace GBE
         m_InterruptManager->SetInterruptFlag(0xE1);
         m_InterruptManager->SetInterruptEnabled(0x00);
 
+        m_Timer->Init();
+
         _InitMemoryMapping();
     }
+
 
     void Gameboy::Tick()
     {
@@ -42,11 +48,34 @@ namespace GBE
         {
             m_Joypad->Tick();
 
+            
+            uint16_t pc = m_Cpu.GetRegisters().GetReg16(Reg16::PC);
+            //if (m_Memory.Get(pc) == 0x27)
+            //    std::cout << m_Cpu.GetRegisters().ToString() << "\n";
+            
             InstructionResult result{};
             m_Cpu.Run(m_Memory, result);
+            if (pc == 49988)
+                s_DoDebug = false;
+
+            if ( /* m_Memory.Get(pc) == 0x27 || */ s_DoDebug)
+            {
+                std::cout << result.Asm.ToString() << "\n";
+                std::cout << m_Cpu.GetRegisters().ToString() << "\n";
+                std::cout << "";    
+            }
+
+            for (uint16_t i = 0; i < result.Cycles; i++)
+                m_Timer->Tick();
             
             uint32_t instructionDots = result.Cycles * 4;
             m_Ppu->Tick(instructionDots);
+            
+            // manage oam transfer
+            const auto &oam = m_Ppu->GetOam();
+            const auto &lcdControl = m_Ppu->GetLcdControl();
+            lcdControl->Tick(m_Memory, oam, instructionDots);
+
             dots += instructionDots;
         }
     }
@@ -119,23 +148,8 @@ namespace GBE
     }
 
     void Gameboy::_CpuTick()
-    {   
-        m_Timer->Tick();
+    {
 
-        InstructionResult result{};
-        m_Cpu.Run(m_Memory, result);
-
-        // std::cout << result.Asm.ToString() << "\n";
-        
-        uint32_t dots = result.Cycles * 4;
-        
-        // tick ppu
-        m_Ppu->Tick(dots);
-
-        // manage oam transfer
-        const auto& oam = m_Ppu->GetOam();
-        const auto& lcdControl = m_Ppu->GetLcdControl();
-        lcdControl->Tick(m_Memory, oam, dots);
 
     }
 
