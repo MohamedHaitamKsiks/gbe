@@ -62,7 +62,7 @@ class GBEBuild:
         os.chdir(workingDirectory)
 
     # run created build
-    def run(self, arguments: list[str], debugger :bool) -> int:
+    def run(self, arguments: list[str]) -> int:
         runCommand = []
 
         if coverage:
@@ -71,7 +71,7 @@ class GBEBuild:
             runCommand.append(f"ctest -T coverage --test-dir {self.__buildDirectory}")
         else:
             os.chdir(self.__buildDirectory);
-            runCommand = ["gdb" if debugger else ""] + ["./gbe"] + arguments
+            runCommand = ["./gbe"] + arguments
 
         return os.system(' '.join(runCommand))
     
@@ -125,12 +125,6 @@ if __name__ == "__main__":
         debug = True
         test = True
 
-    # check debugger flag
-    debugger = checkFlag("--gdb", arguments)
-    if debugger and not debug:
-        print("[ERROR] GDB requires --debug flag!")
-        exit(1)
-
     # create the build
     gbeBuild = GBEBuild(debug, test, coverage)
     
@@ -141,6 +135,6 @@ if __name__ == "__main__":
 
     # run
     print(arguments)
-    exit(gbeBuild.run(arguments, debugger))
+    exit(gbeBuild.run(arguments))
     
 
