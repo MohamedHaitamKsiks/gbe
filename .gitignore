@@ -31,13 +31,27 @@
 *.out
 *.app
 
-# build folder
+# Local build directories
 .build/
+build/
+build/**
 
-# vscode
+# CMake/Ninja artifacts
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.ninja
+.ninja_log
+.ninja_deps
+compile_commands.json
+
+# VSCode / tooling
 .vscode/
 .ropeproject/
 
-# tests
+# Tests output
 Testing/
+
+# Local assets not for source control
 assets/games/

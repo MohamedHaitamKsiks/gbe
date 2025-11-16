@@ -5,8 +5,6 @@
 #include <vector>
 #include <memory>
 #include <cstdint>
-#include <functional>
-#include <string>
 #include "io/graphics/Ppu.h"
 
 namespace GBE
@@ -26,8 +24,9 @@ namespace GBE
         Renderer(SDL_Window* sdlWindow, std::shared_ptr<Ppu> ppu);
         ~Renderer();
 
-        void Render(float delta, int32_t width, int32_t height);
-        void SetOpenRomCallback(std::function<void(const std::string&)> cb);
+        void DrawScene(float delta, int32_t width, int32_t height);
+        void Present();
+        SDL_Renderer* GetRenderer() const { return m_SDLRenderer; }
 
     private:
         std::shared_ptr<Ppu> m_Ppu = nullptr;
@@ -38,10 +37,6 @@ namespace GBE
 
         std::array<ColorRGB32, LCD_SCREEN_WIDTH * LCD_SCREEN_HEIGHT> m_Pixels;
         std::vector<ColorRGB32> m_ColorPalette; 
-
-        std::function<void(const std::string&)> m_OnOpenRom;
-        bool m_ShowOpenRom = false;
-        char m_OpenRomPath[512] = "";
 
         void _UpdateTexture();
     };

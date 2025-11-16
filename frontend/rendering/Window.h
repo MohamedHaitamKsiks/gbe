@@ -4,7 +4,9 @@
 #include <SDL3/SDL.h>
 #include <functional>
 #include <string>
+#include <memory>
 #include "Renderer.h"
+#include "frontend/gui/GuiLayer.h"
 
 #include "io/joypad/Joypad.h"
 
@@ -31,6 +33,7 @@ namespace GBE
         bool m_IsClosed = false;
 
         std::unique_ptr<Renderer> m_Renderer = nullptr;
+        std::unique_ptr<GuiLayer> m_GuiLayer = nullptr;
         std::shared_ptr<Joypad> m_Joypad = nullptr;
     };
 } // namespace GBE

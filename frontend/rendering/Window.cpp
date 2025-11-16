@@ -1,7 +1,6 @@
 #include "Window.h"
 #include <cassert>
-#include "imgui.h"
-#include "backends/imgui_impl_sdl3.h"
+#include "frontend/gui/GuiLayer.h"
 
 
 namespace GBE
@@ -15,6 +14,7 @@ namespace GBE
         m_Window = SDL_CreateWindow("GBE", width, height, SDL_WINDOW_RESIZABLE);
 
         m_Renderer = std::make_unique<Renderer>(m_Window, ppu);
+        m_GuiLayer = std::make_unique<GuiLayer>(m_Window, m_Renderer->GetRenderer());
         m_Joypad = joypad;
     }
 
@@ -37,7 +37,8 @@ namespace GBE
         SDL_Event event;
     while (SDL_PollEvent(&event))
     {
-        ImGui_ImplSDL3_ProcessEvent(&event);
+        if (m_GuiLayer)
+            m_GuiLayer->ProcessEvent(event);
 
         if (event.type == SDL_EVENT_QUIT)
         {
@@ -48,7 +49,7 @@ namespace GBE
         if (event.type != SDL_EventType::SDL_EVENT_KEY_DOWN && event.type != SDL_EventType::SDL_EVENT_KEY_UP)
             continue;
 
-        if (ImGui::GetIO().WantCaptureKeyboard)
+        if (m_GuiLayer && m_GuiLayer->WantCaptureKeyboard())
             continue;
 
             JoypadEvent joypadEvent;
@@ -90,12 +91,15 @@ namespace GBE
 
         // update width / height
         SDL_GetWindowSize(m_Window, &m_Width, &m_Height);
-        m_Renderer->Render(delta, m_Width, m_Height);
+        m_Renderer->DrawScene(delta, m_Width, m_Height);
+        if (m_GuiLayer)
+            m_GuiLayer->Render(delta, m_Renderer->GetRenderer());
+        m_Renderer->Present();
     }
 
     void Window::SetOpenRomCallback(std::function<void(const std::string&)> cb)
     {
-        if (m_Renderer)
-            m_Renderer->SetOpenRomCallback(std::move(cb));
+        if (m_GuiLayer)
+            m_GuiLayer->SetOpenRomCallback(std::move(cb));
     }
 } // namespace GBE

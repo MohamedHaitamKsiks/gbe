@@ -1,8 +1,5 @@
 #include "Renderer.h"
 #include <cassert>
-#include "imgui.h"
-#include "backends/imgui_impl_sdl3.h"
-#include "backends/imgui_impl_sdlrenderer3.h"
 
 namespace GBE
 {
@@ -31,31 +28,16 @@ namespace GBE
             LCD_SCREEN_HEIGHT
         );
         SDL_SetTextureScaleMode(m_SDLTexture, SDL_SCALEMODE_NEAREST);
-
-        IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
-        ImGui::StyleColorsDark();
-        ImGui_ImplSDL3_InitForSDLRenderer(sdlWindow, m_SDLRenderer);
-        ImGui_ImplSDLRenderer3_Init(m_SDLRenderer);
-    }
-
-    void Renderer::SetOpenRomCallback(std::function<void(const std::string&)> cb)
-    {
-        m_OnOpenRom = std::move(cb);
     }
 
     Renderer::~Renderer()
     {
-        ImGui_ImplSDLRenderer3_Shutdown();
-        ImGui_ImplSDL3_Shutdown();
-        ImGui::DestroyContext();
-
         SDL_DestroyTexture(m_SDLTexture);
         SDL_DestroyRenderer(m_SDLRenderer);
     }
 
-    void Renderer::Render(float delta, int32_t width, int32_t height)
-    {   
+    void Renderer::DrawScene(float delta, int32_t width, int32_t height)
+    {
         // clear
         SDL_SetRenderDrawColor(m_SDLRenderer, 0, 0, 0, 255);
         SDL_RenderClear(m_SDLRenderer);
@@ -65,9 +47,9 @@ namespace GBE
         float aspectRatio = static_cast<float>(LCD_SCREEN_WIDTH) / static_cast<float>(LCD_SCREEN_HEIGHT);
 
         SDL_FRect rect = {
-            0.0f, 
-            0.0f, 
-            0.0f, 
+            0.0f,
+            0.0f,
+            0.0f,
             0.0f
         };
 
@@ -86,70 +68,8 @@ namespace GBE
             rect.y = (fHeight - rect.h) * 0.5f;
         }
 
-        // draw 
+        // draw
         SDL_RenderTexture(m_SDLRenderer, m_SDLTexture, nullptr, &rect);
-
-        ImGui_ImplSDLRenderer3_NewFrame();
-        ImGui_ImplSDL3_NewFrame();
-        ImGui::NewFrame();
-
-        if (ImGui::BeginMainMenuBar())
-        {
-            if (ImGui::BeginMenu("File"))
-            {
-                if (ImGui::MenuItem("Open ROM..."))
-                {
-                {
-                    auto file_callback = [](void* userdata, const char* const* filelist, int numfiles)
-                    {
-                        Renderer* self = static_cast<Renderer*>(userdata);
-                        if (self && numfiles > 0 && self->m_OnOpenRom)
-                        {
-                            self->m_OnOpenRom(std::string(filelist[0]));
-                        }
-                    };
-                    SDL_ShowOpenFileDialog(file_callback, this, m_SDLWindow, nullptr, 0, nullptr, false);
-                }
-                }
-                ImGui::MenuItem("Exit", nullptr, false, false);
-                ImGui::EndMenu();
-            }
-            if (ImGui::BeginMenu("View"))
-            {
-                static bool show_demo = false;
-                ImGui::MenuItem("ImGui Demo", nullptr, &show_demo);
-                ImGui::EndMenu();
-            }
-            ImGui::EndMainMenuBar();
-        }
-
-        if (m_ShowOpenRom)
-            ImGui::OpenPopup("Open ROM");
-        if (ImGui::BeginPopupModal("Open ROM", &m_ShowOpenRom, ImGuiWindowFlags_AlwaysAutoResize))
-        {
-            ImGui::InputText("Path", m_OpenRomPath, sizeof(m_OpenRomPath));
-            if (ImGui::Button("Load"))
-            {
-                if (m_OnOpenRom) m_OnOpenRom(std::string(m_OpenRomPath));
-                m_ShowOpenRom = false;
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Cancel"))
-            {
-                m_ShowOpenRom = false;
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::EndPopup();
-        }
-
-        ImGui::Begin("GBE");
-        float fps_imgui = (delta > 0.0f) ? (1.0f / delta) : 0.0f;
-        ImGui::Text("FPS: %.1f", fps_imgui);
-        ImGui::End();
-
-        ImGui::Render();
-        ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), m_SDLRenderer);
 
         // show fps
         SDL_SetRenderDrawColor(m_SDLRenderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
@@ -159,10 +79,13 @@ namespace GBE
             fps = 1.0f / delta;
 
         SDL_RenderDebugTextFormat(m_SDLRenderer, 16.0f, 16.0f, "%f FPS", fps);
+    }
 
+    void Renderer::Present()
+    {
         SDL_RenderPresent(m_SDLRenderer);
     }
-    
+
     void Renderer::_UpdateTexture()
     {
         // update texture
