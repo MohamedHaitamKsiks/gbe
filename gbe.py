@@ -1,22 +1,22 @@
 # imports
-import os;
-import sys;
-import shutil;
+import os
+import sys
+import shutil
+
 
 # build of gbe
 class GBEBuild:
-    #constructor
+    # constructor
     def __init__(self, debug: bool = False, test: bool = False, coverage: bool = False):
         # init members
         self.__buildDirectory = ""
         self.__buildStatus = 0
         self.__buildErrorMessage = "OK"
-        self.__coverage = coverage;
-    
+        self.__coverage = coverage
+
         # build directory
         self.__buildDirectory = GBEBuild.__createBuilDirectory(debug, test)
-        self.__executable = f'{self.__buildDirectory}/gbe';
-
+        self.__executable = f"{self.__buildDirectory}/gbe"
         # create build directory
         if not os.path.isdir(self.__buildDirectory):
             os.makedirs(self.__buildDirectory)
@@ -28,7 +28,7 @@ class GBEBuild:
         workingDirectory = os.getcwd()
         os.chdir(self.__buildDirectory)
 
-        # cmake    
+        # cmake
         cmakeCommand = ["cmake", workingDirectory]
 
         # check debug / release
@@ -39,21 +39,21 @@ class GBEBuild:
         if test:
             cmakeCommand.append("-DTEST=ON")
 
-        if coverage: 
+        if coverage:
             cmakeCommand.append("-DCOVERAGE=ON")
 
-        err = os.system(' '.join(cmakeCommand))
+        err = os.system(" ".join(cmakeCommand))
         if err:
             self.__setError(err, "CMake failed")
             return
 
         # remove old executable
-        self.__executable = f'{self.__buildDirectory}/gbe'
+        self.__executable = f"{self.__buildDirectory}/gbe"
         if os.path.isfile(self.__executable):
             os.remove(self.__executable)
 
-        # make 
-        err = os.system("make");
+        # make
+        err = os.system("make")
         if err:
             self.__setError(err, "Make failed")
             return
@@ -70,11 +70,11 @@ class GBEBuild:
             runCommand.append("&&")
             runCommand.append(f"ctest -T coverage --test-dir {self.__buildDirectory}")
         else:
-            os.chdir(self.__buildDirectory);
+            os.chdir(self.__buildDirectory)
             runCommand = ["./gbe"] + arguments
 
-        return os.system(' '.join(runCommand))
-    
+        return os.system(" ".join(runCommand))
+
     # get build status
     def getBuildStatus(self) -> int:
         return self.__buildStatus
@@ -86,19 +86,19 @@ class GBEBuild:
     # set error
     def __setError(self, status: int, message: str) -> None:
         self.__buildStatus = status
-        self.__buildErrorMessage = f'[ERROR {status}] -> {message}'
+        self.__buildErrorMessage = f"[ERROR {status}] -> {message}"
 
     # create build directory
     def __createBuilDirectory(debug: bool = False, test: bool = False) -> str:
         # build directory
         buildDiractoryBuilder = [".", ".build"]
-        
+
         buildDiractoryBuilder.append("test" if test else "desktop")
         buildDiractoryBuilder.append("debug" if debug else "release")
-        
-        buildDirectory = '/'.join(buildDiractoryBuilder)
 
-        return buildDirectory;
+        buildDirectory = "/".join(buildDiractoryBuilder)
+
+        return buildDirectory
 
 
 # check flag in argument
@@ -109,10 +109,11 @@ def checkFlag(flag: str, arguments: list[str]) -> bool:
 
     return False
 
+
 # main
 if __name__ == "__main__":
     arguments = sys.argv[1:]
-    
+
     # check test flag
     test = checkFlag("--test", arguments)
 
@@ -127,7 +128,7 @@ if __name__ == "__main__":
 
     # create the build
     gbeBuild = GBEBuild(debug, test, coverage)
-    
+
     # check status
     if gbeBuild.getBuildStatus():
         print(gbeBuild.getBuildErrorMessage)
@@ -136,5 +137,3 @@ if __name__ == "__main__":
     # run
     print(arguments)
     exit(gbeBuild.run(arguments))
-    
-
