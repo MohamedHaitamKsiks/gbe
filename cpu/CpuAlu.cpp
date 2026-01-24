@@ -109,8 +109,11 @@ namespace GBE
 
     void Cpu::ExecAluOpA_R8(Alu::OperationDestSrc8 op, bool addCarry, const Instruction &instr, Memory &memory, InstructionResult &result)
     {
+        // operands
+        auto [a, r8] = instr.GetOperands<OperandR8, OperandR8>();
+        GBE_ASSERT(a == OperandR8::A);
+
         // fetch
-        auto r8 = instr.GetOperand<OperandR8>(1);
         uint8_t value = GetOperandR8(r8, memory, result);
 
         // execute
@@ -119,6 +122,10 @@ namespace GBE
 
     void Cpu::ExecAluOpA_Imm8(Alu::OperationDestSrc8 op, bool addCarry, const Instruction &instr, Memory &memory, InstructionResult &result)
     {
+        // operands
+        auto [a, imm8] = instr.GetOperands<OperandR8, OperandImm8>();
+        GBE_ASSERT(a == OperandR8::A);
+
         // fetch
         uint8_t value = GetImm8(memory, result);
 
@@ -126,9 +133,18 @@ namespace GBE
         _ExecAluOpA(op, value, addCarry);
     }
 
-    void Cpu::RotateR8(Alu::OperationRotateSrc op, ShiftDirection direction, OperandR8 r8, Memory &memory, InstructionResult &result, bool checkZero)
+    void Cpu::RotateR8(Alu::OperationRotateSrc op, ShiftDirection direction,  const Instruction &instr, Memory &memory, InstructionResult &result)
     {
         // fetch
+        OperandR8 r8 = OperandR8::A;
+        bool checkZero = false;
+
+        if (instr.GetOperandsCount() > 0)
+        {
+            r8 = instr.GetOperand<OperandR8>(0);
+            checkZero = true;
+        }
+
         uint8_t value = GetOperandR8(r8, memory, result);
         uint8_t carry = _GetCarry();
 
@@ -139,15 +155,19 @@ namespace GBE
             carry,
             direction,
             aluResult,
-            checkZero);
+            checkZero
+        );
 
         // save result
         SetOperandR8(r8, aluResult.Result8, memory, result);
         m_Regs.SetFlags(aluResult.AffectedFlags, aluResult.Flags);
     }
 
-    void Cpu::ShiftR8(ShiftDirection direction, OperandR8 r8, Memory &memory, InstructionResult &result, bool isLogical)
+    void Cpu::ShiftR8(ShiftDirection direction, bool isLogical, const Instruction &instr, Memory &memory, InstructionResult &result)
     {
+        // operands
+        auto [r8] = instr.GetOperands<OperandR8>();
+
         // fetch
         uint8_t value = GetOperandR8(r8, memory, result);
         uint8_t carry = _GetCarry();
@@ -158,15 +178,19 @@ namespace GBE
             value,
             direction,
             aluResult,
-            isLogical);
+            isLogical
+        );
 
         // save result
         SetOperandR8(r8, aluResult.Result8, memory, result);
         m_Regs.SetFlags(aluResult.AffectedFlags, aluResult.Flags);
     }
 
-    void Cpu::SwapR8(OperandR8 r8, Memory &memory, InstructionResult &result)
+    void Cpu::SwapR8(const Instruction &instr, Memory &memory, InstructionResult &result)
     {
+        // operands
+        auto [r8] = instr.GetOperands<OperandR8>();
+
         // fetch
         uint8_t value = GetOperandR8(r8, memory, result);
 
@@ -174,7 +198,8 @@ namespace GBE
         AluResult aluResult{};
         Alu::Swap(
             value,
-            aluResult);
+            aluResult
+        );
 
         // save result
         SetOperandR8(r8, aluResult.Result8, memory, result);
@@ -184,8 +209,7 @@ namespace GBE
     void Cpu::TestBitR8(const Instruction &instr, Memory &memory, InstructionResult &result)
     {
         // fetch
-        auto bit = instr.GetOperand<OperandBit3>(0);
-        auto r8 = instr.GetOperand<OperandR8>(1);
+        auto [bit, r8] = instr.GetOperands<OperandBit3, OperandR8>();
 
         uint8_t value = GetOperandR8(r8, memory, result);
 
@@ -200,8 +224,7 @@ namespace GBE
     void Cpu::SetBitR8(const Instruction &instr, Memory &memory, InstructionResult &result)
     {
         // fetch
-        auto bit = instr.GetOperand<OperandBit3>(0);
-        auto r8 = instr.GetOperand<OperandR8>(1);
+        auto [bit, r8] = instr.GetOperands<OperandBit3, OperandR8>();
 
         uint8_t value = GetOperandR8(r8, memory, result);
 
@@ -217,8 +240,7 @@ namespace GBE
     void Cpu::ResetBitR8(const Instruction &instr, Memory &memory, InstructionResult &result)
     {
         // fetch
-        auto bit = instr.GetOperand<OperandBit3>(0);
-        auto r8 = instr.GetOperand<OperandR8>(1);
+        auto [bit, r8] = instr.GetOperands<OperandBit3, OperandR8>();
 
         uint8_t value = GetOperandR8(r8, memory, result);
 

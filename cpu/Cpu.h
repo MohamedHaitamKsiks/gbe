@@ -189,13 +189,23 @@ namespace GBE
         */
 
         // rl/rr/rlc/rrc R8
-        void RotateR8(Alu::OperationRotateSrc op, ShiftDirection direction, OperandR8 r8, Memory& memory, InstructionResult& result, bool checkZero = true);
+        void RotateR8(Alu::OperationRotateSrc op, ShiftDirection direction, const Instruction &instr, Memory &memory, InstructionResult &result);
+        template <Alu::OperationRotateSrc op, ShiftDirection direction>
+        inline void RotateR8(const Instruction &instr, Memory &memory, InstructionResult &result)
+        {
+            RotateR8(op, direction, instr, memory, result);
+        }
 
         // sla/sra/srl R8
-        void ShiftR8(ShiftDirection direction, OperandR8 r8, Memory &memory, InstructionResult &result, bool isLogical = false);
+        void ShiftR8(ShiftDirection direction, bool isLogical, const Instruction &instr, Memory &memory, InstructionResult &result);
+        template <ShiftDirection direction, bool isLogical>
+        inline void ShiftR8(const Instruction &instr, Memory &memory, InstructionResult &result)
+        {
+            ShiftR8(direction, isLogical, instr, memory, result);
+        }
 
         // swap r8
-        void SwapR8(OperandR8 r8, Memory &memory, InstructionResult &result);
+        void SwapR8(const Instruction &instr, Memory &memory, InstructionResult &result);
 
         /*
             Stack manipulation
@@ -275,6 +285,13 @@ namespace GBE
 
         // daa
         void DecimalAdjustAccumulator(const Instruction &instr, Memory &memory, InstructionResult &result);
+
+        // stop
+        void Stop(const Instruction &instr, Memory &memory, InstructionResult &result);
+
+        // halt
+        void Halt(const Instruction &instr, Memory &memory, InstructionResult &result);
+
 
     private: 
         InstructionDecoder m_Decoder{};

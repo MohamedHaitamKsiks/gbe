@@ -827,18 +827,21 @@ GBE_TEST_SUITE(Cpu)
         CHECK(!cpu.GetRegisters().GetFlag(GBE::CpuFlag::N));
         CHECK(!cpu.GetRegisters().GetFlag(GBE::CpuFlag::H));
     }
-    /*
+    
     TEST_CASE("DecimalAdjustAccumulator")
     {
         // arrange
         GBE::InstructionResult result{};
+        GBE::Instruction instr{};
+        instr.AddOperand(GBE::OperandR8::A, GBE::OperandR8::B);
 
         cpu.GetRegisters().SetReg8(GBE::Reg8::A, 0x18);
         cpu.GetRegisters().SetReg8(GBE::Reg8::B, 0x24);
-        cpu.ExecAluOpA_R8(GBE::Alu::Add8, GBE::OperandR8::B, memory, result);
+        cpu.ExecAluOpA_R8<&GBE::Alu::Add8, false>(instr, memory, result);
 
         // act
-        cpu.DecimalAdjustAccumulator(result);
+        instr.ClearOperands();
+        cpu.DecimalAdjustAccumulator(instr, memory, result);
 
         // assert
         CHECK_EQ(
@@ -855,13 +858,16 @@ GBE_TEST_SUITE(Cpu)
     {
         // arrange
         GBE::InstructionResult result{};
+        GBE::Instruction instr{};
+        instr.AddOperand(GBE::OperandR8::A, GBE::OperandR8::B);
 
         cpu.GetRegisters().SetReg8(GBE::Reg8::A, 0x90);
         cpu.GetRegisters().SetReg8(GBE::Reg8::B, 0x12);
-        cpu.ExecAluOpA_R8(GBE::Alu::Add8, GBE::OperandR8::B, memory, result);
+        cpu.ExecAluOpA_R8<&GBE::Alu::Add8, false>(instr, memory, result);
 
         // act
-        cpu.DecimalAdjustAccumulator(result);
+        instr.ClearOperands();
+        cpu.DecimalAdjustAccumulator(instr, memory, result);
 
         // assert
         CHECK_EQ(
@@ -1067,5 +1073,4 @@ GBE_TEST_SUITE(Cpu)
             cpu.GetIME()
         );
     }
-    */
 }

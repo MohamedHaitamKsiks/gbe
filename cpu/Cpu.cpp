@@ -272,6 +272,14 @@ namespace GBE
         m_Regs.SetFlag(CpuFlag::H, false);
     }
 
+    void Cpu::Stop(const Instruction &instr, Memory &memory, InstructionResult &result)
+    {
+    }
+
+    void Cpu::Halt(const Instruction &instr, Memory &memory, InstructionResult &result)
+    {
+    }
+
     void Cpu::_HandleIME()
     {
         if (m_IME || m_QueueIME <= 0)

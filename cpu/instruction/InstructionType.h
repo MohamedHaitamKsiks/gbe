@@ -13,6 +13,7 @@ namespace GBE
         DEC,
         INC,
         ADD,
+        ADC,
         SUB,
         SBC,
         CP,

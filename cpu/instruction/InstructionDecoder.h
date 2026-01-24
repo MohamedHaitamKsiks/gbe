@@ -26,7 +26,7 @@ namespace GBE
         static void _ThrowInvalidInstruction();
 
         // cache
-        mutable std::array<Instruction, UINT8_MAX> m_Instructions{ {} };
-        mutable std::array<Instruction, UINT8_MAX> m_PrefixInstructions{ {} };
+        mutable std::array<Instruction, UINT8_MAX + 1> m_Instructions{ {} };
+        mutable std::array<Instruction, UINT8_MAX + 1> m_PrefixInstructions{ {} };
     };
 } // namespace GBE
