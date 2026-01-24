@@ -8,7 +8,8 @@
 
 #include "util/Binary.h"
 #include "util/Foreach.h"
-#include "CpuOperand.h"
+
+#include "Operand.h"
 
 #define __GBE_ADD_OPERAND(operand) __asmInst.AddOperand(operand);
 
@@ -25,7 +26,7 @@
 
 namespace GBE
 {
-    class AssemblyInstruction
+    class Assembly
     {
     public:
         void SetAddress(uint16_t address);

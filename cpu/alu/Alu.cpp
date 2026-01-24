@@ -3,7 +3,7 @@
 
 #include "util/Binary.h"
 
-#include "CpuFlags.h"
+#include "cpu/registers/CpuFlags.h"
 
 #include <iostream>
 

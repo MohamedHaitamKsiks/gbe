@@ -1,8 +1,8 @@
 #include "GBETestSuite.h"
 
-#include "cpu/CpuFlags.h"
-#include "cpu/Alu.h"
-#include "cpu/AluResult.h"
+#include "cpu/registers/CpuFlags.h"
+#include "cpu/alu/Alu.h"
+#include "cpu/alu/AluResult.h"
 
 
 GBE_TEST_SUITE(ALU)

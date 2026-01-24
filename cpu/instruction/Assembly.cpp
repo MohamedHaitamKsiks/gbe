@@ -1,4 +1,4 @@
-#include "AssemblyInstruction.h"
+#include "Assembly.h"
 
 #include "util/Binary.h"
 
@@ -9,27 +9,27 @@
 
 namespace GBE
 {
-    void AssemblyInstruction::SetAddress(uint16_t address)
+    void Assembly::SetAddress(uint16_t address)
     {
         m_Address = address;
     }
 
-    void AssemblyInstruction::SetOpcode(uint8_t opcode)
+    void Assembly::SetOpcode(uint8_t opcode)
     {
         m_Opcode = opcode;
     }
 
-    void AssemblyInstruction::SetOperation(std::string_view op)
+    void Assembly::SetOperation(std::string_view op)
     {
         m_Operation = op;
     }
 
-    void AssemblyInstruction::_AddOperand(std::string_view operand)
+    void Assembly::_AddOperand(std::string_view operand)
     {
         m_Operands.push_back(std::string(operand));
     }
 
-    void AssemblyInstruction::AddR8(OperandR8 r8)
+    void Assembly::AddR8(OperandR8 r8)
     {
         if (r8 == OperandR8::ADR_HL)
         {
@@ -40,12 +40,12 @@ namespace GBE
         AddOperand(magic_enum::enum_name(r8));
     }
 
-    void AssemblyInstruction::AddR16(OperandR16 r16)
+    void Assembly::AddR16(OperandR16 r16)
     {
         AddOperand(magic_enum::enum_name(r16));
     }
 
-    void AssemblyInstruction::AddR16Mem(OperandR16Mem r16mem)
+    void Assembly::AddR16Mem(OperandR16Mem r16mem)
     {
         std::stringstream ss;
         ss << "[" << magic_enum::enum_name(r16mem) << "]";
@@ -53,11 +53,11 @@ namespace GBE
         AddOperand(ss.str());
     }
 
-    void AssemblyInstruction::AddR16Stk(OperandR16Stk r16stk)
+    void Assembly::AddR16Stk(OperandR16Stk r16stk)
     {
         AddOperand(magic_enum::enum_name(r16stk));
     }
-    void AssemblyInstruction::AddImm8(uint8_t imm8, bool isAddress)
+    void Assembly::AddImm8(uint8_t imm8, bool isAddress)
     {
         std::stringstream ss;
         if (isAddress) 
@@ -70,7 +70,7 @@ namespace GBE
 
         AddOperand(ss.str());
     }
-    void AssemblyInstruction::AddImm16(uint16_t imm16, bool isAddress)
+    void Assembly::AddImm16(uint16_t imm16, bool isAddress)
     {
         std::stringstream ss;
         if (isAddress)
@@ -84,7 +84,7 @@ namespace GBE
         AddOperand(ss.str());
     }
 
-    std::string AssemblyInstruction::ToString() const
+    std::string Assembly::ToString() const
     {
         std::stringstream ss;
         // address

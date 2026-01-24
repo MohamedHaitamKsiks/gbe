@@ -1,5 +1,6 @@
 #include "Gameboy.h"
-#include "cpu/InstructionResult.h"
+
+#include "cpu/instruction/InstructionResult.h"
 
 namespace GBE
 {
@@ -59,9 +60,11 @@ namespace GBE
 
             if ( /* m_Memory.Get(pc) == 0x27 || */ s_DoDebug)
             {
+                /*
                 std::cout << result.Asm.ToString() << "\n";
                 std::cout << m_Cpu.GetRegisters().ToString() << "\n";
-                std::cout << "";    
+                std::cout << ""; 
+                */
             }
 
             for (uint16_t i = 0; i < result.Cycles; i++)

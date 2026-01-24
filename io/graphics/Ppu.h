@@ -12,8 +12,6 @@
 #include "vram/Vram.h"
 #include "oam/ObjectAttributesMemory.h"
 
-#include "PpuTask.h"
-#include "PpuTaskManager.h"
 #include "PixelFIFO.h"
 
 #include "io/interrupts/InterruptManager.h"

@@ -1,8 +1,9 @@
 #include "Cpu.h"
 
-#include "InstructionResult.h"
-#include "AluResult.h"
-#include "Alu.h"
+#include "instruction/InstructionResult.h"
+
+#include "alu/AluResult.h"
+#include "alu/Alu.h"
 
 #include "memory/Memory.h"
 #include "util/Binary.h" 
@@ -16,8 +17,7 @@
 namespace GBE
 {
     Cpu::~Cpu()
-    {
-        
+    {   
     }
 
     void Cpu::Init()
@@ -200,627 +200,8 @@ namespace GBE
     {
         memory.Set16(m_Regs.GetReg16(Reg16::PC), imm16);
     }
-    
-    void Cpu::LoadR16_Imm16(OperandR16 r16, Memory &memory, InstructionResult &result)
-    {
-        // fetch
-        uint16_t imm16 = GetImm16(memory, result);
 
-        // execute
-        SetOperandR16(r16, imm16, result);
-
-        // report
-        GBE_ASM(result.Asm, "ld", r16, imm16);
-    }
-    
-    void Cpu::LoadR16Mem_A(OperandR16Mem r16mem, Memory &memory, InstructionResult &result)
-    {
-        // fetch
-        uint8_t value = GetOperandR8(OperandR8::A, memory, result);
-
-        // execute
-        SetOperandR16Mem(r16mem, value, memory, result);
-
-        // report
-        GBE_ASM(result.Asm, "ld", r16mem, OperandR8::A);
-    }
-
-    void Cpu::LoadA_R16Mem(OperandR16Mem r16mem, Memory &memory, InstructionResult &result)
-    {
-        // fetch
-        uint8_t value = GetOperandR16Mem(r16mem, memory, result);
-    
-        // execute
-        SetOperandR8(OperandR8::A, value, memory, result);
-
-        // report
-        GBE_ASM(result.Asm, "ld", OperandR8::A, r16mem);
-    }
-
-    void Cpu::LoadAdrImm16_SP(Memory &memory, InstructionResult &result)
-    {
-        // fetch
-        int16_t imm16 = GetImm16(memory, result);
-        int16_t value = GetOperandR16(OperandR16::SP, result);
-
-        // execute
-        memory.Set16(imm16, value);
-        result.Cycles += 2;
-    }
-
-    void Cpu::LoadR8_Imm8(OperandR8 r8, Memory &memory, InstructionResult &result)
-    {
-        // fetch
-        uint8_t imm8 = GetImm8(memory, result);
-
-        // execute
-        SetOperandR8(r8, imm8, memory, result);
-
-        // 
-        GBE_ASM(result.Asm, "ld", r8, imm8);
-
-    }
-
-    void Cpu::LoadR8_R8(OperandR8 src8, OperandR8 dest8, Memory &memory, InstructionResult &result)
-    {
-        // fetch
-        uint8_t value = GetOperandR8(src8, memory, result);
-
-        // execute
-        SetOperandR8(dest8, value, memory, result);
-
-        // report
-        GBE_ASM(result.Asm, "ld", dest8, src8);
-    }
-
-    void Cpu::LoadHighC_A(Memory &memory, InstructionResult &result)
-    {
-        // fetch
-        uint8_t src = m_Regs.GetReg8(Reg8::A);
-        uint16_t destAdr = 0xff00 + m_Regs.GetReg8(Reg8::C);
-
-        // execute
-        memory.Set(
-            destAdr,
-            src
-        );
-        result.Cycles++;
-
-        GBE_ASM(result.Asm, "ldh", Reg8::C, Reg8::A);
-    }
-
-    void Cpu::LoadA_HighC(Memory &memory, InstructionResult &result)
-    {
-        // fetch
-        uint16_t srcAdr = 0xff00 + m_Regs.GetReg8(Reg8::C);
-        uint8_t src = memory.Get(srcAdr);
-        result.Cycles++;
-
-        // execute
-        m_Regs.SetReg8(Reg8::A, src);
-
-        GBE_ASM(result.Asm, "ldh", Reg8::A, Reg8::C);
-    }
-
-    void Cpu::LoadHighImm8_A(Memory &memory, InstructionResult &result)
-    {
-        // fetch
-        uint8_t src = m_Regs.GetReg8(Reg8::A);
-        uint16_t destAdr = 0xff00 + GetImm8(memory, result);
-
-        // execute
-        memory.Set(
-            destAdr,
-            src
-        );
-        result.Cycles++;
-
-        // report
-        GBE_ASM(result.Asm, "ldh", destAdr, Reg8::A);
-    }
-
-    void Cpu::LoadA_HighImm8(Memory &memory, InstructionResult &result)
-    {
-        // fetch
-        uint16_t srcAdr = 0xff00 + GetImm8(memory, result);
-        uint8_t src = memory.Get(srcAdr);
-        result.Cycles++;
-
-        // execute
-        m_Regs.SetReg8(Reg8::A, src);
-
-        // report
-        GBE_ASM(result.Asm, "ldh", Reg8::A, srcAdr);
-    }
-
-    void Cpu::LoadAdrImm16_A(Memory &memory, InstructionResult &result)
-    {
-        // fetch
-        uint8_t src = m_Regs.GetReg8(Reg8::A);
-        uint16_t destAdr = GetImm16(memory, result);
-
-        // execute
-        memory.Set(
-            destAdr,
-            src
-        );
-        result.Cycles++;
-
-        // report
-        GBE_ASM(result.Asm, "ld", destAdr, Reg8::A);
-    }
-
-    void Cpu::LoadA_AdrImm16(Memory &memory, InstructionResult &result)
-    {
-        // fetch
-        uint16_t srcAdr = GetImm16(memory, result);
-        uint8_t src = memory.Get(srcAdr);
-        result.Cycles++;
-
-        // execute
-        m_Regs.SetReg8(Reg8::A, src);
-
-        // 
-        GBE_ASM(result.Asm, "ld", Reg8::A, srcAdr);
-    }
-
-    void Cpu::LoadHL_SPImm8(Memory &memory, InstructionResult &result)
-    {
-        _AddToDestSP_Imm8(Reg16::HL, memory, result);
-    }
-
-    void Cpu::LoadSP_HL(InstructionResult &result)
-    {
-        // fetch
-        uint16_t hl = m_Regs.GetReg16(Reg16::HL);
-
-        // execute
-        m_Regs.SetReg16(Reg16::SP, hl);
-
-        // result
-        result.Cycles++;
-
-        GBE_ASM(result.Asm, "ld", Reg16::SP, Reg16::HL);
-    }
-
-    void Cpu::ExecAluOpR16(Alu::OperationDest16 op, OperandR16 r16, InstructionResult &result)
-    {
-        // fetch
-        uint16_t value = GetOperandR16(r16, result);
-
-        // execute
-        AluResult aluResult{};
-        op(value, aluResult);
-        result.Cycles++;
-
-        // save result
-        SetOperandR16(r16, aluResult.Result16, result);
-    }
-
-    void Cpu::AddHL_R16(OperandR16 r16, InstructionResult &result)
-    {
-        // fetch
-        uint16_t a = GetOperandR16(OperandR16::HL, result);
-        uint16_t b = GetOperandR16(r16, result);
-
-        // execute
-        AluResult aluResult{};
-        Alu::Add16(a, b, aluResult);
-        result.Cycles++;
-
-        // save result
-        SetOperandR16(OperandR16::HL, aluResult.Result16, result);
-        m_Regs.SetFlags(aluResult.AffectedFlags, aluResult.Flags);
-    }
-
-    void Cpu::ExecAluOpR8(Alu::OperationDest8 op, OperandR8 r8, Memory &memory, InstructionResult &result)
-    {
-        // fetch
-        uint8_t value = GetOperandR8(r8, memory, result);
-
-        // execute
-        AluResult aluResult{};
-        op(value, aluResult);
-
-        // result
-        SetOperandR8(r8, aluResult.Result8, memory, result);
-        m_Regs.SetFlags(aluResult.AffectedFlags, aluResult.Flags);
-    }
-
-    void Cpu::_ExecAluOpA(Alu::OperationDestSrc8 op, uint8_t v8, bool addCarry)
-    {
-        // fetch
-        uint8_t a = m_Regs.GetReg8(Reg8::A);
-
-        // execute
-        AluResult aluResult{};
-        op(a, v8, aluResult, (addCarry) ? _GetCarry() : 0);
-
-        // result
-        m_Regs.SetReg8(Reg8::A, aluResult.Result8);
-        m_Regs.SetFlags(aluResult.AffectedFlags, aluResult.Flags);
-    }
-
-
-    void Cpu::ExecAluOpA_R8(Alu::OperationDestSrc8 op, OperandR8 r8, Memory& memory, InstructionResult &result, bool addCarry)
-    {
-        // fetch 
-        uint8_t value = GetOperandR8(r8, memory, result);
-
-        // execute
-        _ExecAluOpA(op, value, addCarry);
-    }
-
-    void Cpu::ExecAluOpA_Imm8(Alu::OperationDestSrc8 op, Memory &memory, InstructionResult &result, bool addCarry)
-    {
-        // fetch
-        uint8_t value = GetImm8(memory, result);
-
-        // execute
-        _ExecAluOpA(op, value, addCarry);
-    }
-
-    void Cpu::AddSP_Imm8(Memory &memory, InstructionResult &result)
-    {
-        _AddToDestSP_Imm8(Reg16::SP, memory, result);
-    }
-
-    void Cpu::ComplementA(InstructionResult &result)
-    {
-        // fetch
-        uint8_t a = m_Regs.GetReg8(Reg8::A);
-
-        // execute
-        m_Regs.SetReg8(Reg8::A, ~a);
-
-        // result
-        m_Regs.SetFlag(CpuFlag::H, true);
-        m_Regs.SetFlag(CpuFlag::N, true);
-    }
-
-    void Cpu::TestBitR8(uint8_t bit, OperandR8 r8, Memory &memory, InstructionResult &result)
-    {
-        // fetch
-        uint8_t value = GetOperandR8(r8, memory, result);
-
-        // execute
-        AluResult aluResult{};
-        Alu::TestBit(bit, aluResult.Result8, aluResult);
-
-        // result
-        m_Regs.SetFlags(aluResult.AffectedFlags, aluResult.Flags);
-    
-        // report
-        GBE_ASM(result.Asm, "bit", bit, r8);
-    }
-
-    void Cpu::SetBitR8(uint8_t bit, OperandR8 r8, Memory &memory, InstructionResult &result)
-    {
-        // fetch
-        uint8_t value = GetOperandR8(r8, memory, result);
-
-        // execute
-        AluResult aluResult{};
-        Alu::SetBit(bit, value, aluResult);
-
-        // result
-        SetOperandR8(r8, aluResult.Result8, memory, result);
-        m_Regs.SetFlags(aluResult.AffectedFlags, aluResult.Flags);
-
-        // report
-        GBE_ASM(result.Asm, "set", bit, r8);
-    }
-
-    void Cpu::ResetBitR8(uint8_t bit, OperandR8 r8, Memory &memory, InstructionResult &result)
-    {
-        // fetch
-        uint8_t value = GetOperandR8(r8, memory, result);
-
-        // execute
-        AluResult aluResult{};
-        Alu::ResetBit(bit, value, aluResult);
-
-        // result
-        SetOperandR8(r8, aluResult.Result8, memory, result);
-        m_Regs.SetFlags(aluResult.AffectedFlags, aluResult.Flags);
-
-        // report
-        GBE_ASM(result.Asm, "res", bit, r8);
-    }
-
-    void Cpu::RotateR8(Alu::OperationRotateSrc op, ShiftDirection direction, OperandR8 r8, Memory &memory, InstructionResult &result, bool checkZero)
-    {
-        // fetch
-        uint8_t value = GetOperandR8(r8, memory, result);
-        uint8_t carry = _GetCarry();
-
-        // run alu rotation op
-        AluResult aluResult{};
-        op(
-            value,
-            carry,
-            direction,
-            aluResult,
-            checkZero
-        );
-
-        // save result
-        SetOperandR8(r8, aluResult.Result8, memory, result);
-        m_Regs.SetFlags(aluResult.AffectedFlags, aluResult.Flags);
-    }
-
-    void Cpu::ShiftR8(ShiftDirection direction, OperandR8 r8, Memory &memory, InstructionResult &result, bool isLogical)
-    {
-        // fetch
-        uint8_t value = GetOperandR8(r8, memory, result);
-        uint8_t carry = _GetCarry();
-
-        // run alu rotation op
-        AluResult aluResult{};
-        Alu::Shift(
-            value,
-            direction,
-            aluResult,
-            isLogical
-        );
-
-        // save result
-        SetOperandR8(r8, aluResult.Result8, memory, result);
-        m_Regs.SetFlags(aluResult.AffectedFlags, aluResult.Flags);
-    }
-    
-    void Cpu::SwapR8(OperandR8 r8, Memory &memory, InstructionResult &result)
-    {
-        // fetch
-        uint8_t value = GetOperandR8(r8, memory, result);
-
-        // run alu swap op
-        AluResult aluResult{};
-        Alu::Swap(
-            value,
-            aluResult
-        );
-
-        // save result
-        SetOperandR8(r8, aluResult.Result8, memory, result);
-        m_Regs.SetFlags(aluResult.AffectedFlags, aluResult.Flags);
-    }
-
-    void Cpu::Push(uint16_t value, Memory &memory, InstructionResult &result)
-    {
-        // decrement stack pointer
-        uint16_t stack = m_Regs.GetReg16(Reg16::SP);
-        stack -= 2;
-        m_Regs.SetReg16(Reg16::SP, stack);
-
-        // load 
-        memory.Set16(stack, value);
-
-        // add cycles
-        result.Cycles += 3;
-    }
-
-    uint16_t Cpu::Pop(Memory &memory, InstructionResult &result)
-    {
-        // get top
-        uint16_t stack = m_Regs.GetReg16(Reg16::SP);
-        uint16_t top = memory.Get16(stack);
-        
-        // increment stack
-        stack += 2;
-        m_Regs.SetReg16(Reg16::SP, stack);
-
-        // add cycles
-        result.Cycles += 2;
-
-        // returns the popped value
-        return top;
-    }
-
-    uint16_t Cpu::Top(Memory &memory)
-    {
-        uint16_t stack = m_Regs.GetReg16(Reg16::SP);
-        return memory.Get16(stack);
-    }
-
-    void Cpu::PushR16Stk(OperandR16Stk r16stk, Memory &memory, InstructionResult &result)
-    {
-        // fetch 
-        uint16_t value = GetOperandR16Stk(r16stk, result);
-
-        // execute
-        Push(value, memory, result);
-
-        // result
-
-        GBE_ASM(result.Asm, "push", r16stk);
-    }
-    
-    void Cpu::PopR16Stk(OperandR16Stk r16stk, Memory &memory, InstructionResult &result)
-    {
-        // execute
-        uint16_t top = Pop(memory, result);
-
-        // result
-        SetOperandR16Stk(r16stk, top, result);
-
-        GBE_ASM(result.Asm, "pop", r16stk);
-    }
-
-    void Cpu::_Call(uint16_t adr16, Memory &memory, InstructionResult &result)
-    {
-        uint16_t de = m_Regs.GetReg16(Reg16::DE);
-
-        // push pc to stack
-        uint16_t pc = m_Regs.GetReg16(Reg16::PC);
-        Push(pc, memory, result);
-
-        // set pc to adr
-        m_Regs.SetReg16(Reg16::PC, adr16);
-
-    }
-
-    void Cpu::CallImm16(Memory &memory, InstructionResult &result)
-    {
-        // fetch
-        uint16_t imm16 = GetImm16(memory, result);
-
-        // execute
-        _Call(imm16, memory, result);
-
-        // report
-        GBE_ASM(result.Asm, "call", imm16);
-    }
-
-    void Cpu::CallCC_Imm16(OperandCond cc, Memory &memory, InstructionResult &result)
-    {
-        // fetch
-        uint16_t imm16 = GetImm16(memory, result);
-
-        // execute
-        if (CheckOperandCond(cc))
-            _Call(imm16, memory, result);
-
-        // report
-        GBE_ASM(result.Asm, "call", cc, imm16);
-    }
-
-
-    void Cpu::JumpHL(InstructionResult &result)
-    {
-        // fetch
-        uint16_t adr16 = m_Regs.GetReg16(Reg16::HL);
-
-        // execute
-        m_Regs.SetReg16(Reg16::PC, adr16);
-
-        GBE_ASM(result.Asm, "jp", Reg16::HL);
-    }
-
-    void Cpu::JumpImm16(Memory &memory, InstructionResult &result)
-    {
-        // fetch
-        uint16_t adr16 = GetImm16(memory, result);
-
-        // execute
-        m_Regs.SetReg16(Reg16::PC, adr16);
-        result.Cycles += 1;
-
-        // report
-        GBE_ASM(result.Asm, "jp", adr16);
-    }
-    
-    void Cpu::JumpCC_Imm16(OperandCond cc, Memory& memory, InstructionResult& result)
-    {
-        // fetch
-        uint16_t adr16 = GetImm16(memory, result);
-
-        // execute
-        if (CheckOperandCond(cc))
-        {
-            m_Regs.SetReg16(Reg16::PC, adr16);
-            result.Cycles += 1;
-        }
-
-        // report
-        GBE_ASM(result.Asm, "jp", cc, adr16);
-    }
-
-    void Cpu::_JumpRelative(uint8_t offset8, InstructionResult &result)
-    {
-        int8_t signedOffset8 = static_cast<int8_t>(offset8);
-        int16_t signedOffset16 = static_cast<int16_t>(signedOffset8);
-
-        // offset pc
-        uint16_t pc = m_Regs.GetReg16(Reg16::PC) + signedOffset16 ;
-        m_Regs.SetReg16(Reg16::PC, pc);
-        result.Cycles++;
-    }
-
-    void Cpu::_AddToDestSP_Imm8(Reg16 dest, Memory &memory, InstructionResult &result)
-    {
-        // fetch
-        uint8_t imm8 = GetImm8(memory, result);
-
-        uint16_t a = m_Regs.GetReg16(Reg16::SP);
-        int8_t e = static_cast<int8_t>(imm8);
-
-        // execute
-        AluResult aluResult{};
-        Alu::Offset16(a, e, aluResult);
-        m_Regs.SetReg16(dest, aluResult.Result16);
-
-        // result
-        m_Regs.SetFlags(aluResult.AffectedFlags, aluResult.Flags);
-        result.Cycles++;
-    }
-
-
-    void Cpu::JumpRelativeImm8(Memory &memory, InstructionResult &result)
-    {
-        // fetch
-        uint8_t offset = GetImm8(memory, result);
-
-        // execute
-        _JumpRelative(offset, result);
-
-        // report
-        GBE_ASM(result.Asm, "jr", offset);
-    }
-    
-    void Cpu::JumpRelativeCC_Imm8(OperandCond cc, Memory &memory, InstructionResult &result)
-    {
-        // fetch
-        uint8_t offset = GetImm8(memory, result);
-
-        // execute
-        if (CheckOperandCond(cc))
-            _JumpRelative(offset, result);
-
-        // report
-        GBE_ASM(result.Asm, "jr", cc, offset);
-    }
-
-    void Cpu::Return(Memory &memory, InstructionResult &result)
-    {
-        // pop top adress
-        uint16_t topAdr16 = Pop(memory, result);
-
-        // jump to adress
-        m_Regs.SetReg16(Reg16::PC, topAdr16);
-        result.Cycles++;
-
-        GBE_ASM(result.Asm, "ret");
-    }
-    
-    void Cpu::ReturnCC(OperandCond cc, Memory &memory, InstructionResult &result)
-    {
-        result.Cycles++;
-
-        if (CheckOperandCond(cc))
-            Return(memory, result);
-
-        GBE_ASM(result.Asm, "ret", cc);
-    }
-    
-    void Cpu::ReturnAndEnableInterrupts(Memory &memory, InstructionResult &result)
-    {
-        // TODO: Add enbale interrupts
-        EnableInterrupts(result);
-        Return(memory, result);
-        GBE_ASM(result.Asm, "reti");
-    }
-    
-    void Cpu::RstVec(uint8_t tgt3, Memory &memory, InstructionResult &result)
-    {
-        uint16_t adr16 = static_cast<uint16_t>(tgt3) * 8;
-
-        _Call(adr16, memory, result);
-
-        GBE_ASM(result.Asm, "rst", tgt3);
-    }
-    
-    void Cpu::ComplementCarryFlag(InstructionResult &result)
+    void Cpu::ComplementCarryFlag(const Instruction &instr, Memory &memory, InstructionResult &result)
     {
         // reset N and H Flags
         m_Regs.SetFlag(CpuFlag::N, false);
@@ -831,7 +212,7 @@ namespace GBE
         m_Regs.SetFlag(CpuFlag::C, !carryFlag);
     }
 
-    void Cpu::SetCarryFlag(InstructionResult &result)
+    void Cpu::SetCarryFlag(const Instruction &instr, Memory &memory, InstructionResult &result)
     {
         // reset N and H Flags
         m_Regs.SetFlag(CpuFlag::N, false);
@@ -841,21 +222,19 @@ namespace GBE
         m_Regs.SetFlag(CpuFlag::C, true);
     }
 
-    void Cpu::DisableInterrupts(InstructionResult &result)
+    void Cpu::DisableInterrupts(const Instruction &instr, Memory &memory, InstructionResult &result)
     {
         m_IME = false;
         m_QueueIME = 0;
-
-        GBE_ASM(result.Asm, "di");
     }
 
-    void Cpu::EnableInterrupts(InstructionResult & result)
+    void Cpu::EnableInterrupts(const Instruction &instr, Memory &memory, InstructionResult &result)
     {
         if (m_QueueIME == 0 && !m_IME)
             m_QueueIME = 2;
     }
 
-    void Cpu::DecimalAdjustAccumulator(InstructionResult &result)
+    void Cpu::DecimalAdjustAccumulator(const Instruction &instr, Memory &memory, InstructionResult &result)
     {
         // fetch
         uint8_t a = m_Regs.GetReg8(Reg8::A);
@@ -870,8 +249,7 @@ namespace GBE
             
             if (m_Regs.GetFlag(CpuFlag::C))
                 adjust += 0x60;
-            // std::cout << "adjust: " <<Binary::ToHex(adjust) << "\n";
-        
+
             a -= adjust;
         }
         else
@@ -896,7 +274,6 @@ namespace GBE
 
     void Cpu::_HandleIME()
     {
-        
         if (m_IME || m_QueueIME <= 0)
             return;
 
@@ -961,8 +338,6 @@ namespace GBE
 
         // result
         result.Cycles = 5; // hard code 5 cycles it's easier that way
-        
-        GBE_ASM(result.Asm, "interrupt", handler);
 
         return true;
     }

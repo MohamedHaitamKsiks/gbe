@@ -1,8 +1,5 @@
 #include "Vram.h"
 
-#include "cpu/AluResult.h"
-#include "cpu/Alu.h"
-
 #include <iostream>
 
 namespace GBE
@@ -35,7 +32,7 @@ namespace GBE
         uint16_t tileIndex = address / TILE_VRAM_SIZE;
         uint16_t tileLocalAddress = address % TILE_VRAM_SIZE;
 
-        TileData& tile = m_Tiles.at(tileIndex);
+        TileData &tile = m_Tiles.at(tileIndex);
         tile.Set(tileLocalAddress, value);
     }
 
