@@ -32,7 +32,7 @@ namespace GBE
         template <typename T>
         inline T GetOperand(size_t indx) const
         {
-            GBE_ASSERT(GetOperandType<T>() == m_Operands[indx].GetType());
+            GBE_ASSERT(Operand::GetOperandType<T>() == m_Operands[indx].GetType());
             GBE_ASSERT(indx < m_OperandsCount);
             return m_Operands[indx].Get<T>();
         }
@@ -53,6 +53,11 @@ namespace GBE
         inline size_t GetOperandsCount() const 
         { 
             return m_OperandsCount; 
+        }
+
+        inline void ClearOperands()
+        {
+            m_OperandsCount = 0;
         }
 
         inline OperandType GetOperandType(size_t indx) const 

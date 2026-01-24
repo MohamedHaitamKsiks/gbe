@@ -32,14 +32,14 @@ namespace GBE
 
     void Cpu::_RunInstruction(const Instruction &instr, Memory& memory, InstructionResult& result)
     {
-        if (instr.Type == InstructionType::PREFIX_INST)
+        if (instr.GetType() == InstructionType::PREFIX_INST)
         {
             _RunPrefixInstruction(memory, result);
             return;
         }
 
         // run instruction method
-        (this->*instr.Method)(instr, memory, result);
+        (this->*instr.GetMethod())(instr, memory, result);
     }
 
     void Cpu::_RunPrefixInstruction(Memory &memory, InstructionResult &result)
