@@ -6,14 +6,17 @@ namespace GBE
 {
     class InstructionDecoder;
     class Memory;
-    class Asm;
+    class Assembly;
 
-    namespace Disassembler
+    class Disassembler
     {
-        static Asm GetAsm(
+    public:
+        static Assembly Disassemble(
             uint16_t instAddr, 
             const Memory& memory, 
             const InstructionDecoder& decoder
         );
+    private:
+
     };
 } // namespace GBE

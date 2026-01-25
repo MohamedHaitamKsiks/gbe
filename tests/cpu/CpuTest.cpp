@@ -1049,8 +1049,6 @@ GBE_TEST_SUITE(Cpu)
         {
             GBE::InstructionResult result{};
             cpu.Run(memory, result);
-
-            //std::cout << result.Asm.ToString() << "\n";
         }
 
         // assert

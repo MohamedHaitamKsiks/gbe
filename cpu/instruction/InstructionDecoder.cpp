@@ -2,6 +2,8 @@
 #include "cpu/Cpu.h"
 #include "cpu/alu/Alu.h"
 
+#include <print>
+
 
 namespace GBE
 {
@@ -217,7 +219,6 @@ namespace GBE
     void InstructionDecoder::_DecodeBlock1(Instruction &instr)
     {
         uint8_t opcode = instr.GetOpcode();
-        instr.SetSize(1);
 
         if (opcode == 0x76)
         {
@@ -509,9 +510,10 @@ namespace GBE
         // type of the prefix instruction should is defined with the 7-6
         uint8_t instructionType = (opcode >> 6) & 0x3;
 
+        
         OperandBit3 b3 { static_cast<uint8_t>((opcode >> 3) & 0x7) };                    // bits 5-3
         OperandR8   r8 = static_cast<OperandR8>(opcode & 0x7); // bits 2-0
-
+        
         instr.AddOperand(b3, r8);
 
         // bits operations

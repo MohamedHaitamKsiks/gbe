@@ -2,6 +2,8 @@
 
 #include "cpu/instruction/InstructionResult.h"
 
+#include <print>
+
 namespace GBE
 {
     Gameboy::Gameboy()
@@ -69,7 +71,7 @@ namespace GBE
 
             for (uint16_t i = 0; i < result.Cycles; i++)
                 m_Timer->Tick();
-            
+
             uint32_t instructionDots = result.Cycles * 4;
             m_Ppu->Tick(instructionDots);
             
@@ -80,6 +82,8 @@ namespace GBE
 
             dots += instructionDots;
         }
+
+        // std::println("{}", m_Ppu->GetLcdControl()->ToString());
     }
 
     void Gameboy::Stop()

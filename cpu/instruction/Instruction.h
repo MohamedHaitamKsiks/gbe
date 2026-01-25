@@ -24,6 +24,12 @@ namespace GBE
         inline void AddOperand(T operand, Args... args)
         {
             m_Operands[m_OperandsCount++].Set(operand);
+
+            if (Operand::GetOperandType<T>() == OperandType::IMM8)
+                m_Size += 1;
+            else if (Operand::GetOperandType<T>() == OperandType::IMM16)
+                m_Size += 2;
+
             if constexpr (sizeof...(args) > 0)
                 AddOperand<Args...>(args...);
         }
@@ -72,6 +78,12 @@ namespace GBE
             return m_Operands[indx].IsAddress();
         }
 
+        inline Operand GetOperand(size_t indx) const
+        {
+            GBE_ASSERT(indx < m_OperandsCount);
+            return m_Operands[indx];
+        }
+
         inline void SetOpcode(uint8_t opcode)
         {
             m_Opcode = opcode;
@@ -111,13 +123,15 @@ namespace GBE
         {
             return m_Method;
         }
+
+
     private:
         std::array<Operand, 3> m_Operands{{}};
         size_t m_OperandsCount = 0;
         uint8_t m_Opcode = 0xFF;
 
         InstructionType m_Type = InstructionType::NONE;
-        uint16_t m_Size = 0;
+        uint16_t m_Size = 1;
 
         void (Cpu::*m_Method)(const Instruction &istr, Memory &memory, InstructionResult &result) = nullptr;
     };

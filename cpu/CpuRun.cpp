@@ -1,6 +1,7 @@
 #include "Cpu.h"
 
 #include "instruction/InstructionResult.h"
+#include "instruction/Disassembler.h"
 
 #include "alu/AluResult.h"
 #include "alu/Alu.h"
@@ -9,11 +10,19 @@
 
 #include <iostream>
 #include <exception>
+#include <print>
 
 namespace GBE
 {
     void Cpu::Run(Memory &memory, InstructionResult &result)
     {
+        Assembly assembly = Disassembler::Disassemble(
+            m_Regs.GetReg16(Reg16::PC),
+            memory,
+            m_Decoder
+        );
+        // std::println("{}", assembly.ToString());
+
         // check if interruption is pending
         if (_HandleInterrupts(memory, result))
             return;

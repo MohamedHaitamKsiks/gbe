@@ -7,6 +7,8 @@
 #include "alu/AluResult.h"
 #include "alu/Alu.h"
 
+#include <print>
+
 namespace GBE
 {
     void Cpu::_AddToDestSP_Imm8(Reg16 dest, Memory &memory, InstructionResult &result)
@@ -215,7 +217,7 @@ namespace GBE
 
         // execute
         AluResult aluResult{};
-        Alu::TestBit(bit.Value, aluResult.Result8, aluResult);
+        Alu::TestBit(bit.Value, value, aluResult);
 
         // result
         m_Regs.SetFlags(aluResult.AffectedFlags, aluResult.Flags);

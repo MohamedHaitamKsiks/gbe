@@ -103,7 +103,7 @@ namespace GBE
     void Cpu::JumpRelativeCC_Imm8(const Instruction &instr, Memory &memory, InstructionResult &result)
     {
         // fetch
-        auto cc = instr.GetOperand<OperandCond>(0);
+        auto [cc, imm8] = instr.GetOperands<OperandCond, OperandImm8>();
         uint8_t offset = GetImm8(memory, result);
 
         // execute
@@ -138,10 +138,9 @@ namespace GBE
 
     void Cpu::RstVec(const Instruction &instr, Memory &memory, InstructionResult &result)
     {
-        auto tgt3 = instr.GetOperand<OperandTgt3>(0);
+        auto [tgt3] = instr.GetOperands<OperandTgt3>();
 
         uint16_t adr16 = static_cast<uint16_t>(tgt3.Value) * 8;
-
         _Call(adr16, memory, result);
     }
 

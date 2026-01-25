@@ -1,6 +1,7 @@
 set (GBE_TESTS_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/GBETestSuite.h
     ${CMAKE_CURRENT_LIST_DIR}/cpu/CpuTest.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/cpu/CpuRomTest.cpp
     ${CMAKE_CURRENT_LIST_DIR}/cpu/InstructionDecoderTest.cpp
     ${CMAKE_CURRENT_LIST_DIR}/cpu/CpuRegistersSetTest.cpp
     ${CMAKE_CURRENT_LIST_DIR}/cpu/CpuRegisterTest.cpp

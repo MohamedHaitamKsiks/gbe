@@ -189,7 +189,8 @@ namespace GBE
     void Cpu::LoadHL_SPImm8(const Instruction &instr, Memory &memory, InstructionResult &result)
     {
         // operands
-        auto [hl, spimm8] = instr.GetOperands<OperandR16, OperandImm8>();
+        auto [hl, sp, imm8] = instr.GetOperands<OperandR16, OperandR16, OperandImm8>();
+        GBE_ASSERT(sp == OperandR16::SP);
         GBE_ASSERT(hl == OperandR16::HL);
 
         _AddToDestSP_Imm8(Reg16::HL, memory, result);
