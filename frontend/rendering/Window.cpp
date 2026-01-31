@@ -14,7 +14,9 @@ namespace GBE
         m_Window = SDL_CreateWindow("GBE", width, height, SDL_WINDOW_RESIZABLE);
 
         m_Renderer = std::make_unique<Renderer>(m_Window, ppu);
-        m_GuiLayer = std::make_unique<GuiLayer>(m_Window, m_Renderer->GetRenderer());
+        m_GuiLayer = std::make_shared<GuiLayer>(m_Window, m_Renderer->GetRenderer());
+        m_Renderer->SetGuiLayer(m_GuiLayer);
+
         m_Joypad = joypad;
     }
 
@@ -34,23 +36,33 @@ namespace GBE
 
     void Window::Update(float delta)
     {
-        SDL_Event event;
-    while (SDL_PollEvent(&event))
+        _ProcessEvents();
+
+        // update width / height
+        SDL_GetWindowSize(m_Window, &m_Width, &m_Height);
+        m_Renderer->Render(delta, m_Width, m_Height);
+    }
+    
+    void Window::_ProcessEvents()
     {
-        if (m_GuiLayer)
-            m_GuiLayer->ProcessEvent(event);
-
-        if (event.type == SDL_EVENT_QUIT)
+        SDL_Event event;
+        while (SDL_PollEvent(&event))
         {
-            m_IsClosed = true;
-            break;
-        }
+            // quit event
+            if (event.type == SDL_EVENT_QUIT)
+            {
+                m_IsClosed = true;
+                break;
+            }
 
-        if (event.type != SDL_EventType::SDL_EVENT_KEY_DOWN && event.type != SDL_EventType::SDL_EVENT_KEY_UP)
-            continue;
+            // gui layer events
+            m_GuiLayer->ProcessEvent(event);
+            if (m_GuiLayer && m_GuiLayer->WantCaptureKeyboard())
+                continue;
 
-        if (m_GuiLayer && m_GuiLayer->WantCaptureKeyboard())
-            continue;
+            // process joypad events
+            if (event.type != SDL_EventType::SDL_EVENT_KEY_DOWN && event.type != SDL_EventType::SDL_EVENT_KEY_UP)
+                continue;
 
             JoypadEvent joypadEvent{};
             joypadEvent.Pressed = event.key.down;
@@ -86,23 +98,9 @@ namespace GBE
                 doQueueEvent = false;
                 break;
             }
-            
+
             if (doQueueEvent)
                 m_Joypad->QueueJoypadEvent(joypadEvent);
         }
-
-
-        // update width / height
-        SDL_GetWindowSize(m_Window, &m_Width, &m_Height);
-        m_Renderer->DrawScene(delta, m_Width, m_Height);
-        if (m_GuiLayer)
-            m_GuiLayer->Render(delta, m_Renderer->GetRenderer());
-        m_Renderer->Present();
-    }
-
-    void Window::SetOpenRomCallback(std::function<void(const std::string&)> cb)
-    {
-        if (m_GuiLayer)
-            m_GuiLayer->SetOpenRomCallback(std::move(cb));
     }
 } // namespace GBE

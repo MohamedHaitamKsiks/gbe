@@ -19,27 +19,16 @@ namespace GBE
 
     void Application::Run()
     {
-        // load cartridge
-        std::shared_ptr<Cartridge> catridge = std::make_shared<Cartridge>();
-        //catridge->LoadFromAssets("./games/game.gb");
-        // catridge->LoadFromAssets("./test_roms/cpu_instrs/cpu_instrs.gb");
-        catridge->LoadFromAssets("./test_roms/cpu_instrs/individual/10-bit ops.gb");
-        // catridge->LoadFromAssets("./test_roms/dmg-acid2.gb");
-
-        m_GB.Start(catridge);
-
-        float delta = 0.0f;
-
         // get time now=
         m_Window = std::make_unique<Window>(m_GB.GetPpu(), m_GB.GetJoypad(), 1280, 720);
-
-        m_Window->SetOpenRomCallback([this](const std::string &romPath) {
+        m_Window->SetOpenRomCallback([this](std::string_view romPath) {
+            m_GB.Stop();
             auto cartridge = std::make_shared<Cartridge>();
             cartridge->Load(romPath);
-            m_GB.Stop();
             m_GB.Start(std::move(cartridge));
         });
 
+        float delta = 0.0f;
         while (!m_Window->IsClosed())
         {
             const auto pastTime = std::chrono::high_resolution_clock::now();

@@ -5,7 +5,10 @@
 #include <vector>
 #include <memory>
 #include <cstdint>
+
 #include "io/graphics/Ppu.h"
+#include "frontend/gui/GuiLayer.h"
+#include "io/graphics/lcd/LcdScreen.h"
 
 namespace GBE
 {
@@ -24,18 +27,23 @@ namespace GBE
         Renderer(SDL_Window* sdlWindow, std::shared_ptr<Ppu> ppu);
         ~Renderer();
 
-        void DrawScene(float delta, int32_t width, int32_t height);
-        void Present();
+        inline void SetGuiLayer(std::shared_ptr<GuiLayer> guiLayer)
+        {
+            m_GuiLayer = guiLayer;
+        }
+
+        void Render(float delta, int32_t width, int32_t height);
         SDL_Renderer* GetRenderer() const { return m_SDLRenderer; }
 
     private:
         std::shared_ptr<Ppu> m_Ppu = nullptr;
+        std::shared_ptr<GuiLayer> m_GuiLayer = nullptr;
 
         SDL_Window*  m_SDLWindow  = nullptr;
         SDL_Renderer* m_SDLRenderer = nullptr;
         SDL_Texture * m_SDLTexture = nullptr;
 
-        std::array<ColorRGB32, LCD_SCREEN_WIDTH * LCD_SCREEN_HEIGHT> m_Pixels;
+        std::array<uint8_t, LCD_SCREEN_WIDTH * LCD_SCREEN_HEIGHT * 3> m_Pixels;
         std::vector<ColorRGB32> m_ColorPalette; 
 
         void _UpdateTexture();

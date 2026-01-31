@@ -40,6 +40,12 @@ namespace GBE
         {
             return m_Joypad;
         };
+
+        inline bool IsRunning() const
+        {
+            return m_IsRunning;
+        }
+        
     private:
         Cpu m_Cpu{};
         Memory m_Memory{};
@@ -51,6 +57,7 @@ namespace GBE
         std::shared_ptr<Ram> m_HighRam = nullptr;
         std::shared_ptr<Joypad> m_Joypad = nullptr;
         std::shared_ptr<Timer> m_Timer = nullptr;
+        bool m_IsRunning = false;
 
         void _InitMemoryMapping();
         void _CpuTick();

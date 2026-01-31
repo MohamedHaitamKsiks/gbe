@@ -87,4 +87,13 @@ namespace GBE
         }
     }
 
+    void Memory::Reset()
+    {
+        m_AddressCache.fill(AddressCache{
+            .LocalAddress = 0, 
+            .Area = nullptr
+        });
+        m_MemoryAreas.clear();
+    }
+
 } // namespace GBE
