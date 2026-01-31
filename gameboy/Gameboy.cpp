@@ -20,11 +20,13 @@ namespace GBE
     {
     }
 
-    static bool s_DoDebug = false;
-
     void Gameboy::Start(std::shared_ptr<Cartridge> cartridge)
     {
-        s_DoDebug = false;
+        if (m_IsRunning)
+            return;
+
+        m_IsRunning = true;
+
         m_Cartridge = cartridge;
         m_Cartridge->SetReadFlag(true);
 
@@ -46,28 +48,18 @@ namespace GBE
 
     void Gameboy::Tick()
     {
+        if (!m_IsRunning)
+            return;
+
         uint32_t dots = 0;
         while (dots < FRAME_DOTS)
         {
             m_Joypad->Tick();
             
             uint16_t pc = m_Cpu.GetRegisters().GetReg16(Reg16::PC);
-            //if (m_Memory.Get(pc) == 0x27)
-            //    std::cout << m_Cpu.GetRegisters().ToString() << "\n";
-            
+
             InstructionResult result{};
             m_Cpu.Run(m_Memory, result);
-            if (pc == 49988)
-                s_DoDebug = false;
-
-            if ( /* m_Memory.Get(pc) == 0x27 || */ s_DoDebug)
-            {
-                /*
-                std::cout << result.Asm.ToString() << "\n";
-                std::cout << m_Cpu.GetRegisters().ToString() << "\n";
-                std::cout << ""; 
-                */
-            }
 
             for (uint16_t i = 0; i < result.Cycles; i++)
                 m_Timer->Tick();
@@ -82,12 +74,12 @@ namespace GBE
 
             dots += instructionDots;
         }
-
-        // std::println("{}", m_Ppu->GetLcdControl()->ToString());
     }
 
     void Gameboy::Stop()
     {
+        m_IsRunning = false;
+        m_Memory.Reset();
     }
 
     void Gameboy::_InitMemoryMapping()
@@ -155,8 +147,6 @@ namespace GBE
 
     void Gameboy::_CpuTick()
     {
-
-
     }
 
 } // namespace GBE

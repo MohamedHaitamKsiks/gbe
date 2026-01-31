@@ -23,7 +23,10 @@ namespace GBE
         bool IsClosed() const;
 
         void Update(float delta);
-        void SetOpenRomCallback(std::function<void(const std::string&)> cb);
+        inline void SetOpenRomCallback(std::function<void(std::string_view)> cb)
+        {
+            m_GuiLayer->SetOpenRomCallback(std::move(cb));
+        }
 
     private:
         int32_t m_Width = -1;
@@ -33,7 +36,9 @@ namespace GBE
         bool m_IsClosed = false;
 
         std::unique_ptr<Renderer> m_Renderer = nullptr;
-        std::unique_ptr<GuiLayer> m_GuiLayer = nullptr;
+        std::shared_ptr<GuiLayer> m_GuiLayer = nullptr;
         std::shared_ptr<Joypad> m_Joypad = nullptr;
+
+        void _ProcessEvents();
     };
 } // namespace GBE

@@ -1,13 +1,17 @@
 #include "Renderer.h"
+
+#include "io/graphics/Ppu.h"
+#include "frontend/gui/GuiLayer.h"
+
+
 #include <cassert>
 
 namespace GBE
 {
     Renderer::Renderer(SDL_Window *sdlWindow, std::shared_ptr<Ppu> ppu)
+        : m_SDLWindow(sdlWindow),
+        m_Ppu(ppu)
     {
-        m_Ppu = ppu;
-        m_SDLWindow = sdlWindow;
-
         // create sdl renderer
         m_SDLRenderer = SDL_CreateRenderer(sdlWindow, nullptr);
 
@@ -36,7 +40,7 @@ namespace GBE
         SDL_DestroyRenderer(m_SDLRenderer);
     }
 
-    void Renderer::DrawScene(float delta, int32_t width, int32_t height)
+    void Renderer::Render(float delta, int32_t width, int32_t height)
     {
         // clear
         SDL_SetRenderDrawColor(m_SDLRenderer, 0, 0, 0, 255);
@@ -71,18 +75,10 @@ namespace GBE
         // draw
         SDL_RenderTexture(m_SDLRenderer, m_SDLTexture, nullptr, &rect);
 
-        // show fps
-        SDL_SetRenderDrawColor(m_SDLRenderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+        // render gui layer
+        if (m_GuiLayer)
+            m_GuiLayer->Render(delta, m_SDLRenderer);
 
-        float fps = 0.0f;
-        if (delta > 0.0f)
-            fps = 1.0f / delta;
-
-        SDL_RenderDebugTextFormat(m_SDLRenderer, 16.0f, 16.0f, "%f FPS", fps);
-    }
-
-    void Renderer::Present()
-    {
         SDL_RenderPresent(m_SDLRenderer);
     }
 
@@ -96,7 +92,11 @@ namespace GBE
             {
                 uint8_t pixel = lcdScreen.GetPixel(x, y);
                 ColorRGB32 color = m_ColorPalette[pixel % m_ColorPalette.size()];
-                m_Pixels[x + y * LCD_SCREEN_WIDTH] = color;
+                
+                int index = (x + y * LCD_SCREEN_WIDTH) * 3;
+                m_Pixels[index + 0] = color.Red;
+                m_Pixels[index + 1] = color.Green;
+                m_Pixels[index + 2] = color.Blue;
             }
         }
 

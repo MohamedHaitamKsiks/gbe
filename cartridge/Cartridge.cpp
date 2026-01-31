@@ -3,6 +3,7 @@
 #include <fstream>
 #include <string>
 #include <algorithm>
+#include <print>
 
 #ifdef _WIN32
 
@@ -23,6 +24,8 @@ namespace GBE
 
     void Cartridge::Load(std::string_view path)
     {
+        std::print("Loading ROM from path: {}\n", path);
+
         // Open
         std::ifstream file(path.data(), std::ios::binary | std::ios::ate);
         assert(file.is_open());

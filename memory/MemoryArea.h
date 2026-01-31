@@ -11,6 +11,7 @@ namespace GBE
     class MemoryArea
     {
     public:
+        MemoryArea() = default;
         virtual ~MemoryArea() {}
 
         inline bool GetReadFlag() const 
