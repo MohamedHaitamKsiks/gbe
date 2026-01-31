@@ -2,7 +2,11 @@
 
 #include <cstdint>
 #include <SDL3/SDL.h>
+#include <functional>
+#include <string>
+#include <memory>
 #include "Renderer.h"
+#include "frontend/gui/GuiLayer.h"
 
 #include "io/joypad/Joypad.h"
 
@@ -19,6 +23,7 @@ namespace GBE
         bool IsClosed() const;
 
         void Update(float delta);
+        void SetOpenRomCallback(std::function<void(const std::string&)> cb);
 
     private:
         int32_t m_Width = -1;
@@ -28,6 +33,7 @@ namespace GBE
         bool m_IsClosed = false;
 
         std::unique_ptr<Renderer> m_Renderer = nullptr;
+        std::unique_ptr<GuiLayer> m_GuiLayer = nullptr;
         std::shared_ptr<Joypad> m_Joypad = nullptr;
     };
 } // namespace GBE

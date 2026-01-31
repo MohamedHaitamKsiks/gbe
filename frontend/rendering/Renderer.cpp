@@ -6,6 +6,7 @@ namespace GBE
     Renderer::Renderer(SDL_Window *sdlWindow, std::shared_ptr<Ppu> ppu)
     {
         m_Ppu = ppu;
+        m_SDLWindow = sdlWindow;
 
         // create sdl renderer
         m_SDLRenderer = SDL_CreateRenderer(sdlWindow, nullptr);
@@ -27,7 +28,6 @@ namespace GBE
             LCD_SCREEN_HEIGHT
         );
         SDL_SetTextureScaleMode(m_SDLTexture, SDL_SCALEMODE_NEAREST);
-
     }
 
     Renderer::~Renderer()
@@ -36,8 +36,8 @@ namespace GBE
         SDL_DestroyRenderer(m_SDLRenderer);
     }
 
-    void Renderer::Render(float delta, int32_t width, int32_t height)
-    {   
+    void Renderer::DrawScene(float delta, int32_t width, int32_t height)
+    {
         // clear
         SDL_SetRenderDrawColor(m_SDLRenderer, 0, 0, 0, 255);
         SDL_RenderClear(m_SDLRenderer);
@@ -47,9 +47,9 @@ namespace GBE
         float aspectRatio = static_cast<float>(LCD_SCREEN_WIDTH) / static_cast<float>(LCD_SCREEN_HEIGHT);
 
         SDL_FRect rect = {
-            0.0f, 
-            0.0f, 
-            0.0f, 
+            0.0f,
+            0.0f,
+            0.0f,
             0.0f
         };
 
@@ -68,7 +68,7 @@ namespace GBE
             rect.y = (fHeight - rect.h) * 0.5f;
         }
 
-        // draw 
+        // draw
         SDL_RenderTexture(m_SDLRenderer, m_SDLTexture, nullptr, &rect);
 
         // show fps
@@ -79,10 +79,13 @@ namespace GBE
             fps = 1.0f / delta;
 
         SDL_RenderDebugTextFormat(m_SDLRenderer, 16.0f, 16.0f, "%f FPS", fps);
+    }
 
+    void Renderer::Present()
+    {
         SDL_RenderPresent(m_SDLRenderer);
     }
-    
+
     void Renderer::_UpdateTexture()
     {
         // update texture

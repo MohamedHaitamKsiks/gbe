@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <thread>
+#include <string>
 
 
 namespace GBE
@@ -31,6 +32,14 @@ namespace GBE
 
         // get time now=
         m_Window = std::make_unique<Window>(m_GB.GetPpu(), m_GB.GetJoypad(), 1280, 720);
+
+        m_Window->SetOpenRomCallback([this](const std::string &romPath) {
+            auto cartridge = std::make_shared<Cartridge>();
+            cartridge->Load(romPath);
+            m_GB.Stop();
+            m_GB.Start(std::move(cartridge));
+        });
+
         while (!m_Window->IsClosed())
         {
             const auto pastTime = std::chrono::high_resolution_clock::now();

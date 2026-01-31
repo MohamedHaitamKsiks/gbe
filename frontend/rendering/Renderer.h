@@ -1,6 +1,10 @@
 #pragma once
 
 #include <SDL3/SDL.h>
+#include <array>
+#include <vector>
+#include <memory>
+#include <cstdint>
 #include "io/graphics/Ppu.h"
 
 namespace GBE
@@ -20,11 +24,14 @@ namespace GBE
         Renderer(SDL_Window* sdlWindow, std::shared_ptr<Ppu> ppu);
         ~Renderer();
 
-        void Render(float delta, int32_t width, int32_t height);
+        void DrawScene(float delta, int32_t width, int32_t height);
+        void Present();
+        SDL_Renderer* GetRenderer() const { return m_SDLRenderer; }
 
     private:
         std::shared_ptr<Ppu> m_Ppu = nullptr;
 
+        SDL_Window*  m_SDLWindow  = nullptr;
         SDL_Renderer* m_SDLRenderer = nullptr;
         SDL_Texture * m_SDLTexture = nullptr;
 
