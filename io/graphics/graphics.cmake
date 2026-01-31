@@ -13,8 +13,6 @@ set (GBE_HEADERS ${GBE_HEADERS}
     ${CMAKE_CURRENT_LIST_DIR}/vram/Vram.h
 
     ${CMAKE_CURRENT_LIST_DIR}/Ppu.h
-    ${CMAKE_CURRENT_LIST_DIR}/PpuTask.h
-    ${CMAKE_CURRENT_LIST_DIR}/PpuTaskManager.h
     ${CMAKE_CURRENT_LIST_DIR}/PixelFIFO.h
 )
 
@@ -31,7 +29,5 @@ set(GBE_SOURCES ${GBE_SOURCES}
     ${CMAKE_CURRENT_LIST_DIR}/vram/Vram.cpp
 
     ${CMAKE_CURRENT_LIST_DIR}/Ppu.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/PpuTask.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/PpuTaskManager.cpp
     ${CMAKE_CURRENT_LIST_DIR}/PixelFIFO.cpp
 )

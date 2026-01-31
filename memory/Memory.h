@@ -19,6 +19,11 @@ namespace GBE
     {
     public:
         ~Memory() = default;
+        Memory() = default;
+
+        // no copy no assign
+        Memory(const Memory& memory) = delete;
+        Memory& operator=(const Memory& memory) = delete;
 
         // expecting iterable of MemoryMap
         template<typename CollectionType>

@@ -20,10 +20,12 @@ namespace GBE
     {
         // load cartridge
         std::shared_ptr<Cartridge> catridge = std::make_shared<Cartridge>();
-        catridge->LoadFromAssets("./test_roms/cpu_instrs/cpu_instrs.gb");
-        // catridge->LoadFromAssets("./games/game.gb");
+        //catridge->LoadFromAssets("./games/game.gb");
+        // catridge->LoadFromAssets("./test_roms/cpu_instrs/cpu_instrs.gb");
+        catridge->LoadFromAssets("./test_roms/cpu_instrs/individual/10-bit ops.gb");
+        // catridge->LoadFromAssets("./test_roms/dmg-acid2.gb");
 
-        m_GB.Start(std::move(catridge));
+        m_GB.Start(catridge);
 
         float delta = 0.0f;
 
@@ -48,7 +50,6 @@ namespace GBE
             if (wait < 0.0f)
                 wait = 0.01f;
             SDL_Delay(wait);
-
         }
     }
 

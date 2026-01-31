@@ -1,13 +1,13 @@
 
 #include <cstdint>
 #include <sstream>
-#include "AssemblyInstruction.h"
+#include "Instruction.h"
 
 namespace GBE
 {
     struct InstructionResult
     {
         uint16_t Cycles = 1;
-        AssemblyInstruction Asm{}; // the assembly instruction
+        // Assembly Asm{}; no longer needed
     };
 } // namespace GBE

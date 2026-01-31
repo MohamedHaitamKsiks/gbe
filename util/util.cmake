@@ -1,7 +1,8 @@
 set (GBE_HEADERS ${GBE_HEADERS}
     ${CMAKE_CURRENT_LIST_DIR}/Binary.h
+    ${CMAKE_CURRENT_LIST_DIR}/Assert.h
 )
 
 set(GBE_SOURCES ${GBE_SOURCES}
-
+    ${CMAKE_CURRENT_LIST_DIR}/Assert.cpp
 )

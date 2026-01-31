@@ -3,7 +3,7 @@
 
 #include "util/Binary.h"
 
-#include "CpuFlags.h"
+#include "cpu/registers/CpuFlags.h"
 
 #include <iostream>
 
@@ -169,7 +169,7 @@ namespace GBE
     void Alu::Add8(uint8_t a, uint8_t b, AluResult &result, uint8_t carry )
     {
         // calculate result
-        uint32_t result32 = a + b + carry;
+        uint32_t result32 = static_cast<uint32_t>(a) + static_cast<uint32_t>(b) + static_cast<uint32_t>(carry);
         result.Result8 = static_cast<uint8_t>(result32);
 
         // set flags
@@ -181,7 +181,7 @@ namespace GBE
             result.Flags |= CpuFlag::Z;
 
         // overflow 3
-        if (((a & 0xf) + (b & 0xf)) > 0xf)
+        if (((a & 0xf) + (b & 0xf) + carry) > 0xf)
             result.Flags |= CpuFlag::H;
 
         // overflow 7
@@ -238,14 +238,12 @@ namespace GBE
     void Alu::Sub8(uint8_t a, uint8_t b, AluResult &result, uint8_t carry)
     {
         // convert operands to 32
-        uint32_t a32 = a;
-        uint32_t b32 = b + carry; 
-
-        // add carry to b
-        b += carry;
+        uint32_t a32 = static_cast<uint32_t>(a);
+        uint32_t b32 = static_cast<uint32_t>(b) + static_cast<uint32_t>(carry);
 
         // compute
-        result.Result8 = a - b;
+        b += carry;
+        result.Result8 = (a - b);
 
         // set flags
         result.AffectedFlags = CpuFlag::Z | CpuFlag::N | CpuFlag::H | CpuFlag::C;

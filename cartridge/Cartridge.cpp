@@ -32,6 +32,9 @@ namespace GBE
         // Read bytes into buffer
         m_ROM = std::make_unique<uint8_t[]>(size);
         file.read(reinterpret_cast<char *>(m_ROM.get()), size);
+
+        SetReadFlag(true);
+        SetWriteFlag(false);
     }
 
     void Cartridge::_SetImp(uint16_t address, uint8_t value)
