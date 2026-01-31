@@ -2,8 +2,7 @@
 
 #include <iostream>
 #include "memory/Memory.h"
-#include "cpu/CpuRegistersSet.h"
-
+#include "cpu/registers/CpuRegistersSet.h"
 
 GBE_TEST_SUITE(CpuRegisterSet)
 {

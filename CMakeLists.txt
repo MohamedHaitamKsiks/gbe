@@ -4,7 +4,7 @@ project(gbe LANGUAGES CXX C)
 
 # Set C++ standard
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -61,6 +61,7 @@ include(memory/memory.cmake)
 include(io/io.cmake)
 include(gameboy/gameboy.cmake)
 include(cartridge/cartridge.cmake)
+include(util/util.cmake)
 
 #create core library
 add_library(gbelib STATIC
@@ -85,6 +86,8 @@ target_link_libraries(gbelib
 )
 
 #create library
+target_link_options(gbe PRIVATE -rdynamic)
+
 target_link_libraries(gbe
     PRIVATE
     gbelib

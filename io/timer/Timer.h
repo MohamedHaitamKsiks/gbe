@@ -27,6 +27,8 @@ namespace GBE
         Timer(const std::shared_ptr<InterruptManager>& interruptManager);
         ~Timer();
 
+        void Init();
+
         // tick for one m-cycle
         void Tick();
 
@@ -35,6 +37,8 @@ namespace GBE
     private:
         std::shared_ptr<InterruptManager> m_InterruptManager = nullptr;
         std::array<uint8_t, MMAP_TIMER.GetSize()> m_Data{};
+
+        uint16_t m_DIVClock = 0;
         uint16_t m_Clock = 0;
 
         void _SetImp(uint16_t address, uint8_t value) override;

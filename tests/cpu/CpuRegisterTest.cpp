@@ -1,6 +1,6 @@
 #include "GBETestSuite.h"
 
-#include "cpu/CpuRegister.h"
+#include "cpu/registers/CpuRegister.h"
 
 GBE_TEST_SUITE(CpuRegister)
 {

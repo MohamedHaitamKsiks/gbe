@@ -47,6 +47,9 @@ Makefile
 compile_commands.json
 
 # VSCode / tooling
+bin/
+
+# vscode
 .vscode/
 .ropeproject/
 
