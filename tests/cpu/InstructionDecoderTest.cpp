@@ -90,9 +90,6 @@ GBE_TEST_SUITE(InstructionDecoder)
                 
             const GBE::Instruction &instr = decoder.Decode(opcode);
 
-            if (instr.GetMethod() == nullptr)
-                std::print("Decoding prefix opcode: 0x{:02X} -> Type: {}\n", opcode, magic_enum::enum_name(instr.GetType()));
-            
             CHECK_NE(instr.GetType(), GBE::InstructionType::NONE);
             if (instr.GetType() != GBE::InstructionType::PREFIX_INST)
                 CHECK_NE(instr.GetMethod(), nullptr);
@@ -107,6 +104,7 @@ GBE_TEST_SUITE(InstructionDecoder)
         {
             const GBE::Instruction &instr = decoder.DecodePrefix(opcode);
             CHECK_NE(instr.GetType(), GBE::InstructionType::NONE);
+            CHECK_NE(instr.GetMethod(), nullptr);
         }
     }
 }

@@ -21,7 +21,7 @@ namespace GBE
             memory,
             m_Decoder
         );
-        // std::println("{}", assembly.ToString());
+        std::println("{}", assembly.ToString());
 
         // check if interruption is pending
         if (_HandleInterrupts(memory, result))
@@ -55,8 +55,7 @@ namespace GBE
     {
         uint8_t opcode = GetImm8(memory, result);
         const Instruction& instr = m_Decoder.DecodePrefix(opcode);
-
-        _RunInstruction(instr, memory, result);
+        (this->*instr.GetMethod())(instr, memory, result);
     }
 
 } // namespace GBE

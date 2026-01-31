@@ -168,7 +168,7 @@ namespace GBE
     void Cpu::ShiftR8(ShiftDirection direction, bool isLogical, const Instruction &instr, Memory &memory, InstructionResult &result)
     {
         // operands
-        auto [r8] = instr.GetOperands<OperandR8>();
+        auto                              [r8] = instr.GetOperands<OperandR8>();
 
         // fetch
         uint8_t value = GetOperandR8(r8, memory, result);

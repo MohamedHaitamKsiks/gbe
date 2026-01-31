@@ -20,10 +20,10 @@ namespace GBE
     {
         // load cartridge
         std::shared_ptr<Cartridge> catridge = std::make_shared<Cartridge>();
-        // catridge->LoadFromAssets("./games/game.gb");
+        //catridge->LoadFromAssets("./games/game.gb");
         // catridge->LoadFromAssets("./test_roms/cpu_instrs/cpu_instrs.gb");
-        // catridge->LoadFromAssets("./test_roms/cpu_instrs/individual/10-bit ops.gb");
-        catridge->LoadFromAssets("./test_roms/dmg-acid2.gb");
+        catridge->LoadFromAssets("./test_roms/cpu_instrs/individual/10-bit ops.gb");
+        // catridge->LoadFromAssets("./test_roms/dmg-acid2.gb");
 
         m_GB.Start(catridge);
 

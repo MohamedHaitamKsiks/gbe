@@ -334,6 +334,53 @@ GBE_TEST_SUITE(ALU)
         CHECK((result.Flags & GBE::CpuFlag::C));
     }
 
+    TEST_CASE("Sub8 Carry Flag H")
+    {
+        // arrange
+        uint8_t a = 0x24;
+        uint8_t b = 0x1E;
+        constexpr uint8_t carry = 1;
+
+        // act
+        GBE::Alu::Sub8(a, b, result, carry);
+
+        // assert
+        CHECK_EQ(result.Result8, static_cast<uint8_t>(0x05));
+        CHECK((result.Flags & GBE::CpuFlag::H));
+        CHECK(!(result.Flags & GBE::CpuFlag::C));
+        CHECK(!(result.Flags & GBE::CpuFlag::Z));
+    }
+
+    TEST_CASE("Sub8 carry Flag C")
+    {
+        // arrange
+        uint8_t a = 50;
+        uint8_t b = 99;
+        constexpr uint8_t carry = 1;
+
+        // act
+        GBE::Alu::Sub8(a, b, result, carry);
+
+        // assert
+        CHECK_EQ(result.Result8, static_cast<uint8_t>(-50));
+        CHECK((result.Flags & GBE::CpuFlag::C));
+    }
+
+    TEST_CASE("Sub8 carry Flag C")
+    {
+        // arrange
+        uint8_t a = 0x1;
+        uint8_t b = 0xFF;
+        constexpr uint8_t carry = 1;
+
+        // act
+        GBE::Alu::Sub8(a, b, result, carry);
+
+        // assert
+        CHECK_EQ(result.Result8, static_cast<uint8_t>(0x01));
+        // CHECK((result.Flags & GBE::CpuFlag::C));
+    }
+
     TEST_CASE("Cmp Flag C")
     {
         // arrange

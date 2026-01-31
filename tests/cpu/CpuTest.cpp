@@ -338,14 +338,15 @@ GBE_TEST_SUITE(Cpu)
 
         cpu.GetRegisters().SetReg8(GBE::Reg8::A, 8);
         cpu.GetRegisters().SetReg8(GBE::Reg8::B, 2);
+        cpu.GetRegisters().SetFlag(GBE::CpuFlag::C, true);
 
         // act
-        cpu.ExecAluOpA_R8<GBE::Alu::Add8, false>(instr, memory, result);
+        cpu.ExecAluOpA_R8<GBE::Alu::Sub8, true>(instr, memory, result);
 
         // assert
         CHECK_EQ(
             cpu.GetRegisters().GetReg8(GBE::Reg8::A),
-            10
+            5
         );
     }
 

@@ -33,13 +33,13 @@ namespace GBE
             {
             case OperandType::IMM8:
             {
-                uint8_t imm8 = memory.Get(instAddr + 1 + i);
+                uint8_t imm8 = memory.Get(instAddr + 1);
                 assembly.AddImm8(imm8, operand.IsAddress());
                 break;
             }
             case OperandType::IMM16:
             {
-                uint16_t imm16 = memory.Get16(instAddr + 1 + i);
+                uint16_t imm16 = memory.Get16(instAddr + 1);
                 assembly.AddImm16(imm16, operand.IsAddress());
                 break;
             }
