@@ -46,7 +46,7 @@ namespace GBE
             _RunPrefixInstruction(memory, result);
             return;
         }
-
+        
         // run instruction method
         (this->*instr.GetMethod())(instr, memory, result);
     }

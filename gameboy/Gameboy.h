@@ -22,7 +22,7 @@ namespace GBE
 
         void Start(std::shared_ptr<Cartridge> cartridge);
 
-        void Tick();
+        uint16_t Tick();
 
         void Stop();
 
@@ -45,7 +45,18 @@ namespace GBE
         {
             return m_IsRunning;
         }
-        
+
+        inline Cpu& GetCpu()
+        {
+            return m_Cpu;
+        }
+
+        // get memory interface to read/write memory
+        inline Memory& GetMemory()
+        {
+            return m_Memory;
+        }
+
     private:
         Cpu m_Cpu{};
         Memory m_Memory{};
