@@ -17,6 +17,9 @@ namespace GBE
     {
     public:
         ~Cpu();
+        Cpu() = default;
+        Cpu(const Cpu&) = delete;
+        Cpu& operator=(const Cpu&) = delete;
 
         // init after boot load
         void Init();

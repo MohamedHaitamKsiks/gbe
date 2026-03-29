@@ -45,12 +45,12 @@ namespace GBE
         _InitMemoryMapping();
     }
 
-
-    void Gameboy::Tick()
+    uint16_t Gameboy::Tick()
     {
         if (!m_IsRunning)
-            return;
+            return 0;
 
+        uint16_t instructionCycles = 0;
         uint32_t dots = 0;
         while (dots < FRAME_DOTS)
         {
@@ -73,7 +73,9 @@ namespace GBE
             lcdControl->Tick(m_Memory, oam, instructionDots);
 
             dots += instructionDots;
+            instructionCycles += result.Cycles;
         }
+        return instructionCycles;
     }
 
     void Gameboy::Stop()
