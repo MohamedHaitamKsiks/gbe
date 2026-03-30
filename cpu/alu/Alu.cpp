@@ -237,13 +237,17 @@ namespace GBE
 
     void Alu::Sub8(uint8_t a, uint8_t b, AluResult &result, uint8_t carry)
     {
+        SubWithCarry8(a, b, result, carry); 
+    }
+
+    void Alu::SubWithCarry8(uint8_t a, uint8_t b, AluResult &result, uint8_t carry)
+    {
         // convert operands to 32
         uint32_t a32 = static_cast<uint32_t>(a);
         uint32_t b32 = static_cast<uint32_t>(b) + static_cast<uint32_t>(carry);
 
         // compute
-        b += carry;
-        result.Result8 = (a - b);
+        result.Result8 = (a - b - carry);
 
         // set flags
         result.AffectedFlags = CpuFlag::Z | CpuFlag::N | CpuFlag::H | CpuFlag::C;
@@ -254,7 +258,7 @@ namespace GBE
             result.Flags |= CpuFlag::Z;
 
         // overflow 3
-        if ((a & 0xf) < (b & 0xf))
+        if ((a & 0xf) - (b & 0xf) - carry < 0)
             result.Flags |= CpuFlag::H;
 
         // overflow 7

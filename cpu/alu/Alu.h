@@ -28,6 +28,9 @@ namespace GBE
         // first arg - second arg
         static void Sub8(uint8_t a, uint8_t b, AluResult &result, uint8_t carry = 0);
 
+        // first arg - second arg
+        static void SubWithCarry8(uint8_t a, uint8_t b, AluResult &result, uint8_t carry = 0);
+
         // compare a and b (same as sub8 but without the result)
         static void Cmp8(uint8_t a, uint8_t b, AluResult &result, uint8_t carry = 0);
 
