@@ -237,11 +237,6 @@ namespace GBE
 
     void Alu::Sub8(uint8_t a, uint8_t b, AluResult &result, uint8_t carry)
     {
-        SubWithCarry8(a, b, result, carry); 
-    }
-
-    void Alu::SubWithCarry8(uint8_t a, uint8_t b, AluResult &result, uint8_t carry)
-    {
         // convert operands to 32
         uint32_t a32 = static_cast<uint32_t>(a);
         uint32_t b32 = static_cast<uint32_t>(b) + static_cast<uint32_t>(carry);
