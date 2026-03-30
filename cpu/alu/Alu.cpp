@@ -242,8 +242,7 @@ namespace GBE
         uint32_t b32 = static_cast<uint32_t>(b) + static_cast<uint32_t>(carry);
 
         // compute
-        b += carry;
-        result.Result8 = (a - b);
+        result.Result8 = (a - b - carry);
 
         // set flags
         result.AffectedFlags = CpuFlag::Z | CpuFlag::N | CpuFlag::H | CpuFlag::C;
@@ -254,7 +253,7 @@ namespace GBE
             result.Flags |= CpuFlag::Z;
 
         // overflow 3
-        if ((a & 0xf) < (b & 0xf))
+        if ((a & 0xf) - (b & 0xf) - carry < 0)
             result.Flags |= CpuFlag::H;
 
         // overflow 7
