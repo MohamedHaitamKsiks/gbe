@@ -54,6 +54,9 @@ namespace GBE
 
         inline void _SetRegister(TimerRegister reg, uint8_t value)
         {
+            if (reg == TimerRegister::TAC)
+                value = 0xF8 | value & 0x7;
+
             m_Data[static_cast<size_t>(reg)] = value;
         }
     };

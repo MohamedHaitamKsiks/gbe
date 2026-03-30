@@ -106,7 +106,7 @@ namespace GBE
 
     bool Timer::_IsTimerControlEnabled() const
     {
-        uint8_t bit = 3;
+        uint8_t bit = 2;
         return Binary::TestBit(_GetRegister(TimerRegister::TAC), bit);
     }
 
