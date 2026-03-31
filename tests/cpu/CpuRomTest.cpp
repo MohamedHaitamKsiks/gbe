@@ -58,6 +58,6 @@ GBE_TEST_SUITE(CpuRom)
     GBE_ADD_TEST_ROM("07-jr,jp,call,ret,rst.gb", 0xCBB0);
     GBE_ADD_TEST_ROM("08-misc instrs.gb", 0xCB91);
     GBE_ADD_TEST_ROM("09-op r,r.gb", 0xCE67);
-    // GBE_ADD_TEST_ROM("10-bit ops.gb", 0x?;
+    GBE_ADD_TEST_ROM("10-bit ops.gb", 0xCF58);
     GBE_ADD_TEST_ROM("11-op a,(hl).gb", 0xCC62);
 }
