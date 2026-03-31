@@ -17,13 +17,20 @@ namespace GBE
         const Instruction& instr = decoder.Decode(opcode);
         if (instr.GetType() == InstructionType::PREFIX_INST)
         {
-            Assembly assembly = Disassemble(instAddr + 1, memory, decoder);
-            return assembly;
+            uint8_t prefixOpcode = memory.Get(instAddr + 1);
+            const Instruction& prefixInstr = decoder.DecodePrefix(prefixOpcode);
+
+            return _CreateInstructioAssembly(instAddr, memory, prefixInstr);
         }
 
+        return _CreateInstructioAssembly(instAddr, memory, instr);
+    }
+
+    Assembly Disassembler::_CreateInstructioAssembly(uint16_t instAddr, const Memory &memory, const Instruction &instr)
+    {
         Assembly assembly{};
         assembly.SetAddress(instAddr);
-        assembly.SetOpcode(opcode);
+        assembly.SetOpcode(instr.GetOpcode());
         assembly.SetOperation(instr.GetType());
 
         for (size_t i = 0; i < instr.GetOperandsCount(); i++)
@@ -51,5 +58,5 @@ namespace GBE
 
         return assembly;
     }
-    
+
 } // namespace GBE

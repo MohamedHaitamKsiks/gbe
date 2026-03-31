@@ -594,6 +594,7 @@ namespace GBE
 
     void InstructionDecoder::_ThrowInvalidInstruction()
     {
+        GBE_ASSERT(false);
         throw std::runtime_error("Instruction unknown!");
     }
 
