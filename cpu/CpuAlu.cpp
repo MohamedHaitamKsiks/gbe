@@ -211,7 +211,7 @@ namespace GBE
     void Cpu::TestBitR8(const Instruction &instr, Memory &memory, InstructionResult &result)
     {
         // fetch
-        auto [bit, r8] = instr.GetOperands<OperandBit3, OperandR8>();
+         auto [bit, r8] = instr.GetOperands<OperandBit3, OperandR8>();
 
         uint8_t value = GetOperandR8(r8, memory, result);
 
