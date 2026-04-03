@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <map>
+#include <flat_map>
 #include <memory>
 #include <vector>
 
@@ -47,6 +48,7 @@ namespace GBE
     private:
         enum class JoypadButtonType
         {
+            NONE = 0,
             SELECT_DPAD = 4,
             SELECT_BUTTONS = 5
         };
@@ -69,11 +71,10 @@ namespace GBE
         uint8_t m_JoypadFlags = 0x0;
 
         std::vector<JoypadEvent> m_Events{};
-        std::map<JoypadButtonType, uint8_t> m_JoypadMatrix{};
-        std::map<JoypadButton, JoypadButtonInfo> m_JoypadInfos{};
+        std::flat_map<JoypadButtonType, uint8_t> m_JoypadMatrix{};
+        std::flat_map<JoypadButton, JoypadButtonInfo> m_JoypadInfos{};
 
         std::shared_ptr<InterruptManager> m_InterruptManager = nullptr;
-
 
         void _SetImp(uint16_t address, uint8_t value) override;
         uint8_t _GetImp(uint16_t address) const override;

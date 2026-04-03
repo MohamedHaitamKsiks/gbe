@@ -22,6 +22,9 @@ namespace GBE
     
     void InterruptManager::_SetImp(uint16_t address, uint8_t value)
     {
+        constexpr uint8_t interruptMask = 0b00011111;
+        value &= interruptMask;
+        
         if (address == 0)
         {
             m_InterruptFlag = value;
