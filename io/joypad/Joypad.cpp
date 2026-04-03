@@ -12,8 +12,9 @@ namespace GBE
         SetReadWriteFlags(true);
         m_InterruptManager = interruptManager;
 
-        m_JoypadMatrix[JoypadButtonType::SELECT_DPAD] = 0xFF;
-        m_JoypadMatrix[JoypadButtonType::SELECT_BUTTONS] = 0xFF;
+        m_JoypadMatrix[JoypadButtonType::SELECT_DPAD] = 0x0F;
+        m_JoypadMatrix[JoypadButtonType::SELECT_BUTTONS] = 0x0F;
+        m_JoypadMatrix[JoypadButtonType::NONE] = 0x0F; 
 
         // joypad map
         // buttons
@@ -98,16 +99,13 @@ namespace GBE
 
     void Joypad::_SetImp(uint16_t address, uint8_t value)
     {
-        uint8_t mask = JOYPAD_BUTTON_TYPE_MASK;
-        m_JoypadFlags = (value & mask) | m_JoypadFlags;
+        m_JoypadFlags = value & JOYPAD_BUTTON_TYPE_MASK;
     }
 
     uint8_t Joypad::_GetImp(uint16_t address) const
     {
         JoypadButtonType type = _GetType();
-        uint8_t mask = JOYPAD_BUTTON_TYPE_MASK;
-
-        return (m_JoypadFlags & mask) | m_JoypadMatrix.at(type);
+        return (m_JoypadFlags & JOYPAD_BUTTON_TYPE_MASK) | m_JoypadMatrix.at(type);
     }
 
     Joypad::JoypadButtonType Joypad::_GetType() const
@@ -116,8 +114,12 @@ namespace GBE
         {
             return JoypadButtonType::SELECT_DPAD;
         }
+        else if (!Binary::TestBit(m_JoypadFlags, static_cast<uint8_t>(JoypadButtonType::SELECT_BUTTONS)))
+        {
+            return JoypadButtonType::SELECT_BUTTONS;
+        }
 
-        return JoypadButtonType::SELECT_BUTTONS;
+        return JoypadButtonType::NONE;
     }
 
 } // namespace GBE

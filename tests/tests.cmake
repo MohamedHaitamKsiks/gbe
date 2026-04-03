@@ -11,4 +11,5 @@ set (GBE_TESTS_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/io/graphics/LcdPaletteTest.cpp
     ${CMAKE_CURRENT_LIST_DIR}/io/graphics/TileDataTest.cpp
     ${CMAKE_CURRENT_LIST_DIR}/io/graphics/PpuTest.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/io/joypad/JoypadTest.cpp 
 )
