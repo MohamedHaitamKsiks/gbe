@@ -7,7 +7,7 @@
 #define GBE_ADD_TEST_ROM(testName, successAddress) \
 TEST_CASE(testName) \
 { \
-    std::string romPath = "./test_roms/cpu_instrs/individual/" testName; \
+    std::string romPath = "./test_roms/" testName; \
     int result = GBETest::RunRomTest(romPath, successAddress, 10000); \
     CHECK_EQ(result, 0); \
 }
@@ -49,6 +49,7 @@ namespace GBETest
 
 GBE_TEST_SUITE(CpuRom)
 {
+    // cpu_instrs
     GBE_ADD_TEST_ROM("01-special.gb", 0xC7D2);
     GBE_ADD_TEST_ROM("02-interrupts.gb", 0xC7F4);
     GBE_ADD_TEST_ROM("03-op sp,hl.gb", 0xCB44);

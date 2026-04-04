@@ -390,5 +390,6 @@ namespace GBE
             return;
 
         m_Regs.SetReg16(Reg16::PC, pc);
+        m_IsHaltBug = false;
     }
 } // namespace GBE
