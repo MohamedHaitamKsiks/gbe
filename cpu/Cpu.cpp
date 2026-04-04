@@ -288,9 +288,6 @@ namespace GBE
     {
     }
 
-    void Cpu::Halt(const Instruction &instr, Memory &memory, InstructionResult &result)
-    {
-    }
 
     void Cpu::_HandleIME()
     {
@@ -360,5 +357,39 @@ namespace GBE
         result.Cycles = 5; // hard code 5 cycles it's easier that way
 
         return true;
+    }
+
+    bool Cpu::_IsInterruptPending(Memory &memory) const
+    {
+        uint8_t interruptEnable = memory.Get(static_cast<uint16_t>(IORegister::IE));
+        uint8_t interruptFlag = memory.Get(static_cast<uint16_t>(IORegister::IF));
+
+        return (interruptEnable & interruptFlag) != 0;
+    }
+
+    void Cpu::Halt(const Instruction &instr, Memory &memory, InstructionResult &result)
+    {
+        m_IsHalted = true;
+
+        if (_IsInterruptPending(memory) && !m_IME)
+            m_IsHaltBug = true;
+    }
+
+    void Cpu::_HandleHalt(Memory &memory, InstructionResult &result)
+    {
+        if (!m_IsHalted)
+            return;
+
+        if (_IsInterruptPending(memory))
+            m_IsHalted = false;
+
+    }
+    void Cpu::_HandleHaltBug(uint16_t pc)
+    {
+        if (!m_IsHaltBug || m_IsHalted)
+            return;
+
+        m_Regs.SetReg16(Reg16::PC, pc);
+        m_IsHaltBug = false;
     }
 } // namespace GBE

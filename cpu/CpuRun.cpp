@@ -16,8 +16,17 @@ namespace GBE
 {
     void Cpu::Run(Memory &memory, InstructionResult &result)
     {
+        // don't process intructions if halted
+        if (m_IsHalted)
+        {
+            _HandleHalt(memory, result);
+            return;
+        }
+
+        uint16_t pc = m_Regs.GetReg16(Reg16::PC);
+
         Assembly assembly = Disassembler::Disassemble(
-            m_Regs.GetReg16(Reg16::PC),
+            pc,
             memory,
             m_Decoder
         );
@@ -37,6 +46,9 @@ namespace GBE
 
         // handle queue TME
         _HandleIME();
+
+        // if bug don't increment PC to run instruction twice
+        _HandleHaltBug(pc);
 
     }
 
@@ -58,5 +70,7 @@ namespace GBE
         const Instruction& instr = m_Decoder.DecodePrefix(opcode);
         (this->*instr.GetMethod())(instr, memory, result);
     }
+
+
 
 } // namespace GBE
