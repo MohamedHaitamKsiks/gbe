@@ -14,6 +14,8 @@ namespace GBE
 
         void LoadFromAssets(std::string_view path);
         void Load(std::string_view path);
+
+        void Init() override;
     private:
         std::unique_ptr<uint8_t[]> m_ROM = nullptr;
         std::unique_ptr<uint8_t[]> m_RAM = nullptr;

@@ -15,7 +15,9 @@ namespace GBE
     class TileData
     {
     public:
-        ~TileData() {}
+        TileData() = default;
+        ~TileData() = default;
+
         uint8_t GetPixel(uint8_t x, uint8_t y) const;
         
         inline void Set(uint16_t address, uint8_t value)

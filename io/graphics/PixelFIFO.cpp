@@ -4,6 +4,11 @@
 
 namespace GBE
 {
+    void PixelFIFO::Init()
+    {
+        Clear();
+    }
+
     void PixelFIFO::PushBack(uint8_t pixel)
     {
         assert(m_CurrentSize < PIXEL_FIFO_SIZE);
@@ -16,8 +21,6 @@ namespace GBE
 
     uint8_t PixelFIFO::PopFront()
     {
-        // assert(CanPopFront());
-
         uint8_t pixel = m_Pixels[m_PopIndex];
         m_PopIndex = (m_PopIndex + 1) % PIXEL_FIFO_SIZE;
 

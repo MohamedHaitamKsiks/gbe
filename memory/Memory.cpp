@@ -87,6 +87,12 @@ namespace GBE
         }
     }
 
+    void Memory::Init()
+    {
+        for (auto& [memoryArea, memoryMaps]: m_MemoryAreas)
+            memoryArea->Init();
+    }
+
     void Memory::Reset()
     {
         m_AddressCache.fill(AddressCache{

@@ -7,7 +7,6 @@ namespace GBE
 
     Timer::Timer(const std::shared_ptr<InterruptManager> &interruptManager)
     {
-        SetReadWriteFlags(true);
         m_InterruptManager = interruptManager;
     }
 
@@ -17,6 +16,11 @@ namespace GBE
 
     void Timer::Init()
     {
+        SetReadWriteFlags(true);
+        
+        m_DIVClock = 0;
+        m_Clock = 0;
+
         _SetRegister(TimerRegister::DIV, 0x18);
         _SetRegister(TimerRegister::TIMA, 0x00);
         _SetRegister(TimerRegister::TMA, 0x00);

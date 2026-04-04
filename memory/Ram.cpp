@@ -1,12 +1,16 @@
 #include "Ram.h"
 
-
 namespace GBE
 {
 
     Ram::Ram(uint16_t size)
     {
         m_Data.resize(size, 0xFF);
+    }
+
+    void Ram::Init()
+    {
+        SetReadWriteFlags(true);
     }
 
     uint8_t Ram::_GetImp(uint16_t address) const

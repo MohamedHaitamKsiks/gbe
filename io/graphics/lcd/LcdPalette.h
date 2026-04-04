@@ -18,7 +18,8 @@ namespace GBE
     class LcdPalette
     {
     public:
-        ~LcdPalette() {}
+        LcdPalette() = default;
+        ~LcdPalette() = default;
 
         void Set(uint8_t byte);
 

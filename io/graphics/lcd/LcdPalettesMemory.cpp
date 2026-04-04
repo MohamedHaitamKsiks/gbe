@@ -9,6 +9,13 @@ namespace GBE
         OBP1 = 2
     };
 
+    void LcdPalettesMemory::Init()
+    {
+        m_BackgroundPalette.Set(0xFC);
+        for (auto& objPalette: m_ObjectPalettes)
+            objPalette.Set(0x00);
+    }
+
     void LcdPalettesMemory::_SetImp(uint16_t address, uint8_t value)
     {
         switch (static_cast<LcdPaletteAddress>(address))

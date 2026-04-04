@@ -7,13 +7,20 @@ namespace GBE
 {
     InterruptManager::InterruptManager()
     {
-        SetReadWriteFlags(true);
+        
     }
 
     InterruptManager::~InterruptManager()
     {
     }
 
+    void InterruptManager::Init()
+    {
+        SetReadWriteFlags(true);
+        
+        SetInterruptFlag(0xE1);
+        SetInterruptEnabled(0x00);
+    }
 
     void InterruptManager::QueueInterrupt(InterruptFlag interrupt)
     {

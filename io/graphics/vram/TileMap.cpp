@@ -5,6 +5,10 @@ namespace GBE
 {
     TileMap::TileMap()
     {
+    }
+
+    void TileMap::Init()
+    {
         SetReadWriteFlags(true);
     }
 

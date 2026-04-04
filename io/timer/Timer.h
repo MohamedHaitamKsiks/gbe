@@ -27,7 +27,7 @@ namespace GBE
         Timer(const std::shared_ptr<InterruptManager>& interruptManager);
         ~Timer();
 
-        void Init();
+        void Init() override;
 
         // tick for one m-cycle
         void Tick();

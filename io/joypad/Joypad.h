@@ -42,6 +42,8 @@ namespace GBE
         Joypad(const std::shared_ptr<InterruptManager>& interruptManager);
         ~Joypad();
 
+        void Init() override;
+
         void QueueJoypadEvent(JoypadEvent event);
         void Tick();
 

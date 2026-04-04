@@ -16,6 +16,8 @@ namespace GBE
         TileMap();
         ~TileMap() {}
 
+        void Init() override;
+
         uint8_t GetTile(uint8_t x, uint8_t y) const;
     private:
         void _SetImp(uint16_t address, uint8_t value) override;

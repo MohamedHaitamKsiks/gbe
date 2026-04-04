@@ -22,6 +22,8 @@ namespace GBE
         ObjectAttributesMemory();
         ~ObjectAttributesMemory();
 
+        void Init() override;
+
         inline const ObjectAttribute& GetObject(uint8_t objectID) const
         {
             return m_Objects.at(objectID);

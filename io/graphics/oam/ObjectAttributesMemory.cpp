@@ -11,6 +11,11 @@ namespace GBE
     {
     }
 
+    void ObjectAttributesMemory::Init()
+    {
+        SetReadWriteFlags(true);
+    }
+
     void ObjectAttributesMemory::_SetImp(uint16_t address, uint8_t value)
     {
         uint16_t objectIndex = address / OBJECT_ATTRIBUTE_SIZE;

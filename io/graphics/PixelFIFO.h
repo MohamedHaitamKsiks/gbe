@@ -12,7 +12,10 @@ namespace GBE
     class PixelFIFO
     {
     public:
-        ~PixelFIFO() {}
+        PixelFIFO() = default;
+        ~PixelFIFO() = default;
+
+        void Init();
 
         void PushBack(uint8_t pixel);
         

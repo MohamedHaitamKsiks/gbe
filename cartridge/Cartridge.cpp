@@ -22,9 +22,14 @@ namespace GBE
         Load(fullPath);
     }
 
+    void Cartridge::Init()
+    {
+        SetReadFlag(true);
+    }
+
     void Cartridge::Load(std::string_view path)
     {
-        std::print("Loading ROM from path: {}\n", path);
+        std::println("Loading ROM from path: {}", path);
 
         // Open
         std::ifstream file(path.data(), std::ios::binary | std::ios::ate);

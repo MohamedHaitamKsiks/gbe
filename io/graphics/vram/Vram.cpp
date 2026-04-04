@@ -9,9 +9,11 @@ namespace GBE
         // create vram with 
         m_Maps.resize(TILE_MAP_COUNT);
         m_Tiles.resize(TILE_COUNT);
-        
-        SetReadWriteFlags(true);
+    }
 
+    void Vram::Init()
+    {
+        SetReadWriteFlags(true);
     }
 
     void Vram::_SetImp(uint16_t address, uint8_t value)

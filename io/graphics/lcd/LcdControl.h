@@ -45,7 +45,9 @@ namespace GBE
     {
     public:
         LcdControl();
-        ~LcdControl() {}
+        ~LcdControl() = default;
+
+        void Init() override;
 
         bool GetControlFlag(LcdControlFlag flag) const;
 
