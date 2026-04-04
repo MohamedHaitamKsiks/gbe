@@ -50,7 +50,7 @@ namespace GBETest
 GBE_TEST_SUITE(CpuRom)
 {
     GBE_ADD_TEST_ROM("01-special.gb", 0xC7D2);
-    // GBE_ADD_TEST_ROM("02-interrupts.gb", 0x?);
+    GBE_ADD_TEST_ROM("02-interrupts.gb", 0xC7F4);
     GBE_ADD_TEST_ROM("03-op sp,hl.gb", 0xCB44);
     GBE_ADD_TEST_ROM("04-op r,imm.gb", 0xCB35);
     GBE_ADD_TEST_ROM("05-op rp.gb", 0xCB31);

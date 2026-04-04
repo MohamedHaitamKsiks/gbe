@@ -7,12 +7,19 @@
 namespace GBE
 {
 
-    void Cpu::_Call(uint16_t adr16, Memory &memory, InstructionResult &result)
+    void Cpu::_Call(uint16_t adr16, Memory &memory, InstructionResult &result, bool isHaltBug)
     {
         uint16_t de = m_Regs.GetReg16(Reg16::DE);
 
         // push pc to stack
         uint16_t pc = m_Regs.GetReg16(Reg16::PC);
+
+        // to reproduce the halt bug when rst is after halt 
+        // we push to the stack the address of rst instead of the following instr
+        // kinda hacky solution 
+        if (isHaltBug)
+            pc--;
+
         Push(pc, memory, result);
 
         // set pc to adr
@@ -139,9 +146,11 @@ namespace GBE
     void Cpu::RstVec(const Instruction &instr, Memory &memory, InstructionResult &result)
     {
         auto [tgt3] = instr.GetOperands<OperandTgt3>();
-
         uint16_t adr16 = static_cast<uint16_t>(tgt3.Value) * 8;
-        _Call(adr16, memory, result);
+
+        _Call(adr16, memory, result, m_IsHaltBug);
+
+        m_IsHaltBug = false; // not run twice this instruction
     }
 
 } // namespace GBE

@@ -295,6 +295,11 @@ namespace GBE
         // halt
         void Halt(const Instruction &instr, Memory &memory, InstructionResult &result);
 
+        // is halted
+        inline bool IsHalted() const
+        {
+            return m_IsHalted;
+        }
 
     private: 
         InstructionDecoder m_Decoder{};
@@ -302,6 +307,8 @@ namespace GBE
 
         // Flag to enable interrupts
         bool m_IME = false; // Interrupt master enable flag [write only]
+        bool m_IsHalted = false;
+        bool m_IsHaltBug = false;
         int32_t m_QueueIME = 0; // Are we queuing IME to be set in the next instruction
 
         // handle IME flag
@@ -312,6 +319,12 @@ namespace GBE
 
         // handle one interrupt flag and return if interrupt is found
         bool _HandleInterruptFlag(InterruptFlag flag, Memory &memory, InstructionResult &result);
+
+        // handle halt state
+        void _HandleHalt(Memory &memory, InstructionResult &result);
+
+        // handle halt bug
+        void _HandleHaltBug(uint16_t pc);
 
         // add value to pc to move to next intruction
         inline void _AddPC(uint16_t bytes)
@@ -335,7 +348,7 @@ namespace GBE
         void _ExecAluOpA(Alu::OperationDestSrc8 op, uint8_t v8, bool addCarry);
     
         // call to adr16
-        void _Call(uint16_t adr16, Memory &memory, InstructionResult &result);
+        void _Call(uint16_t adr16, Memory &memory, InstructionResult &result, bool isHaltBug = false);
     
         // jump relative
         void _JumpRelative(uint8_t offset8, InstructionResult& result);
@@ -348,5 +361,8 @@ namespace GBE
 
         // run prefix instruction
         void _RunPrefixInstruction(Memory &memory, InstructionResult &result);
+
+        // check if interrupt is pending
+        bool _IsInterruptPending(Memory &memory) const;
     };
 } // namespace GBE
