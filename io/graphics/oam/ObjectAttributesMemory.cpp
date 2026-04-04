@@ -13,7 +13,7 @@ namespace GBE
 
     void ObjectAttributesMemory::Init()
     {
-        SetReadWriteFlags(true);
+        // SetReadWriteFlags(true);
     }
 
     void ObjectAttributesMemory::_SetImp(uint16_t address, uint8_t value)
