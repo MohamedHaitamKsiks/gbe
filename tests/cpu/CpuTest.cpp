@@ -26,6 +26,8 @@ namespace GBETest
 
         ~MemoryCpu() {}
 
+        void Init() override {}
+
     private:
         uint8_t _GetImp(uint16_t address) const override
         {

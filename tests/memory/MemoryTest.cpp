@@ -14,6 +14,8 @@ namespace GBETest
         };
         ~TestMemoryArea() = default;
 
+        void Init() override {}
+
     private:
         std::vector<uint8_t> m_Data{};
 

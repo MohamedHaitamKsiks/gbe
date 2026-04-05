@@ -15,6 +15,7 @@ GBE_TEST_SUITE(JoypadTest)
         uint8_t joypadInterruptBit = static_cast<uint8_t>(GBE::InterruptFlag::JOYPAD);
         
         GBE::Joypad joypad(interruptManager);
+        joypad.Init();
 
         // act
         joypad.QueueJoypadEvent(GBE::JoypadEvent{
@@ -35,6 +36,8 @@ GBE_TEST_SUITE(JoypadTest)
         uint8_t expectedValue = 0b00011110; //  xx01 1110 - select buttons and A pressed
 
         GBE::Joypad joypad(interruptManager);
+        joypad.Init();
+
         joypad.Set(0, 0b00010000); // xx01 0000 - select buttons
 
         // act
@@ -56,6 +59,8 @@ GBE_TEST_SUITE(JoypadTest)
         uint8_t expectedValue = 0b00101011; //  xx10 1011 - select d-pad and A and UP pressed
 
         GBE::Joypad joypad(interruptManager);
+        joypad.Init();
+        
         joypad.Set(0, 0b00100000); // xx10 0000 - d-pad buttons
 
         // act

@@ -30,7 +30,7 @@ namespace GBE
             memory,
             m_Decoder
         );
-        std::println("{}", assembly.ToString());
+        // std::println("{}", assembly.ToString());
     
 
         // check if interruption is pending

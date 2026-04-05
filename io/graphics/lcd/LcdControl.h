@@ -104,7 +104,7 @@ namespace GBE
         // do the transfer of DMA from memory to oam memory
         void Tick(const Memory& memory, const std::shared_ptr<ObjectAttributesMemory>& oam, uint32_t dots);
     private:
-        uint8_t m_Control = 0;
+        uint8_t m_Control = 0x91;
         uint8_t m_Status = 0;
 
         uint8_t m_ViewportX = 0;

@@ -34,6 +34,6 @@ namespace GBE
         };
     private:
         uint8_t m_Byte = 0x0;
-        std::array<LcdColor, 4> m_Colors = {LcdColor::WHITE, LcdColor::LIGHT_GRAY, LcdColor::DARK_GRAY, LcdColor::BLACK};
+        std::array<LcdColor, 4> m_Colors = {LcdColor::WHITE, LcdColor::WHITE, LcdColor::WHITE, LcdColor::WHITE};
     };
 } // namespace GBE

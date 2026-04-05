@@ -42,12 +42,12 @@ namespace GBE
         m_WindowY = 0;
 
         m_LcdYCompare = 0;
-        m_LcdYCoordinate = 0x91;
+        m_LcdYCoordinate = 0x0;
 
         m_DMA = 0xFF;
         m_StartDMATransfer = true;
         m_DMADots = 0;
-
+        
         SetReadWriteFlags(true);
     }
 
