@@ -18,6 +18,8 @@ namespace GBE
     public:
         InterruptManager();
         ~InterruptManager();
+
+        void Init() override;
         
         inline uint8_t GetInterruptFlag() const
         {

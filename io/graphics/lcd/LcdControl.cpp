@@ -28,7 +28,26 @@ namespace GBE
 
     LcdControl::LcdControl()
     {
+    }
+
+    void LcdControl::Init()
+    {
         m_Control = 0x91;
+        m_Status = 0x81;
+
+        m_ViewportX = 0;
+        m_ViewportY = 0;
+
+        m_WindowX = 0;
+        m_WindowY = 0;
+
+        m_LcdYCompare = 0;
+        m_LcdYCoordinate = 0x0;
+
+        m_DMA = 0xFF;
+        m_StartDMATransfer = true;
+        m_DMADots = 0;
+        
         SetReadWriteFlags(true);
     }
 

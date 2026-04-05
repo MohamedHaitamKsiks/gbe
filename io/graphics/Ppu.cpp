@@ -24,8 +24,10 @@ namespace GBE
         m_DotsCounter = 0;
         m_WaitDots = 0;
         m_QueuePpuMode = PpuMode::OAM_SCAN;
+        m_PpuMode = PpuMode::H_BLANK;
 
-        m_BackgroundFIFO.Clear();
+        m_ObjectFIFO.Init();
+        m_BackgroundFIFO.Init();
     }
 
     void Ppu::Tick(uint32_t dots)

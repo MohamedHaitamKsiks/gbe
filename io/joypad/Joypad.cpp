@@ -9,12 +9,7 @@ namespace GBE
 
     Joypad::Joypad(const std::shared_ptr<InterruptManager>& interruptManager)
     {
-        SetReadWriteFlags(true);
         m_InterruptManager = interruptManager;
-
-        m_JoypadMatrix[JoypadButtonType::SELECT_DPAD] = 0x0F;
-        m_JoypadMatrix[JoypadButtonType::SELECT_BUTTONS] = 0x0F;
-        m_JoypadMatrix[JoypadButtonType::NONE] = 0x0F; 
 
         // joypad map
         // buttons
@@ -62,6 +57,17 @@ namespace GBE
 
     Joypad::~Joypad()
     {
+    }
+
+    void Joypad::Init()
+    {
+        SetReadWriteFlags(true);
+
+        m_JoypadMatrix[JoypadButtonType::SELECT_DPAD] = 0x0F;
+        m_JoypadMatrix[JoypadButtonType::SELECT_BUTTONS] = 0x0F;
+        m_JoypadMatrix[JoypadButtonType::NONE] = 0x0F;
+
+        Set(0, 0xCF);
     }
 
     void Joypad::QueueJoypadEvent(JoypadEvent event)

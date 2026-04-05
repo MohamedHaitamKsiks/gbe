@@ -25,6 +25,7 @@ namespace GBE
         Ram(uint16_t size);
         ~Ram() = default;
 
+        void Init() override;
     private:
         std::vector<uint8_t> m_Data{};
 

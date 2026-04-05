@@ -30,6 +30,8 @@ namespace GBE
         Vram();
         ~Vram() {}
 
+        void Init() override;
+
         // Get tile map
         inline const TileMap& GetTileMap(uint8_t tileMapID) const  
         {

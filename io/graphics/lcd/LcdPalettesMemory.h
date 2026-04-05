@@ -16,7 +16,10 @@ namespace GBE
     class LcdPalettesMemory: public MemoryArea
     {   
     public: 
-        ~LcdPalettesMemory(){}
+        LcdPalettesMemory() = default;
+        ~LcdPalettesMemory() = default;
+
+        void Init() override;
 
         inline const LcdPalette &GetBackgroundPalette() const
         {

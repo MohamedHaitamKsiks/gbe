@@ -18,7 +18,8 @@ namespace GBE
     class LcdPalette
     {
     public:
-        ~LcdPalette() {}
+        LcdPalette() = default;
+        ~LcdPalette() = default;
 
         void Set(uint8_t byte);
 
@@ -33,6 +34,6 @@ namespace GBE
         };
     private:
         uint8_t m_Byte = 0x0;
-        std::array<LcdColor, 4> m_Colors = {LcdColor::WHITE, LcdColor::LIGHT_GRAY, LcdColor::DARK_GRAY, LcdColor::BLACK};
+        std::array<LcdColor, 4> m_Colors = {LcdColor::WHITE, LcdColor::WHITE, LcdColor::WHITE, LcdColor::WHITE};
     };
 } // namespace GBE

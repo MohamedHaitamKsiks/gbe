@@ -42,6 +42,9 @@ namespace GBE
         
         // get byte from address
         uint8_t Get(uint16_t address) const;
+
+        // init memory area
+        virtual void Init() = 0;
     protected:
         virtual void _SetImp(uint16_t address, uint8_t value) = 0;
         virtual uint8_t _GetImp(uint16_t address) const = 0;

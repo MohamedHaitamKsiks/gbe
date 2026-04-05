@@ -37,15 +37,10 @@ namespace GBE
         m_Regs.SetReg16(Reg16::PC, 0x0100);
         m_Regs.SetReg16(Reg16::SP, 0xFFFE);
 
-        // predecode every instruction
-        // std::vector<uint8_t> invalidOpcodes = {0xD3, 0xDB, 0xDD, 0xE3, 0xE4, 0xEB, 0xEC, 0xED, 0xF4, 0xFC, 0xFD};
-        // for (uint16_t opcode = 0; opcode <= UINT8_MAX; opcode++)
-        // {
-        //     if (std::find(invalidOpcodes.begin(), invalidOpcodes.end(), opcode) == invalidOpcodes.end())
-        //         m_Decoder.Decode(opcode);
-
-        //     m_Decoder.DecodePrefix(opcode);
-        // }
+        m_IME = false;
+        m_QueueIME = 0;
+        m_IsHaltBug = false;
+        m_IsHalted = false;
     }
 
     uint8_t Cpu::GetReg16Adr(Reg16 adr, Memory &memory) const
@@ -381,7 +376,7 @@ namespace GBE
             return;
 
         if (_IsInterruptPending(memory))
-            m_IsHalted = false;
+             m_IsHalted = false;
 
     }
     void Cpu::_HandleHaltBug(uint16_t pc)

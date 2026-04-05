@@ -59,6 +59,7 @@ namespace GBE
         // copy buffer to memory
         void CopyBuffer(uint16_t address, const void *data, uint16_t size);
 
+        void Init();
         void Reset();
 
     private:

@@ -26,23 +26,13 @@ namespace GBE
             return;
 
         m_IsRunning = true;
-
         m_Cartridge = cartridge;
-        m_Cartridge->SetReadFlag(true);
-
-        m_WorkRam->SetReadWriteFlags(true);
-        m_HighRam->SetReadWriteFlags(true);
-
-        m_Ppu->Init();
-
-        m_Cpu.Init();
-
-        m_InterruptManager->SetInterruptFlag(0xE1);
-        m_InterruptManager->SetInterruptEnabled(0x00);
-
-        m_Timer->Init();
 
         _InitMemoryMapping();
+        m_Memory.Init();
+
+        m_Ppu->Init();
+        m_Cpu.Init();
     }
 
     uint16_t Gameboy::Tick()
