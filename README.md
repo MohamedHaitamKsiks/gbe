@@ -2,7 +2,7 @@
 
 My game boy emulator written is modern C++.
 
-![Test Image 1](screenshots/image.png)
+![Test Image 1](screenshots/image0.png)
 
 ## TODO
 
