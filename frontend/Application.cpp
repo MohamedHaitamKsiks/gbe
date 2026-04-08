@@ -1,54 +1,61 @@
 #include "Application.h"
 
-#include <chrono>
-#include <thread>
+#include <SDL3/SDL.h>
 #include <string>
+#include <print>
+
+#include "gameboy/Gameboy.h"
+
+#include "rendering/Window.h"
+#include "rendering/Renderer.h"
+#include "gui/GuiLayer.h"
+#include "event/EventManager.h"
 
 
 namespace GBE
 {
-    constexpr float SEC_TO_MICRO = 1000000.0f;
-    
     Application::Application()
     {
+        SDL_Init(SDL_INIT_VIDEO);
+
+        m_GB = std::make_shared<Gameboy>();
+        m_Window = std::make_shared<Window>(1280, 720);
+        m_Renderer = std::make_shared<Renderer>(m_Window, m_GB->GetPpu());
+        m_GuiLayer = std::make_shared<GuiLayer>(m_Window, m_Renderer, m_GB);
+        m_EventManager = std::make_shared<EventManager>(m_Window, m_GB->GetJoypad(), m_GuiLayer);
     }
 
     Application::~Application()
     {
+        std::atexit([]() {
+            std::println("Quitting SDL...");
+            SDL_Quit();
+        });
     }
 
-    void Application::Run()
+    bool Application::IsRunning() const
     {
-        // get time now=
-        m_Window = std::make_unique<Window>(m_GB.GetPpu(), m_GB.GetJoypad(), 1280, 720);
-        m_Window->SetOpenRomCallback([this](std::string_view romPath) {
-            m_GB.Stop();
-            auto cartridge = std::make_shared<Cartridge>();
-            cartridge->Load(romPath);
-            m_GB.Start(std::move(cartridge));
-        });
+        return !m_Window->IsClosed();
+    }
 
-        float delta = 0.0f;
-        while (!m_Window->IsClosed())
+    void Application::Update(float delta)
+    {
+        // ticks for one frame every 16.74 ms
+        constexpr float FRAME_TIME = 16.74f * 0.001f; // seconds
+        m_GBTickTimer += delta;
+        if (m_GBTickTimer >= FRAME_TIME)
         {
-            const auto pastTime = std::chrono::high_resolution_clock::now();
-            
-            auto ppu = m_GB.GetPpu();
-
-            // ticks for one frame
-            m_GB.Tick();
-            m_Window->Update(delta);
-
-            // compute delta
-            const auto currentTime = std::chrono::high_resolution_clock::now();
-            delta = std::chrono::duration_cast<std::chrono::microseconds>(currentTime - pastTime).count() / SEC_TO_MICRO;
-        
-            // sleep 
-            float wait = 16.74 - (delta * 1000.0f);
-            if (wait < 0.0f)
-                wait = 0.01f;
-            SDL_Delay(wait);
+            m_GB->Tick();
+            m_GBTickTimer -= FRAME_TIME;
         }
+
+        // update window and render 
+        m_EventManager->ProcessEvents();
+        m_Window->Update();
+
+        m_Renderer->BeginFrame();
+        m_GuiLayer->Render(delta);
+        m_Renderer->EndFrame();
     }
 
 } // namespace GBE

@@ -1,19 +1,25 @@
 #include "Renderer.h"
 
+#include "Window.h"
 #include "io/graphics/Ppu.h"
-#include "frontend/gui/GuiLayer.h"
+#include "util/Assert.h"
 
-
+#include <SDL3/SDL.h>
 #include <cassert>
 
 namespace GBE
 {
-    Renderer::Renderer(SDL_Window *sdlWindow, std::shared_ptr<Ppu> ppu)
-        : m_SDLWindow(sdlWindow),
+    Renderer::Renderer(std::shared_ptr<Window> window, std::shared_ptr<Ppu> ppu): 
+        m_Window(window),
         m_Ppu(ppu)
     {
+        GBE_ASSERT(m_Window);
+        GBE_ASSERT(m_Ppu);
+
         // create sdl renderer
+        SDL_Window* sdlWindow = window->GetSDLWindow();
         m_SDLRenderer = SDL_CreateRenderer(sdlWindow, nullptr);
+        GBE_ASSERT(m_SDLRenderer);
 
         // init color palette
         m_ColorPalette.push_back({224, 248, 208});
@@ -40,7 +46,7 @@ namespace GBE
         SDL_DestroyRenderer(m_SDLRenderer);
     }
 
-    void Renderer::Render(float delta, int32_t width, int32_t height)
+    void Renderer::BeginFrame()
     {
         // clear
         SDL_SetRenderDrawColor(m_SDLRenderer, 0, 0, 0, 255);
@@ -57,7 +63,10 @@ namespace GBE
             0.0f
         };
 
+        uint32_t width = m_Window->GetWidth();
         float fWidth = static_cast<float>(width);
+
+        uint32_t height = m_Window->GetHeight();
         float fHeight = static_cast<float>(height);
         if (fWidth > fHeight)
         {
@@ -74,11 +83,10 @@ namespace GBE
 
         // draw
         SDL_RenderTexture(m_SDLRenderer, m_SDLTexture, nullptr, &rect);
+    }
 
-        // render gui layer
-        if (m_GuiLayer)
-            m_GuiLayer->Render(delta, m_SDLRenderer);
-
+    void Renderer::EndFrame()
+    {
         SDL_RenderPresent(m_SDLRenderer);
     }
 
@@ -100,6 +108,6 @@ namespace GBE
             }
         }
 
-        SDL_UpdateTexture(m_SDLTexture, nullptr, m_Pixels.data(), LCD_SCREEN_WIDTH * sizeof(ColorRGB32));
+        SDL_UpdateTexture(m_SDLTexture, nullptr, m_Pixels.data(), LCD_SCREEN_WIDTH * 3);
     }
 } // namespace GBE

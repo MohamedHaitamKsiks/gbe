@@ -1,34 +1,33 @@
 #pragma once
 
-#include <SDL3/SDL.h>
-#include <functional>
-#include <string>
+#include <memory>
 #include <string_view>
+
+union SDL_Event;
 
 namespace GBE
 {
-    
+    class Window;
+    class Renderer;
+    class Gameboy;
+
     class GuiLayer
     {
     public:
-        GuiLayer(SDL_Window* window, SDL_Renderer* renderer);
+        GuiLayer(std::shared_ptr<Window> window, std::shared_ptr<Renderer> renderer, std::shared_ptr<Gameboy> gameboy);
         ~GuiLayer();
 
-        inline void SetOpenRomCallback(std::function<void(std::string_view)> cb)
-        {
-            m_OnOpenRom = std::move(cb);
-        }
-
-        void Render(float delta, SDL_Renderer* renderer);
-        void ProcessEvent(const SDL_Event& event);
-        bool WantCaptureKeyboard() const;
+        void Render(float delta);
+        bool ProcessEvent(const SDL_Event& event);
 
     private:
-        SDL_Window*   m_Window   = nullptr;
-        SDL_Renderer* m_Renderer = nullptr;
+        std::shared_ptr<Window> m_Window = nullptr;
+        std::shared_ptr<Renderer> m_Renderer = nullptr;
+        std::shared_ptr<Gameboy> m_Gameboy = nullptr;
 
-        std::function<void(std::string_view)> m_OnOpenRom;
-        bool m_ShowOpenRom = false;
-        char m_OpenRomPath[512] = "";
+        void _LoadRom(std::string_view path);
+        void _RenderMainMenuBar();
+        void _RenderFPSCounter(float delta);
+        void _RenderCpuState();
     };
 } // namespace GBE

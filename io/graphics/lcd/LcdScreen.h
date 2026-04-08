@@ -14,7 +14,8 @@ namespace GBE
     public:
         using Pixels = std::array<uint8_t, LCD_SCREEN_WIDTH * LCD_SCREEN_HEIGHT>;
 
-        ~LcdScreen() {}
+        LcdScreen() = default;  
+        ~LcdScreen() = default;
 
         inline void SetPixel(uint8_t x, uint8_t y, uint8_t value)
         {

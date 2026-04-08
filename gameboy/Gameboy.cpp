@@ -71,6 +71,7 @@ namespace GBE
     void Gameboy::Stop()
     {
         m_IsRunning = false;
+        // m_Ppu->GetLcdScreen().Clear();
         m_Memory.Reset();
     }
 

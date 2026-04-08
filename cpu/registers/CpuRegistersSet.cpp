@@ -145,7 +145,6 @@ namespace GBE
     std::string CpuRegistersSet::ToString() const
     {
         std::stringstream ss;
-        ss << "==== CPU REGISTERS ====\n";
         ss << m_AF.ToString("AF") << "\n";
         ss << m_BC.ToString("BC") << "\n";
         ss << m_DE.ToString("DE") << "\n";
@@ -157,7 +156,6 @@ namespace GBE
         ss << "\n";
 
         ss << _FlagsToString() << "\n";
-        ss << "=======================\n";
 
         return ss.str();
     }
