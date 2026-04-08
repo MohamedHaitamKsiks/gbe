@@ -1,44 +1,62 @@
 #pragma once
 
 #include <cstdint>
-#include <SDL3/SDL.h>
 #include <functional>
 #include <string>
 #include <memory>
 #include "Renderer.h"
 #include "frontend/gui/GuiLayer.h"
 
-#include "io/joypad/Joypad.h"
+class SDL_Window;
 
 namespace GBE
 {
-    class Ppu;
-    
     class Window
     {
     public:
-        Window(const std::shared_ptr<Ppu>& ppu, const std::shared_ptr<Joypad>& joypad, int32_t width, int32_t height);
+        using FileDialogCallback = std::function<void(const std::vector<std::string>&)>;
+
+        Window(uint32_t width, uint32_t height);
         ~Window();
 
-        bool IsClosed() const;
-
-        void Update(float delta);
-        inline void SetOpenRomCallback(std::function<void(std::string_view)> cb)
+        inline bool IsClosed() const
         {
-            m_GuiLayer->SetOpenRomCallback(std::move(cb));
+            return m_IsClosed;
         }
 
-    private:
-        int32_t m_Width = -1;
-        int32_t m_Height = -1;
+        inline void Close()
+        {
+            m_IsClosed = true;
+        }
 
-        SDL_Window *m_Window = nullptr;
+        void Update();
+
+        inline uint32_t GetWidth() const 
+        { 
+            return m_Width; 
+        }
+
+        inline uint32_t GetHeight() const 
+        { 
+            return m_Height; 
+        }
+
+        inline SDL_Window* GetSDLWindow() const 
+        { 
+            return m_SDLWindow; 
+        }
+
+        void OpenFileDialog(const FileDialogCallback& callback);
+
+    private:
+        SDL_Window *m_SDLWindow = nullptr;
+        
+        uint32_t m_Width = 0;
+        uint32_t m_Height = 0;
         bool m_IsClosed = false;
 
-        std::unique_ptr<Renderer> m_Renderer = nullptr;
-        std::shared_ptr<GuiLayer> m_GuiLayer = nullptr;
-        std::shared_ptr<Joypad> m_Joypad = nullptr;
+        FileDialogCallback m_FileDialogCallback;
+        bool m_IsFileDialogOpen = false;
 
-        void _ProcessEvents();
     };
 } // namespace GBE

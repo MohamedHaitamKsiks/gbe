@@ -12,6 +12,8 @@
 
 namespace GBE
 {
+    class Window;
+    
     struct ColorRGB32
     {
         uint8_t Red = 0x0;
@@ -24,22 +26,21 @@ namespace GBE
     class Renderer
     {
     public:
-        Renderer(SDL_Window* sdlWindow, std::shared_ptr<Ppu> ppu);
+        Renderer(std::shared_ptr<Window> window, std::shared_ptr<Ppu> ppu);
         ~Renderer();
 
-        inline void SetGuiLayer(std::shared_ptr<GuiLayer> guiLayer)
-        {
-            m_GuiLayer = guiLayer;
+        void BeginFrame();
+        void EndFrame();
+        
+        inline SDL_Renderer* GetSDLRenderer() const 
+        { 
+            return m_SDLRenderer; 
         }
 
-        void Render(float delta, int32_t width, int32_t height);
-        SDL_Renderer* GetRenderer() const { return m_SDLRenderer; }
-
     private:
+        std::shared_ptr<Window> m_Window = nullptr;
         std::shared_ptr<Ppu> m_Ppu = nullptr;
-        std::shared_ptr<GuiLayer> m_GuiLayer = nullptr;
 
-        SDL_Window*  m_SDLWindow  = nullptr;
         SDL_Renderer* m_SDLRenderer = nullptr;
         SDL_Texture * m_SDLTexture = nullptr;
 
