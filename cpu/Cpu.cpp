@@ -1,5 +1,6 @@
 #include "Cpu.h"
 
+#include "instruction/Instruction.h"
 #include "instruction/InstructionResult.h"
 
 #include "alu/AluResult.h"
@@ -8,6 +9,7 @@
 #include "memory/Memory.h"
 #include "util/Binary.h" 
 #include "io/IORegister.h"
+#include "io/interrupts/InterruptManager.h"
 
 #include <magic_enum.hpp>
 #include <iostream>
@@ -16,6 +18,13 @@
 
 namespace GBE
 {
+
+    Cpu::Cpu(const std::shared_ptr<Memory> &memory, const std::shared_ptr<InstructionDecoder> &decoder):
+        m_Memory(memory),
+        m_Decoder(decoder)
+    {
+    }
+
     Cpu::~Cpu()
     {   
     }
@@ -41,16 +50,18 @@ namespace GBE
         m_QueueIME = 0;
         m_IsHaltBug = false;
         m_IsHalted = false;
+
+        m_Debugger.Init();
     }
 
-    uint8_t Cpu::GetReg16Adr(Reg16 adr, Memory &memory) const
+    uint8_t Cpu::GetReg16Adr(Reg16 adr) const
     {
-        return memory.Get(m_Regs.GetReg16(adr));
+        return m_Memory->Get(m_Regs.GetReg16(adr));
     }
 
-    void Cpu::SetReg16Adr(Reg16 adr, uint8_t value, Memory &memory)
+    void Cpu::SetReg16Adr(Reg16 adr, uint8_t value)
     {
-        memory.Set(
+        m_Memory->Set(
             m_Regs.GetReg16(adr), 
             value
         );
@@ -68,23 +79,23 @@ namespace GBE
         m_Regs.SetReg16(Reg16::HL, aluResult.Result16);
     }
 
-    uint8_t Cpu::GetOperandR8(OperandR8 r8, Memory &memory, InstructionResult &result)
+    uint8_t Cpu::GetOperandR8(OperandR8 r8, InstructionResult &result)
     {
         if (r8 == OperandR8::ADR_HL)
         {
             result.Cycles++;
-            return GetReg16Adr(Reg16::HL, memory);
+            return GetReg16Adr(Reg16::HL);
         }
 
         return m_Regs.GetReg8(static_cast<Reg8>(r8));
     }
 
-    void Cpu::SetOperandR8(OperandR8 r8, uint8_t value, Memory &memory, InstructionResult &result)
+    void Cpu::SetOperandR8(OperandR8 r8, uint8_t value, InstructionResult &result)
     {
         if (r8 == OperandR8::ADR_HL)
         {
             result.Cycles++;
-            SetReg16Adr(Reg16::HL, value, memory);
+            SetReg16Adr(Reg16::HL, value);
             return; 
         }
 
@@ -120,7 +131,7 @@ namespace GBE
         m_Regs.SetReg16(static_cast<Reg16>(r16stk), value);
     }
 
-    uint16_t Cpu::GetOperandR16Mem(OperandR16Mem r16mem, Memory& memory, InstructionResult &result)
+    uint16_t Cpu::GetOperandR16Mem(OperandR16Mem r16mem, InstructionResult &result)
     {
         result.Cycles++;
         uint8_t value = 0;
@@ -128,34 +139,34 @@ namespace GBE
         switch (r16mem)
         {
         case OperandR16Mem::HLI:
-            value = GetReg16Adr(Reg16::HL, memory);
+            value = GetReg16Adr(Reg16::HL);
             _HLIncDec(true);
             break;
         case OperandR16Mem::HLD:
-            value = GetReg16Adr(Reg16::HL, memory);
+            value = GetReg16Adr(Reg16::HL);
             _HLIncDec(false);
             break;
         default:
-            value = GetReg16Adr(static_cast<Reg16>(r16mem), memory);
+            value = GetReg16Adr(static_cast<Reg16>(r16mem));
         }
         return value;
     }
 
-    void Cpu::SetOperandR16Mem(OperandR16Mem r16mem, uint8_t value, Memory& memory, InstructionResult &result)
+    void Cpu::SetOperandR16Mem(OperandR16Mem r16mem, uint8_t value, InstructionResult &result)
     {
         result.Cycles++;
         switch (r16mem)
         {
         case OperandR16Mem::HLI:
-            SetReg16Adr(Reg16::HL, value, memory);
+            SetReg16Adr(Reg16::HL, value);
             _HLIncDec(true);
             break;
         case OperandR16Mem::HLD:
-            SetReg16Adr(Reg16::HL, value, memory);
+            SetReg16Adr(Reg16::HL, value);
             _HLIncDec(false);
             break;
         default:
-            SetReg16Adr(static_cast<Reg16>(r16mem), value, memory);
+            SetReg16Adr(static_cast<Reg16>(r16mem), value);
         }
     }
 
@@ -176,9 +187,9 @@ namespace GBE
         return false;
     }
 
-    uint8_t Cpu::GetImm8(Memory &memory, InstructionResult &result)
+    uint8_t Cpu::GetImm8(InstructionResult &result)
     {
-        uint8_t imm8 = memory.Get(m_Regs.GetReg16(Reg16::PC)); 
+        uint8_t imm8 = m_Memory->Get(m_Regs.GetReg16(Reg16::PC)); 
 
         result.Cycles++;
         _AddPC(1);
@@ -186,9 +197,9 @@ namespace GBE
         return imm8;
     }
 
-    uint16_t Cpu::GetImm16(Memory &memory, InstructionResult &result)
+    uint16_t Cpu::GetImm16(InstructionResult &result)
     {
-        uint16_t imm16 = memory.Get16(m_Regs.GetReg16(Reg16::PC));
+        uint16_t imm16 = m_Memory->Get16(m_Regs.GetReg16(Reg16::PC));
 
         _AddPC(2);
         result.Cycles += 2;
@@ -196,17 +207,17 @@ namespace GBE
         return imm16;
     }
 
-    void Cpu::SetImm8(uint8_t imm8, Memory &memory)
+    void Cpu::SetImm8(uint8_t imm8)
     {
-        memory.Set(m_Regs.GetReg16(Reg16::PC), imm8);
+        m_Memory->Set(m_Regs.GetReg16(Reg16::PC), imm8);
     }
 
-    void Cpu::SetImm16(uint16_t imm16, Memory &memory)
+    void Cpu::SetImm16(uint16_t imm16)
     {
-        memory.Set16(m_Regs.GetReg16(Reg16::PC), imm16);
+        m_Memory->Set16(m_Regs.GetReg16(Reg16::PC), imm16);
     }
 
-    void Cpu::ComplementCarryFlag(const Instruction &instr, Memory &memory, InstructionResult &result)
+    void Cpu::ComplementCarryFlag(const Instruction &instr, InstructionResult &result)
     {
         // reset N and H Flags
         m_Regs.SetFlag(CpuFlag::N, false);
@@ -217,7 +228,7 @@ namespace GBE
         m_Regs.SetFlag(CpuFlag::C, !carryFlag);
     }
 
-    void Cpu::SetCarryFlag(const Instruction &instr, Memory &memory, InstructionResult &result)
+    void Cpu::SetCarryFlag(const Instruction &instr, InstructionResult &result)
     {
         // reset N and H Flags
         m_Regs.SetFlag(CpuFlag::N, false);
@@ -227,13 +238,13 @@ namespace GBE
         m_Regs.SetFlag(CpuFlag::C, true);
     }
 
-    void Cpu::DisableInterrupts(const Instruction &instr, Memory &memory, InstructionResult &result)
+    void Cpu::DisableInterrupts(const Instruction &instr, InstructionResult &result)
     {
         m_IME = false;
         m_QueueIME = 0;
     }
 
-    void Cpu::EnableInterrupts(const Instruction &instr, Memory &memory, InstructionResult &result)
+    void Cpu::EnableInterrupts(const Instruction &instr, InstructionResult &result)
     {
         if (m_QueueIME == 0 && !m_IME)
             m_QueueIME = 2;
@@ -241,7 +252,7 @@ namespace GBE
         m_IME = true;
     }
 
-    void Cpu::DecimalAdjustAccumulator(const Instruction &instr, Memory &memory, InstructionResult &result)
+    void Cpu::DecimalAdjustAccumulator(const Instruction &instr, InstructionResult &result)
     {
         // fetch
         uint8_t a = m_Regs.GetReg8(Reg8::A);
@@ -279,7 +290,7 @@ namespace GBE
         m_Regs.SetFlag(CpuFlag::H, false);
     }
 
-    void Cpu::Stop(const Instruction &instr, Memory &memory, InstructionResult &result)
+    void Cpu::Stop(const Instruction &instr, InstructionResult &result)
     {
     }
 
@@ -294,7 +305,7 @@ namespace GBE
             m_IME = true;
     }
 
-    bool Cpu::_HandleInterrupts(Memory &memory, InstructionResult &result)
+    bool Cpu::_HandleInterrupts(InstructionResult &result)
     {
         if (!m_IME)
             return false;
@@ -311,7 +322,7 @@ namespace GBE
 
         for (auto flag: flags)
         {
-            if (_HandleInterruptFlag(flag, memory, result))
+            if (_HandleInterruptFlag(flag, result))
             {
                 // std::cout << "Exception: " << magic_enum::enum_name(flag) << "\n";
                 return true;
@@ -321,15 +332,15 @@ namespace GBE
         return false;
     }
 
-    bool Cpu::_HandleInterruptFlag(InterruptFlag flag, Memory &memory, InstructionResult &result)
+    bool Cpu::_HandleInterruptFlag(InterruptFlag flag, InstructionResult &result)
     {
         // cast flag to uint8_t
         uint8_t flagBit = static_cast<uint8_t>(flag);
 
 
         // get interrupt flags
-        uint8_t interruptEnable = memory.Get(static_cast<uint16_t>(IORegister::IE));
-        uint8_t interruptFlag = memory.Get(static_cast<uint16_t>(IORegister::IF));
+        uint8_t interruptEnable = m_Memory->Get(static_cast<uint16_t>(IORegister::IE));
+        uint8_t interruptFlag = m_Memory->Get(static_cast<uint16_t>(IORegister::IF));
 
         // check interrupt enable
         if (!Binary::TestBit(interruptEnable, flagBit))
@@ -340,13 +351,13 @@ namespace GBE
             return false;
 
         // get handler address
-        uint16_t handler = 0x40 + 0x8 * static_cast<uint16_t>(flagBit);
+        uint16_t handler = InterruptManager::GetHandler(flag);
 
         // handle interrupt
         m_IME = false; // disable IME flag
         interruptFlag = Binary::ResetBit(interruptFlag, flagBit); // reset interrupt flag
-        memory.Set(static_cast<uint16_t>(IORegister::IF), interruptFlag);
-        _Call(handler, memory, result); // call interrupt
+        m_Memory->Set(static_cast<uint16_t>(IORegister::IF), interruptFlag);
+        _Call(handler, result); // call interrupt
 
         // result
         result.Cycles = 5; // hard code 5 cycles it's easier that way
@@ -354,28 +365,28 @@ namespace GBE
         return true;
     }
 
-    bool Cpu::_IsInterruptPending(Memory &memory) const
+    bool Cpu::_IsInterruptPending() const
     {
-        uint8_t interruptEnable = memory.Get(static_cast<uint16_t>(IORegister::IE));
-        uint8_t interruptFlag = memory.Get(static_cast<uint16_t>(IORegister::IF));
+        uint8_t interruptEnable = m_Memory->Get(static_cast<uint16_t>(IORegister::IE));
+        uint8_t interruptFlag = m_Memory->Get(static_cast<uint16_t>(IORegister::IF));
 
         return (interruptEnable & interruptFlag) != 0;
     }
 
-    void Cpu::Halt(const Instruction &instr, Memory &memory, InstructionResult &result)
+    void Cpu::Halt(const Instruction &instr, InstructionResult &result)
     {
         m_IsHalted = true;
 
-        if (_IsInterruptPending(memory) && !m_IME)
+        if (_IsInterruptPending() && !m_IME)
             m_IsHaltBug = true;
     }
 
-    void Cpu::_HandleHalt(Memory &memory, InstructionResult &result)
+    void Cpu::_HandleHalt(InstructionResult &result)
     {
         if (!m_IsHalted)
             return;
 
-        if (_IsInterruptPending(memory))
+        if (_IsInterruptPending())
              m_IsHalted = false;
 
     }

@@ -133,6 +133,9 @@ namespace GBE
             if constexpr (std::is_same_v<T, OperandImm16>)
                 return OperandType::IMM16;
 
+            if constexpr (std::is_same_v<T, OperandCond>)
+                return OperandType::COND;
+
             return OperandType::NONE;
         };
 

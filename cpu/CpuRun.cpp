@@ -1,7 +1,8 @@
 #include "Cpu.h"
 
+#include "instruction/Instruction.h"
+#include "instruction/InstructionDecoder.h"
 #include "instruction/InstructionResult.h"
-#include "instruction/Disassembler.h"
 
 #include "alu/AluResult.h"
 #include "alu/Alu.h"
@@ -14,35 +15,36 @@
 
 namespace GBE
 {
-    void Cpu::Run(Memory &memory, InstructionResult &result)
+    void Cpu::Run(InstructionResult &result)
     {
+        uint16_t pc = m_Regs.GetReg16(Reg16::PC);
+
+        // debug
+        if (m_Debugger.IsEnabled())
+        {
+            m_Debugger.Tick(pc);
+
+            if (m_Debugger.IsBreaked())
+                return;
+        }
+
         // don't process intructions if halted
         if (m_IsHalted)
         {
-            _HandleHalt(memory, result);
+            _HandleHalt(result);
             return;
         }
 
-        uint16_t pc = m_Regs.GetReg16(Reg16::PC);
-
-        Assembly assembly = Disassembler::Disassemble(
-            pc,
-            memory,
-            m_Decoder
-        );
-        // std::println("{}", assembly.ToString());
-    
-
         // check if interruption is pending
-        if (_HandleInterrupts(memory, result))
+        if (_HandleInterrupts(result))
             return;
 
         // handle instruction
         result.Cycles = 0;
 
-        uint8_t opcode = GetImm8(memory, result);
-        const Instruction& instr = m_Decoder.Decode(opcode);
-        _RunInstruction(instr, memory, result);
+        uint8_t opcode = GetImm8(result);
+        const Instruction& instr = m_Decoder->Decode(opcode);
+        _RunInstruction(instr, result);
 
         // handle queue TME
         _HandleIME();
@@ -52,23 +54,25 @@ namespace GBE
 
     }
 
-    void Cpu::_RunInstruction(const Instruction &instr, Memory& memory, InstructionResult& result)
+    void Cpu::_RunInstruction(const Instruction &instr, InstructionResult& result)
     {
+        GBE_ASSERT(instr.GetType() != InstructionType::INVALID);
+
         if (instr.GetType() == InstructionType::PREFIX_INST)
         {
-            _RunPrefixInstruction(memory, result);
+            _RunPrefixInstruction(result);
             return;
         }
         
         // run instruction method
-        (this->*instr.GetMethod())(instr, memory, result);
+        (this->*instr.GetMethod())(instr, result);
     }
 
-    void Cpu::_RunPrefixInstruction(Memory &memory, InstructionResult &result)
+    void Cpu::_RunPrefixInstruction(InstructionResult &result)
     {
-        uint8_t opcode = GetImm8(memory, result);
-        const Instruction& instr = m_Decoder.DecodePrefix(opcode);
-        (this->*instr.GetMethod())(instr, memory, result);
+        uint8_t opcode = GetImm8(result);
+        const Instruction& instr = m_Decoder->DecodePrefix(opcode);
+        (this->*instr.GetMethod())(instr, result);
     }
 
 

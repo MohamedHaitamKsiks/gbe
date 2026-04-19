@@ -26,7 +26,8 @@ namespace GBE
 
     constexpr uint8_t LYC_WRITABLE_MASK = 0b01111000;
 
-    LcdControl::LcdControl()
+    LcdControl::LcdControl(const std::shared_ptr<ObjectAttributesMemory> &oam):
+        m_Oam(oam)
     {
     }
 
@@ -118,7 +119,7 @@ namespace GBE
         return oldPpuModeInt2 != ppuModeBit && Binary::TestBit(m_Status, ppuModeBit);
     }
 
-    void LcdControl::Tick(const Memory &memory, const std::shared_ptr<ObjectAttributesMemory> &oam, uint32_t dots)
+    void LcdControl::Tick(const Memory &memory, uint32_t dots)
     {
         if (!m_StartDMATransfer)
             return;
@@ -133,7 +134,7 @@ namespace GBE
         for (uint16_t address = 0; address < MMAP_OAM.GetSize(); address++)
         {
             uint8_t byte = memory.Get(address + m_DMA);
-            oam->Set(address, byte);
+            m_Oam->Set(address, byte);
         }
 
         // done
@@ -147,6 +148,7 @@ namespace GBE
         case LcdAddress::LCDC:
             m_Control = value;
             break;
+            // BITS 0 - 2 READ ONLY //
         case LcdAddress::STAT:
             m_Status = (value & LYC_WRITABLE_MASK) | (m_Status & ~LYC_WRITABLE_MASK);
             break;
@@ -159,7 +161,6 @@ namespace GBE
         // READ ONLY //
         case LcdAddress::LY:
             break;
-        // BITS 0 - 2 READ ONLY //
         case LcdAddress::LYC:
             m_LcdYCompare = value;
             break;

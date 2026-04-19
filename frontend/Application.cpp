@@ -8,7 +8,7 @@
 
 #include "rendering/Window.h"
 #include "rendering/Renderer.h"
-#include "gui/GuiLayer.h"
+#include "gui/GuiManager.h"
 #include "event/EventManager.h"
 
 
@@ -20,9 +20,9 @@ namespace GBE
 
         m_GB = std::make_shared<Gameboy>();
         m_Window = std::make_shared<Window>(1280, 720);
-        m_Renderer = std::make_shared<Renderer>(m_Window, m_GB->GetPpu());
-        m_GuiLayer = std::make_shared<GuiLayer>(m_Window, m_Renderer, m_GB);
-        m_EventManager = std::make_shared<EventManager>(m_Window, m_GB->GetJoypad(), m_GuiLayer);
+        m_Renderer = std::make_shared<Renderer>(m_Window, m_GB);
+        m_GuiManager = std::make_shared<GuiManager>(m_Window, m_Renderer, m_GB);
+        m_EventManager = std::make_shared<EventManager>(m_Window, m_GB, m_GuiManager);
     }
 
     Application::~Application()
@@ -54,7 +54,7 @@ namespace GBE
         m_Window->Update();
 
         m_Renderer->BeginFrame();
-        m_GuiLayer->Render(delta);
+        m_GuiManager->Render(delta);
         m_Renderer->EndFrame();
     }
 

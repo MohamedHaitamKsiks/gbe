@@ -44,6 +44,8 @@ namespace GBE
         // queue interrupt to be executed
         void QueueInterrupt(InterruptFlag interrupt);
 
+        // get interrupt handler address
+        static uint16_t GetHandler(InterruptFlag flag);
         
     private:
         uint8_t m_InterruptFlag = 0;

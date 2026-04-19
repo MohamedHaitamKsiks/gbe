@@ -2,6 +2,9 @@
 
 #include "MemoryMap.h"
 #include "MemoryArea.h"
+
+#include "util/Class.h"
+
 #include <vector>
 
 namespace GBE
@@ -22,6 +25,8 @@ namespace GBE
     class Ram: public MemoryArea
     {
     public: 
+        GBE_CLASS_NO_COPY_NO_MOVE(Ram)
+        
         Ram(uint16_t size);
         ~Ram() = default;
 

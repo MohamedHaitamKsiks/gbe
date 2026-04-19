@@ -3,6 +3,7 @@
 #include "MemoryArea.h"
 #include "MemoryMap.h"
 
+#include "util/Class.h"
 
 #include <memory>
 #include <cstdint>
@@ -18,12 +19,10 @@ namespace GBE
     class Memory
     {
     public:
+        GBE_CLASS_NO_COPY_NO_MOVE(Memory)
+        
         ~Memory() = default;
         Memory() = default;
-
-        // no copy no assign
-        Memory(const Memory& memory) = delete;
-        Memory& operator=(const Memory& memory) = delete;
 
         // expecting iterable of MemoryMap
         template<typename CollectionType>

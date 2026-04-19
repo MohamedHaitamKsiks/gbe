@@ -1,0 +1,7 @@
+set (GBE_HEADERS ${GBE_HEADERS}
+    ${CMAKE_CURRENT_LIST_DIR}/CpuDebugger.h
+)
+
+set(GBE_SOURCES ${GBE_SOURCES}
+    ${CMAKE_CURRENT_LIST_DIR}/CpuDebugger.cpp
+)

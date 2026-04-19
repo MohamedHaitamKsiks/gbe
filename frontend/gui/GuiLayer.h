@@ -1,33 +1,48 @@
 #pragma once
 
 #include <memory>
-#include <string_view>
-
-union SDL_Event;
+#include <vector>
 
 namespace GBE
 {
+    class Gameboy;
     class Window;
     class Renderer;
-    class Gameboy;
 
     class GuiLayer
     {
     public:
         GuiLayer(std::shared_ptr<Window> window, std::shared_ptr<Renderer> renderer, std::shared_ptr<Gameboy> gameboy);
-        ~GuiLayer();
+        virtual ~GuiLayer();
+        void Render();
 
-        void Render(float delta);
-        bool ProcessEvent(const SDL_Event& event);
+        inline bool IsVisible() const
+        {
+            return m_IsVisible;
+        }
 
-    private:
-        std::shared_ptr<Window> m_Window = nullptr;
-        std::shared_ptr<Renderer> m_Renderer = nullptr;
+        inline void SetVisible(bool visible)
+        {
+            m_IsVisible = visible;
+        }
+
+        template <typename T>
+        std::shared_ptr<T> AddLayer()
+        {
+            auto layer = std::make_shared<T>(m_Window, m_Renderer, m_Gameboy);
+            m_Layers.push_back(layer);
+            return layer;
+        }
+
+    protected:
+        virtual void _RenderImp() {};
+
         std::shared_ptr<Gameboy> m_Gameboy = nullptr;
+        std::shared_ptr<Renderer> m_Renderer = nullptr;
+        std::shared_ptr<Window> m_Window = nullptr;
 
-        void _LoadRom(std::string_view path);
-        void _RenderMainMenuBar();
-        void _RenderFPSCounter(float delta);
-        void _RenderCpuState();
+        std::vector<std::shared_ptr<GuiLayer>> m_Layers{};
+
+        bool m_IsVisible = true;
     };
 } // namespace GBE

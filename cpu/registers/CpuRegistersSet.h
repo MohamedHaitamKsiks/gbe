@@ -5,6 +5,8 @@
 #include "CpuFlags.h"
 #include "CpuRegister.h"
 
+#include "util/Class.h"
+
 namespace GBE
 {
     // R8
@@ -34,6 +36,8 @@ namespace GBE
     class CpuRegistersSet
     {
     public:
+        GBE_CLASS_NO_COPY_NO_MOVE(CpuRegistersSet)
+
         CpuRegistersSet();
         ~CpuRegistersSet() {}
 
