@@ -2,7 +2,11 @@
 
 #include "Assembly.h"
 #include "memory/Memory.h"
+
 #include "cpu/instruction/InstructionDecoder.h"
+#include "io/interrupts/InterruptFlag.h"
+#include "io/interrupts/InterruptManager.h"
+
 #include <unordered_set>
 #include <cstdint>
 #include <print>
@@ -22,14 +26,28 @@ namespace GBE
     {
         // clear all ?
         m_IsDisassembled.fill(false);
-        m_JumpAddresses.clear();
         m_AssemblySections.clear();
         m_MaxSection = secion;
-        
 
-        // recursive diassemble from start address
-        _Disassemble(startAddress);
+        // add  interrupts
+        m_JumpAddresses.clear();
+        std::vector<InterruptFlag> flags = {
+            InterruptFlag::V_BLANK,
+            InterruptFlag::LCD,
+            InterruptFlag::TIMER,
+            InterruptFlag::SERIAL,
+            InterruptFlag::JOYPAD
+        };
+        for (auto flag : flags)
+        {
+            uint16_t handler = InterruptManager::GetHandler(flag);
+            m_JumpAddresses.insert(handler);
+        }
         m_JumpAddresses.insert(startAddress);
+
+        // recursive diassemble from all jump addresses
+        for (auto addr: m_JumpAddresses)
+            _Disassemble(addr);
 
         // retrieve assembly sections
         // they are contiguous section of instruction 
@@ -46,6 +64,8 @@ namespace GBE
         m_IsDisassembled[address] = true;
 
         Assembly& assembly = m_AssemblyInstructions.at(address);
+        assembly = Assembly{}; // clear current assembly instru
+
         DisassembleInstruction(address, assembly);
 
         const auto& asmNextAddresses = assembly.GetNextAddresses();
@@ -144,7 +164,7 @@ namespace GBE
             return;
 
         uint16_t a = address + instr.GetSize();
-        
+
         if (isPrefix)
             a++;
 
@@ -188,21 +208,31 @@ namespace GBE
     {
         InstructionType type = instr.GetType();
 
-        if (type != InstructionType::JP && type != InstructionType::CALL)
+        if (type != InstructionType::JP && type != InstructionType::CALL && type != InstructionType::RST)
             return;
     
         for (size_t i = 0; i < instr.GetOperandsCount(); i++)
         {
+            uint16_t jumpAddress16 = 0x0;
             if (instr.GetOperandType(i) == OperandType::IMM16)
             {
-                uint16_t imm16 = m_Memory->Get16(address + 1);
-                Assembly::NextAddress jumpAddress{
-                    .Address = imm16,
-                    .IsJump = true
-                };
-                assembly.AddNextAddress(jumpAddress);
-                break;
+                jumpAddress16 = m_Memory->Get16(address + 1);
             }
+            else if (instr.GetOperandType(i) == OperandType::TGT3)
+            {
+                jumpAddress16 = instr.GetOperand<OperandTgt3>(i).GetTargetAddress();
+            }
+            else
+            {
+                continue;
+            }
+
+            Assembly::NextAddress jumpAddress{
+                .Address = jumpAddress16,
+                .IsJump = true
+            };
+            assembly.AddNextAddress(jumpAddress);
+            break;
         }
     }
 

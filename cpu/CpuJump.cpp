@@ -147,7 +147,7 @@ namespace GBE
     void Cpu::RstVec(const Instruction &instr, InstructionResult &result)
     {
         auto [tgt3] = instr.GetOperands<OperandTgt3>();
-        uint16_t adr16 = static_cast<uint16_t>(tgt3.Value) * 8;
+        uint16_t adr16 = tgt3.GetTargetAddress();
 
         _Call(adr16, result, m_IsHaltBug);
 
