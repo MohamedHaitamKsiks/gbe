@@ -31,7 +31,6 @@ namespace GBE
             .EndAddress     = static_cast<uint16_t>(m_MaxSectionEnd)
         };
         
-        std::println("disassemble at {} {} {}", startPC, maxSection.StartAddress, maxSection.EndAddress);
         disassembler.Disassemble(m_StartPC, maxSection);
     }
 

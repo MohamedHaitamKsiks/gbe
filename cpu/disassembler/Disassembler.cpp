@@ -160,6 +160,9 @@ namespace GBE
             {
             case OperandType::IMM8:
             {
+                if (instr.GetType() == InstructionType::JR)
+                    return;
+                    
                 uint8_t imm8 = m_Memory->Get(address + 1);
                 assembly.AddImm8(imm8, operand.IsAddress());
                 break;
@@ -219,6 +222,7 @@ namespace GBE
                     .IsJump = true
                 };
                 assembly.AddNextAddress(jumpAddress);
+                assembly.AddImm16(jumpAddress16);
                 break;
             }
         }

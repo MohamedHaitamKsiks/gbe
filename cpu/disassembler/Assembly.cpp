@@ -105,13 +105,16 @@ namespace GBE
         _AddOperand(Binary::ToHex(tgt3.Value * 8));
     }
 
-    void Assembly::AddImm8(uint8_t imm8, bool isAddress)
+    void Assembly::AddImm8(uint8_t imm8, bool isAddress, bool isSigned)
     {
         std::stringstream ss;
         if (isAddress) 
             ss << "[";
 
-        ss << Binary::ToHex(imm8);
+        if (isSigned)
+            ss << static_cast<int>(static_cast<int8_t>(imm8));
+        else
+            ss << Binary::ToHex(imm8);
 
         if (isAddress) 
             ss << "]";

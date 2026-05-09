@@ -51,7 +51,7 @@ namespace GBE
         
         void SetOperation(InstructionType op);
         void AddOperand(Operand op);
-        void AddImm8(uint8_t imm8, bool isAddress = false);
+        void AddImm8(uint8_t imm8, bool isAddress = false, bool isSigned = false);
         void AddImm16(uint16_t imm16, bool isAddress = false);
 
         const std::string& ToString() const;
