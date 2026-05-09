@@ -248,8 +248,6 @@ namespace GBE
     {
         if (m_QueueIME == 0 && !m_IME)
             m_QueueIME = 2;
-
-        m_IME = true;
     }
 
     void Cpu::DecimalAdjustAccumulator(const Instruction &instr, InstructionResult &result)
