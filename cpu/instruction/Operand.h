@@ -56,7 +56,14 @@ namespace GBE
     struct OperandBit3 { uint8_t Value = 0; };
 
     // rst's target address, divided by 8        TGT3,
-    struct OperandTgt3 { uint8_t Value = 0; };
+    struct OperandTgt3 { 
+        uint8_t Value = 0;
+
+        inline uint16_t GetTargetAddress() const 
+        {
+            return static_cast<uint16_t>(Value) * 8;
+        }
+    };
 
     struct OperandImm8 {};
     
@@ -132,6 +139,9 @@ namespace GBE
 
             if constexpr (std::is_same_v<T, OperandImm16>)
                 return OperandType::IMM16;
+
+            if constexpr (std::is_same_v<T, OperandCond>)
+                return OperandType::COND;
 
             return OperandType::NONE;
         };

@@ -3,15 +3,28 @@
 #include <iostream>
 #include <magic_enum.hpp>
 
+#include "io/interrupts/InterruptManager.h"
+
+#include "lcd/LcdControl.h"
+#include "lcd/LcdPalettesMemory.h"
+#include "vram/Vram.h"
+#include "oam/ObjectAttributesMemory.h"
+
 namespace GBE
 {
-    Ppu::Ppu(std::shared_ptr<InterruptManager> interruptManager)
+    Ppu::Ppu(
+        const std::shared_ptr<Vram> &vram, 
+        const std::shared_ptr<ObjectAttributesMemory> &oam, 
+        const std::shared_ptr<LcdPalettesMemory> &palettes, 
+        const std::shared_ptr<LcdControl> &lcdControl, 
+        const std::shared_ptr<InterruptManager> &interruptManager
+    ):
+        m_Vram(vram),
+        m_Oam(oam),
+        m_Palettes(palettes),
+        m_LcdControl(lcdControl),
+        m_InterruptManager(interruptManager)
     {
-        m_Vram = std::make_shared<Vram>();
-        m_Oam = std::make_shared<ObjectAttributesMemory>();
-        m_Palettes = std::make_shared<LcdPalettesMemory>();
-        m_LcdControl = std::make_shared<LcdControl>();
-        m_InterruptManager = interruptManager;
     }
 
     Ppu::~Ppu()

@@ -1,6 +1,8 @@
 include(${CMAKE_CURRENT_LIST_DIR}/alu/alu.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/instruction/instruction.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/registers/registers.cmake)
+include (${CMAKE_CURRENT_LIST_DIR}/debugger/debugger.cmake)
+include (${CMAKE_CURRENT_LIST_DIR}/disassembler/disassembler.cmake)
 
 set (GBE_HEADERS ${GBE_HEADERS}
     ${CMAKE_CURRENT_LIST_DIR}/Cpu.h

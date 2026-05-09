@@ -5,6 +5,7 @@ namespace GBE
     enum class InstructionType
     {
         NONE = 0,
+        INVALID,
         // load
         LD,
         LDH,

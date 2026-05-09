@@ -5,14 +5,13 @@
 #include <vector>
 #include <memory>
 #include <cstdint>
-
-#include "io/graphics/Ppu.h"
-#include "frontend/gui/GuiLayer.h"
+#include "frontend/gui/GuiManager.h"
 #include "io/graphics/lcd/LcdScreen.h"
 
 namespace GBE
 {
     class Window;
+    class Gameboy;
     
     struct ColorRGB32
     {
@@ -26,7 +25,7 @@ namespace GBE
     class Renderer
     {
     public:
-        Renderer(std::shared_ptr<Window> window, std::shared_ptr<Ppu> ppu);
+        Renderer(std::shared_ptr<Window> window, std::shared_ptr<Gameboy> ppu);
         ~Renderer();
 
         void BeginFrame();
@@ -39,7 +38,7 @@ namespace GBE
 
     private:
         std::shared_ptr<Window> m_Window = nullptr;
-        std::shared_ptr<Ppu> m_Ppu = nullptr;
+        std::shared_ptr<Gameboy> m_GB = nullptr;
 
         SDL_Renderer* m_SDLRenderer = nullptr;
         SDL_Texture * m_SDLTexture = nullptr;

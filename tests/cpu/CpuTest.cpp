@@ -7,7 +7,9 @@
 #include "memory/MemoryArea.h"
 #include "memory/Memory.h"
 
+#include "cpu/instruction/InstructionDecoder.h"
 #include "cpu/instruction/InstructionResult.h"
+#include "cpu/instruction/Instruction.h"
 #include "cpu/Cpu.h"
 #include "cpu/alu/Alu.h"
 
@@ -48,24 +50,24 @@ namespace GBETest
 GBE_TEST_SUITE(Cpu)
 {
     // arrange
-    auto memoryCpu = std::make_shared <GBETest::MemoryCpu>();
-    GBE::Memory memory{};
-    
-    GBE::Cpu cpu{};
+    auto memoryCpu  = std::make_shared <GBETest::MemoryCpu>();
+    auto memory     = std::make_shared<GBE::Memory>();
+    auto decoder    = std::make_shared<GBE::InstructionDecoder>();
+    auto cpu        = std::make_shared<GBE::Cpu>(memory, decoder);
 
     TEST_CASE("Init")
     {
-        memory.MapMemoryArea({GBE::MemoryMap{0, 0xFFFF}}, memoryCpu);
+        memory->MapMemoryArea({GBE::MemoryMap{0, 0xFFFF}}, memoryCpu);
     }
     
     TEST_CASE("SetImm8")
     {
         // act 
-        cpu.SetImm8(0xAB, memory);
+        cpu->SetImm8(0xAB);
 
         // assert
         CHECK_EQ(
-            memory.Get(cpu.GetRegisters().GetReg16(GBE::Reg16::PC)),
+            memory->Get(cpu->GetRegisters().GetReg16(GBE::Reg16::PC)),
             0xAB
         );
     }
@@ -73,16 +75,16 @@ GBE_TEST_SUITE(Cpu)
     TEST_CASE("SetImm16")
     {
         // act
-        cpu.SetImm16(0xABCD, memory);
+        cpu->SetImm16(0xABCD);
 
         // assert
         CHECK_EQ(
-            memory.Get(cpu.GetRegisters().GetReg16(GBE::Reg16::PC)),
+            memory->Get(cpu->GetRegisters().GetReg16(GBE::Reg16::PC)),
             0xCD
         );
 
         CHECK_EQ(
-            memory.Get(cpu.GetRegisters().GetReg16(GBE::Reg16::PC) + 1),
+            memory->Get(cpu->GetRegisters().GetReg16(GBE::Reg16::PC) + 1),
             0xAB
         );
     }
@@ -92,11 +94,11 @@ GBE_TEST_SUITE(Cpu)
         GBE::InstructionResult result{};
 
         // arrange
-        memory.Set(cpu.GetRegisters().GetReg16(GBE::Reg16::PC), 0xCD);
-        memory.Set(cpu.GetRegisters().GetReg16(GBE::Reg16::PC) + 1, 0xAB);
+        memory->Set(cpu->GetRegisters().GetReg16(GBE::Reg16::PC), 0xCD);
+        memory->Set(cpu->GetRegisters().GetReg16(GBE::Reg16::PC) + 1, 0xAB);
 
         // act
-        uint16_t imm16 = cpu.GetImm16(memory, result);
+        uint16_t imm16 = cpu->GetImm16(result);
 
         // assert
         CHECK_EQ(
@@ -114,14 +116,14 @@ GBE_TEST_SUITE(Cpu)
         GBE::Instruction instr{};
         instr.AddOperand(GBE::OperandR16::HL, GBE::OperandImm16{});
 
-        cpu.SetImm16(0xABCD, memory);
+        cpu->SetImm16(0xABCD);
 
         // act
-        cpu.LoadR16_Imm16(instr, memory, result);
+        cpu->LoadR16_Imm16(instr, result);
 
         // assert
         CHECK_EQ(
-            cpu.GetRegisters().GetReg16(GBE::Reg16::HL),
+            cpu->GetRegisters().GetReg16(GBE::Reg16::HL),
             0xABCD
         );
 
@@ -138,15 +140,15 @@ GBE_TEST_SUITE(Cpu)
         GBE::Instruction instr{};
         instr.AddOperand(GBE::OperandR8::ADR_HL, GBE::OperandImm8{});
 
-        cpu.SetImm8(0xAB, memory);
-        cpu.GetRegisters().SetReg16(GBE::Reg16::HL, 0x1234);
+        cpu->SetImm8(0xAB);
+        cpu->GetRegisters().SetReg16(GBE::Reg16::HL, 0x1234);
 
         // act
-        cpu.LoadR8_Imm8(instr, memory, result);
+        cpu->LoadR8_Imm8(instr, result);
 
         // assert
         CHECK_EQ(
-            cpu.GetReg16Adr(GBE::Reg16::HL, memory),
+            cpu->GetReg16Adr(GBE::Reg16::HL),
             0xAB  
         );
 
@@ -164,16 +166,16 @@ GBE_TEST_SUITE(Cpu)
         GBE::Instruction instr{};
         instr.AddOperand(GBE::OperandR16Mem::BC, GBE::OperandR8::A);
         
-        cpu.GetRegisters().SetReg8(GBE::Reg8::A, 16);
-        cpu.SetImm16(0xABCD, memory);
-        cpu.GetRegisters().SetReg16(GBE::Reg16::BC, 0xABCD);
+        cpu->GetRegisters().SetReg8(GBE::Reg8::A, 16);
+        cpu->SetImm16(0xABCD);
+        cpu->GetRegisters().SetReg16(GBE::Reg16::BC, 0xABCD);
 
         // act
-        cpu.LoadR16Mem_A(instr, memory, result);
+        cpu->LoadR16Mem_A(instr, result);
 
         // assert
         CHECK_EQ(
-            memory.Get(0xABCD),
+            memory->Get(0xABCD),
             16
         );
 
@@ -190,15 +192,15 @@ GBE_TEST_SUITE(Cpu)
         GBE::Instruction instr{};
         instr.AddOperand(GBE::OperandR8::A, GBE::OperandR16Mem::BC);
 
-        memory.Set(0xABCD, 16);
-        cpu.GetRegisters().SetReg16(GBE::Reg16::BC, 0xABCD);
+        memory->Set(0xABCD, 16);
+        cpu->GetRegisters().SetReg16(GBE::Reg16::BC, 0xABCD);
         
         // act
-        cpu.LoadA_R16Mem(instr, memory, result);
+        cpu->LoadA_R16Mem(instr, result);
 
         // assert
         CHECK_EQ(
-            cpu.GetRegisters().GetReg8(GBE::Reg8::A),
+            cpu->GetRegisters().GetReg8(GBE::Reg8::A),
             16   
         );
 
@@ -215,15 +217,15 @@ GBE_TEST_SUITE(Cpu)
         GBE::Instruction instr{};
         instr.AddOperand(GBE::OperandImm16{}, GBE::OperandR16::SP);
 
-        cpu.SetImm16(0xABCD, memory);
-        cpu.GetRegisters().SetReg16(GBE::Reg16::SP, 0x1234);
+        cpu->SetImm16(0xABCD);
+        cpu->GetRegisters().SetReg16(GBE::Reg16::SP, 0x1234);
 
         // act
-        cpu.LoadAdrImm16_SP(instr, memory, result);
+        cpu->LoadAdrImm16_SP(instr, result);
 
         // assert
         CHECK_EQ(
-            memory.Get16(0xABCD),
+            memory->Get16(0xABCD),
             0x1234
         );
 
@@ -240,14 +242,14 @@ GBE_TEST_SUITE(Cpu)
         GBE::Instruction instr{};
         instr.AddOperand(GBE::OperandR8::D, GBE::OperandR8::B);
 
-        cpu.GetRegisters().SetReg8(GBE::Reg8::B, 16);
+        cpu->GetRegisters().SetReg8(GBE::Reg8::B, 16);
 
         // act
-        cpu.LoadR8_R8(instr, memory, result);
+        cpu->LoadR8_R8(instr, result);
 
         // assert
         CHECK_EQ(
-            cpu.GetRegisters().GetReg8(GBE::Reg8::D),
+            cpu->GetRegisters().GetReg8(GBE::Reg8::D),
             16
         );
     }
@@ -259,14 +261,14 @@ GBE_TEST_SUITE(Cpu)
         GBE::Instruction instr{};
         instr.AddOperand(GBE::OperandR16::HL);
 
-        cpu.GetRegisters().SetReg16(GBE::Reg16::HL, 0xABCD);
+        cpu->GetRegisters().SetReg16(GBE::Reg16::HL, 0xABCD);
 
         // act
-        cpu.ExecAluOpR16<GBE::Alu::Increment16>(instr, memory, result);
+        cpu->ExecAluOpR16<GBE::Alu::Increment16>(instr, result);
 
         // assert
         CHECK_EQ(
-            cpu.GetRegisters().GetReg16(GBE::Reg16::HL),
+            cpu->GetRegisters().GetReg16(GBE::Reg16::HL),
             0xABCE   
         );
 
@@ -284,15 +286,15 @@ GBE_TEST_SUITE(Cpu)
         GBE::Instruction instr{};
         instr.AddOperand(GBE::OperandR16::HL, GBE::OperandR16::BC);
 
-        cpu.GetRegisters().SetReg16(GBE::Reg16::HL, 800);
-        cpu.GetRegisters().SetReg16(GBE::Reg16::BC, 1200);
+        cpu->GetRegisters().SetReg16(GBE::Reg16::HL, 800);
+        cpu->GetRegisters().SetReg16(GBE::Reg16::BC, 1200);
 
         // act
-        cpu.AddHL_R16(instr, memory, result);
+        cpu->AddHL_R16(instr, result);
 
         // assert
         CHECK_EQ(
-            cpu.GetRegisters().GetReg16(GBE::Reg16::HL),
+            cpu->GetRegisters().GetReg16(GBE::Reg16::HL),
             2000
         );
         
@@ -309,14 +311,14 @@ GBE_TEST_SUITE(Cpu)
         GBE::Instruction instr{};
         instr.AddOperand(GBE::OperandR8::ADR_HL);
 
-        cpu.SetReg16Adr(GBE::Reg16::HL, 1, memory);
+        cpu->SetReg16Adr(GBE::Reg16::HL, 1);
 
         // act
-        cpu.ExecAluOpR8<GBE::Alu::Decrement8>(instr, memory, result);
+        cpu->ExecAluOpR8<GBE::Alu::Decrement8>(instr, result);
 
         // assert
         CHECK_EQ(
-            cpu.GetReg16Adr(GBE::Reg16::HL, memory),
+            cpu->GetReg16Adr(GBE::Reg16::HL),
             0
         );
 
@@ -326,7 +328,7 @@ GBE_TEST_SUITE(Cpu)
         );
 
         CHECK_NE(
-            cpu.GetRegisters().GetFlags() & static_cast<uint8_t>(GBE::CpuFlag::Z),
+            cpu->GetRegisters().GetFlags() & static_cast<uint8_t>(GBE::CpuFlag::Z),
             0
         );
     }
@@ -338,16 +340,16 @@ GBE_TEST_SUITE(Cpu)
         GBE::Instruction instr{};
         instr.AddOperand(GBE::OperandR8::A, GBE::OperandR8::B);
 
-        cpu.GetRegisters().SetReg8(GBE::Reg8::A, 8);
-        cpu.GetRegisters().SetReg8(GBE::Reg8::B, 2);
-        cpu.GetRegisters().SetFlag(GBE::CpuFlag::C, true);
+        cpu->GetRegisters().SetReg8(GBE::Reg8::A, 8);
+        cpu->GetRegisters().SetReg8(GBE::Reg8::B, 2);
+        cpu->GetRegisters().SetFlag(GBE::CpuFlag::C, true);
 
         // act
-        cpu.ExecAluOpA_R8<GBE::Alu::Sub8, true>(instr, memory, result);
+        cpu->ExecAluOpA_R8<GBE::Alu::Sub8, true>(instr, result);
 
         // assert
         CHECK_EQ(
-            cpu.GetRegisters().GetReg8(GBE::Reg8::A),
+            cpu->GetRegisters().GetReg8(GBE::Reg8::A),
             5
         );
     }
@@ -359,16 +361,16 @@ GBE_TEST_SUITE(Cpu)
         GBE::Instruction instr{};
         instr.AddOperand(GBE::OperandR8::A, GBE::OperandR8::ADR_HL);
 
-        cpu.GetRegisters().SetFlag(GBE::CpuFlag::C, true);
-        cpu.GetRegisters().SetReg8(GBE::Reg8::A, 10);
-        cpu.SetReg16Adr(GBE::Reg16::HL,5, memory);
+        cpu->GetRegisters().SetFlag(GBE::CpuFlag::C, true);
+        cpu->GetRegisters().SetReg8(GBE::Reg8::A, 10);
+        cpu->SetReg16Adr(GBE::Reg16::HL,5);
 
         // act
-        cpu.ExecAluOpA_R8<GBE::Alu::Add8, true>(instr, memory, result);
+        cpu->ExecAluOpA_R8<GBE::Alu::Add8, true>(instr, result);
 
         // assert
         CHECK_EQ(
-            cpu.GetRegisters().GetReg8(GBE::Reg8::A),
+            cpu->GetRegisters().GetReg8(GBE::Reg8::A),
             16
         );
 
@@ -386,15 +388,15 @@ GBE_TEST_SUITE(Cpu)
         GBE::Instruction instr{};
         instr.AddOperand(GBE::OperandAddressOf(GBE::OperandR8::C), GBE::OperandR8::A);
 
-        cpu.GetRegisters().SetReg8(GBE::Reg8::C, 0xCD);
-        cpu.GetRegisters().SetReg8(GBE::Reg8::A, 16);
+        cpu->GetRegisters().SetReg8(GBE::Reg8::C, 0xCD);
+        cpu->GetRegisters().SetReg8(GBE::Reg8::A, 16);
 
         // act
-        cpu.LoadHighC_A(instr, memory, result);
+        cpu->LoadHighC_A(instr, result);
 
         // assert
         CHECK_EQ(
-            memory.Get(0xFFCD),
+            memory->Get(0xFFCD),
             16
         );
     }
@@ -406,15 +408,15 @@ GBE_TEST_SUITE(Cpu)
         GBE::Instruction instr{};
         instr.AddOperand(GBE::OperandR8::A, GBE::OperandAddressOf(GBE::OperandR8::C));
 
-        memory.Set(0xFFCD, 16);
-        cpu.GetRegisters().SetReg8(GBE::Reg8::C, 0xCD);
+        memory->Set(0xFFCD, 16);
+        cpu->GetRegisters().SetReg8(GBE::Reg8::C, 0xCD);
 
         // act
-        cpu.LoadA_HighC(instr, memory, result);
+        cpu->LoadA_HighC(instr, result);
 
         // assert
         CHECK_EQ(
-            cpu.GetRegisters().GetReg8(GBE::Reg8::A),
+            cpu->GetRegisters().GetReg8(GBE::Reg8::A),
             16
         );
     }
@@ -427,15 +429,15 @@ GBE_TEST_SUITE(Cpu)
         GBE::Instruction instr{};
         instr.AddOperand(GBE::OperandAddressOf(GBE::OperandImm8{}), GBE::OperandR8::A);
 
-        cpu.SetImm8(0xCD, memory);
-        cpu.GetRegisters().SetReg8(GBE::Reg8::A, 16);
+        cpu->SetImm8(0xCD);
+        cpu->GetRegisters().SetReg8(GBE::Reg8::A, 16);
 
         // act
-        cpu.LoadHighImm8_A(instr, memory, result);
+        cpu->LoadHighImm8_A(instr, result);
 
         // assert
         CHECK_EQ(
-            memory.Get(0xFFCD),
+            memory->Get(0xFFCD),
             16
         );
     }
@@ -447,15 +449,15 @@ GBE_TEST_SUITE(Cpu)
         GBE::Instruction instr{};
         instr.AddOperand(GBE::OperandR8::A, GBE::OperandAddressOf(GBE::OperandImm8{}));
 
-        memory.Set(0xFFCD, 16);
-        cpu.SetImm8(0xCD, memory);
+        memory->Set(0xFFCD, 16);
+        cpu->SetImm8(0xCD);
 
         // act
-        cpu.LoadA_HighImm8(instr, memory, result);
+        cpu->LoadA_HighImm8(instr, result);
 
         // assert
         CHECK_EQ(
-            cpu.GetRegisters().GetReg8(GBE::Reg8::A),
+            cpu->GetRegisters().GetReg8(GBE::Reg8::A),
             16
         );
     }
@@ -467,15 +469,15 @@ GBE_TEST_SUITE(Cpu)
         GBE::Instruction instr{};
         instr.AddOperand(GBE::OperandAddressOf(GBE::OperandImm16{}), GBE::OperandR8::A);
 
-        cpu.SetImm16(0xABCD, memory);
-        cpu.GetRegisters().SetReg8(GBE::Reg8::A, 16);
+        cpu->SetImm16(0xABCD);
+        cpu->GetRegisters().SetReg8(GBE::Reg8::A, 16);
 
         // act
-        cpu.LoadAdrImm16_A(instr, memory, result);
+        cpu->LoadAdrImm16_A(instr, result);
 
         // assert
         CHECK_EQ(
-            memory.Get(0xABCD),
+            memory->Get(0xABCD),
             16
         );
     }
@@ -487,15 +489,15 @@ GBE_TEST_SUITE(Cpu)
         GBE::Instruction instr{};
         instr.AddOperand(GBE::OperandR8::A, GBE::OperandAddressOf(GBE::OperandImm16{}));
 
-        memory.Set(0xABCD, 16);
-        cpu.SetImm16(0xABCD, memory);
+        memory->Set(0xABCD, 16);
+        cpu->SetImm16(0xABCD);
 
         // act
-        cpu.LoadA_AdrImm16(instr, memory, result);
+        cpu->LoadA_AdrImm16(instr, result);
 
         // assert
         CHECK_EQ(
-            cpu.GetRegisters().GetReg8(GBE::Reg8::A),
+            cpu->GetRegisters().GetReg8(GBE::Reg8::A),
             16
         );
     }
@@ -507,15 +509,15 @@ GBE_TEST_SUITE(Cpu)
         GBE::Instruction instr{};
         instr.AddOperand(GBE::OperandR16::SP, GBE::OperandImm8{});
 
-        cpu.GetRegisters().SetReg16(GBE::Reg16::SP, 1200);
-        cpu.SetImm8(32, memory);
+        cpu->GetRegisters().SetReg16(GBE::Reg16::SP, 1200);
+        cpu->SetImm8(32);
 
         // act
-        cpu.AddSP_Imm8(instr, memory, result);
+        cpu->AddSP_Imm8(instr, result);
 
         // assert
         CHECK_EQ(
-            cpu.GetRegisters().GetReg16(GBE::Reg16::SP),
+            cpu->GetRegisters().GetReg16(GBE::Reg16::SP),
             1232
         );
 
@@ -533,19 +535,19 @@ GBE_TEST_SUITE(Cpu)
         const uint16_t initStack = 0xFFFF;
         const uint16_t newStack = initStack - 2;
 
-        cpu.GetRegisters().SetReg16(GBE::Reg16::SP, initStack);
+        cpu->GetRegisters().SetReg16(GBE::Reg16::SP, initStack);
 
         // act
-        cpu.Push(value, memory, result);
+        cpu->Push(value, result);
 
         // assert
         CHECK_EQ(
-            cpu.GetRegisters().GetReg16(GBE::Reg16::SP),
+            cpu->GetRegisters().GetReg16(GBE::Reg16::SP),
             newStack
         );
 
         CHECK_EQ(
-            memory.Get16(newStack),
+            memory->Get16(newStack),
             value
         );
     }
@@ -558,15 +560,15 @@ GBE_TEST_SUITE(Cpu)
         const uint16_t initStack = 0xFFFD;
         const uint16_t newStack = initStack + 2;
 
-        memory.Set16(initStack, value);
-        cpu.GetRegisters().SetReg16(GBE::Reg16::SP, initStack);
+        memory->Set16(initStack, value);
+        cpu->GetRegisters().SetReg16(GBE::Reg16::SP, initStack);
 
         // act
-        uint16_t top = cpu.Pop(memory, result);
+        uint16_t top = cpu->Pop(result);
 
         // assert
         CHECK_EQ(
-            cpu.GetRegisters().GetReg16(GBE::Reg16::SP),
+            cpu->GetRegisters().GetReg16(GBE::Reg16::SP),
             newStack
         );
 
@@ -584,21 +586,21 @@ GBE_TEST_SUITE(Cpu)
         GBE::Instruction instr{};
         instr.AddOperand(GBE::OperandImm16{});
 
-        cpu.GetRegisters().SetReg16(GBE::Reg16::SP, 0xFFFF);
-        cpu.SetImm16(0xABCD, memory);
-        uint16_t oldPC = cpu.GetRegisters().GetReg16(GBE::Reg16::PC) + 2;
+        cpu->GetRegisters().SetReg16(GBE::Reg16::SP, 0xFFFF);
+        cpu->SetImm16(0xABCD);
+        uint16_t oldPC = cpu->GetRegisters().GetReg16(GBE::Reg16::PC) + 2;
         
         // act
-        cpu.CallImm16(instr, memory, result);
+        cpu->CallImm16(instr, result);
 
         // assert
         CHECK_EQ(
-            cpu.GetRegisters().GetReg16(GBE::Reg16::PC),
+            cpu->GetRegisters().GetReg16(GBE::Reg16::PC),
             0xABCD
         );
 
         CHECK_EQ(
-            cpu.Top(memory),
+            cpu->Top(),
             oldPC
         );
 
@@ -615,21 +617,21 @@ GBE_TEST_SUITE(Cpu)
         GBE::Instruction instr{};
         instr.AddOperand(GBE::OperandTgt3{ 2 });
 
-        cpu.GetRegisters().SetReg16(GBE::Reg16::SP, 0xFFFF);
+        cpu->GetRegisters().SetReg16(GBE::Reg16::SP, 0xFFFF);
 
-        uint16_t oldPC = cpu.GetRegisters().GetReg16(GBE::Reg16::PC);
+        uint16_t oldPC = cpu->GetRegisters().GetReg16(GBE::Reg16::PC);
 
         // act
-        cpu.RstVec(instr, memory, result);
+        cpu->RstVec(instr, result);
 
         // assert
         CHECK_EQ(
-            cpu.GetRegisters().GetReg16(GBE::Reg16::PC),
+            cpu->GetRegisters().GetReg16(GBE::Reg16::PC),
             16
         );
 
         CHECK_EQ(
-            cpu.Top(memory),
+            cpu->Top(),
             oldPC
         );
 
@@ -646,23 +648,23 @@ GBE_TEST_SUITE(Cpu)
         GBE::Instruction instr{};
         instr.AddOperand(GBE::OperandCond::Z, GBE::OperandImm16{});
 
-        cpu.GetRegisters().SetFlag(GBE::CpuFlag::Z, true);
-        cpu.GetRegisters().SetReg16(GBE::Reg16::SP, 0xFFFF);
+        cpu->GetRegisters().SetFlag(GBE::CpuFlag::Z, true);
+        cpu->GetRegisters().SetReg16(GBE::Reg16::SP, 0xFFFF);
         
-        cpu.SetImm16(0xABCD, memory);
-        uint16_t oldPC = cpu.GetRegisters().GetReg16(GBE::Reg16::PC) + 2;
+        cpu->SetImm16(0xABCD);
+        uint16_t oldPC = cpu->GetRegisters().GetReg16(GBE::Reg16::PC) + 2;
         
         // act
-        cpu.CallCC_Imm16(instr, memory, result);
+        cpu->CallCC_Imm16(instr, result);
 
         // assert
         CHECK_EQ(
-            cpu.GetRegisters().GetReg16(GBE::Reg16::PC),
+            cpu->GetRegisters().GetReg16(GBE::Reg16::PC),
             0xABCD
         );
 
         CHECK_EQ(
-            cpu.Top(memory),
+            cpu->Top(),
             oldPC
         );
 
@@ -680,18 +682,18 @@ GBE_TEST_SUITE(Cpu)
         GBE::Instruction instr{};
         instr.AddOperand(GBE::OperandCond::Z, GBE::OperandImm16{});
 
-        cpu.GetRegisters().SetFlag(GBE::CpuFlag::Z, false);
-        cpu.GetRegisters().SetReg16(GBE::Reg16::SP, 0xFFFF);
+        cpu->GetRegisters().SetFlag(GBE::CpuFlag::Z, false);
+        cpu->GetRegisters().SetReg16(GBE::Reg16::SP, 0xFFFF);
         
-        cpu.SetImm16(0xABCD, memory);
-        uint16_t oldPC = cpu.GetRegisters().GetReg16(GBE::Reg16::PC) + 2;
+        cpu->SetImm16(0xABCD);
+        uint16_t oldPC = cpu->GetRegisters().GetReg16(GBE::Reg16::PC) + 2;
         
         // act
-        cpu.CallCC_Imm16(instr, memory, result);
+        cpu->CallCC_Imm16(instr, result);
 
         // assert
         CHECK_EQ(
-            cpu.GetRegisters().GetReg16(GBE::Reg16::PC),
+            cpu->GetRegisters().GetReg16(GBE::Reg16::PC),
             oldPC
         );
 
@@ -708,17 +710,17 @@ GBE_TEST_SUITE(Cpu)
         GBE::Instruction instr{};
         instr.AddOperand(GBE::OperandCond::Z, GBE::OperandImm8{});
 
-        cpu.GetRegisters().SetFlag(GBE::CpuFlag::Z, true);
-        cpu.GetRegisters().SetReg16(GBE::Reg16::PC, 100);
+        cpu->GetRegisters().SetFlag(GBE::CpuFlag::Z, true);
+        cpu->GetRegisters().SetReg16(GBE::Reg16::PC, 100);
         
-        cpu.SetImm8(13, memory);
+        cpu->SetImm8(13);
 
         // act
-        cpu.JumpRelativeCC_Imm8(instr, memory, result);
+        cpu->JumpRelativeCC_Imm8(instr, result);
 
         // assert
         CHECK_EQ(
-            cpu.GetRegisters().GetReg16(GBE::Reg16::PC),
+            cpu->GetRegisters().GetReg16(GBE::Reg16::PC),
             114
         );
 
@@ -735,17 +737,17 @@ GBE_TEST_SUITE(Cpu)
         GBE::Instruction instr{};
         instr.AddOperand(GBE::OperandCond::Z, GBE::OperandImm8{});
 
-        cpu.GetRegisters().SetFlag(GBE::CpuFlag::Z, false);
-        cpu.GetRegisters().SetReg16(GBE::Reg16::PC, 100);
+        cpu->GetRegisters().SetFlag(GBE::CpuFlag::Z, false);
+        cpu->GetRegisters().SetReg16(GBE::Reg16::PC, 100);
 
-        cpu.SetImm8(13, memory);
+        cpu->SetImm8(13);
 
         // act
-        cpu.JumpRelativeCC_Imm8(instr, memory, result);
+        cpu->JumpRelativeCC_Imm8(instr, result);
 
         // assert
         CHECK_EQ(
-            cpu.GetRegisters().GetReg16(GBE::Reg16::PC),
+            cpu->GetRegisters().GetReg16(GBE::Reg16::PC),
             101
         );
 
@@ -761,16 +763,16 @@ GBE_TEST_SUITE(Cpu)
         GBE::InstructionResult result{};
         GBE::Instruction instr{};
 
-        cpu.GetRegisters().SetReg16(GBE::Reg16::SP, 0xFFFF);
-        cpu.Push(0xABCD, memory, result);
+        cpu->GetRegisters().SetReg16(GBE::Reg16::SP, 0xFFFF);
+        cpu->Push(0xABCD, result);
         result.Cycles = 1;
 
         // act
-        cpu.Return(instr, memory, result);
+        cpu->Return(instr, result);
 
         // assert
         CHECK_EQ(
-            cpu.GetRegisters().GetReg16(GBE::Reg16::PC),
+            cpu->GetRegisters().GetReg16(GBE::Reg16::PC),
             0xABCD
         );
 
@@ -786,15 +788,15 @@ GBE_TEST_SUITE(Cpu)
         GBE::InstructionResult result{};
         GBE::Instruction instr{};
 
-        cpu.GetRegisters().SetFlag(GBE::CpuFlag::C, false);
+        cpu->GetRegisters().SetFlag(GBE::CpuFlag::C, false);
 
         // act
-        cpu.ComplementCarryFlag(instr, memory, result);
+        cpu->ComplementCarryFlag(instr, result);
 
         // assert
-        CHECK(cpu.GetRegisters().GetFlag(GBE::CpuFlag::C));
-        CHECK(!cpu.GetRegisters().GetFlag(GBE::CpuFlag::N));
-        CHECK(!cpu.GetRegisters().GetFlag(GBE::CpuFlag::H));
+        CHECK(cpu->GetRegisters().GetFlag(GBE::CpuFlag::C));
+        CHECK(!cpu->GetRegisters().GetFlag(GBE::CpuFlag::N));
+        CHECK(!cpu->GetRegisters().GetFlag(GBE::CpuFlag::H));
     }
 
     TEST_CASE("ComplementCarryFlag C is set")
@@ -803,15 +805,15 @@ GBE_TEST_SUITE(Cpu)
         GBE::InstructionResult result{};
         GBE::Instruction instr{};
 
-        cpu.GetRegisters().SetFlag(GBE::CpuFlag::C, true);
+        cpu->GetRegisters().SetFlag(GBE::CpuFlag::C, true);
 
         // act
-        cpu.ComplementCarryFlag(instr, memory, result);
+        cpu->ComplementCarryFlag(instr, result);
 
         // assert
-        CHECK(!cpu.GetRegisters().GetFlag(GBE::CpuFlag::C));
-        CHECK(!cpu.GetRegisters().GetFlag(GBE::CpuFlag::N));
-        CHECK(!cpu.GetRegisters().GetFlag(GBE::CpuFlag::H));
+        CHECK(!cpu->GetRegisters().GetFlag(GBE::CpuFlag::C));
+        CHECK(!cpu->GetRegisters().GetFlag(GBE::CpuFlag::N));
+        CHECK(!cpu->GetRegisters().GetFlag(GBE::CpuFlag::H));
     }
 
     TEST_CASE("SetCarryFlag C is set")
@@ -820,15 +822,15 @@ GBE_TEST_SUITE(Cpu)
         GBE::InstructionResult result{};
         GBE::Instruction instr{};
 
-        cpu.GetRegisters().SetFlags(0xFF, 0);
+        cpu->GetRegisters().SetFlags(0xFF, 0);
 
         // act
-        cpu.SetCarryFlag(instr, memory, result);
+        cpu->SetCarryFlag(instr, result);
 
         // assert
-        CHECK(cpu.GetRegisters().GetFlag(GBE::CpuFlag::C));
-        CHECK(!cpu.GetRegisters().GetFlag(GBE::CpuFlag::N));
-        CHECK(!cpu.GetRegisters().GetFlag(GBE::CpuFlag::H));
+        CHECK(cpu->GetRegisters().GetFlag(GBE::CpuFlag::C));
+        CHECK(!cpu->GetRegisters().GetFlag(GBE::CpuFlag::N));
+        CHECK(!cpu->GetRegisters().GetFlag(GBE::CpuFlag::H));
     }
     
     TEST_CASE("DecimalAdjustAccumulator")
@@ -838,23 +840,23 @@ GBE_TEST_SUITE(Cpu)
         GBE::Instruction instr{};
         instr.AddOperand(GBE::OperandR8::A, GBE::OperandR8::B);
 
-        cpu.GetRegisters().SetReg8(GBE::Reg8::A, 0x18);
-        cpu.GetRegisters().SetReg8(GBE::Reg8::B, 0x24);
-        cpu.ExecAluOpA_R8<&GBE::Alu::Add8, false>(instr, memory, result);
+        cpu->GetRegisters().SetReg8(GBE::Reg8::A, 0x18);
+        cpu->GetRegisters().SetReg8(GBE::Reg8::B, 0x24);
+        cpu->ExecAluOpA_R8<&GBE::Alu::Add8, false>(instr, result);
 
         // act
         instr.ClearOperands();
-        cpu.DecimalAdjustAccumulator(instr, memory, result);
+        cpu->DecimalAdjustAccumulator(instr, result);
 
         // assert
         CHECK_EQ(
-            cpu.GetRegisters().GetReg8(GBE::Reg8::A),
+            cpu->GetRegisters().GetReg8(GBE::Reg8::A),
             0x42
         );
 
-        CHECK(!cpu.GetRegisters().GetFlag(GBE::CpuFlag::Z));
-        CHECK(!cpu.GetRegisters().GetFlag(GBE::CpuFlag::H));
-        CHECK(!cpu.GetRegisters().GetFlag(GBE::CpuFlag::C));
+        CHECK(!cpu->GetRegisters().GetFlag(GBE::CpuFlag::Z));
+        CHECK(!cpu->GetRegisters().GetFlag(GBE::CpuFlag::H));
+        CHECK(!cpu->GetRegisters().GetFlag(GBE::CpuFlag::C));
     }
 
     TEST_CASE("DecimalAdjustAccumulator C flag")
@@ -864,23 +866,23 @@ GBE_TEST_SUITE(Cpu)
         GBE::Instruction instr{};
         instr.AddOperand(GBE::OperandR8::A, GBE::OperandR8::B);
 
-        cpu.GetRegisters().SetReg8(GBE::Reg8::A, 0x90);
-        cpu.GetRegisters().SetReg8(GBE::Reg8::B, 0x12);
-        cpu.ExecAluOpA_R8<&GBE::Alu::Add8, false>(instr, memory, result);
+        cpu->GetRegisters().SetReg8(GBE::Reg8::A, 0x90);
+        cpu->GetRegisters().SetReg8(GBE::Reg8::B, 0x12);
+        cpu->ExecAluOpA_R8<&GBE::Alu::Add8, false>(instr, result);
 
         // act
         instr.ClearOperands();
-        cpu.DecimalAdjustAccumulator(instr, memory, result);
+        cpu->DecimalAdjustAccumulator(instr, result);
 
         // assert
         CHECK_EQ(
-            cpu.GetRegisters().GetReg8(GBE::Reg8::A),
+            cpu->GetRegisters().GetReg8(GBE::Reg8::A),
             0x02
         );
 
-        CHECK(!cpu.GetRegisters().GetFlag(GBE::CpuFlag::Z));
-        CHECK(!cpu.GetRegisters().GetFlag(GBE::CpuFlag::H));
-        CHECK(cpu.GetRegisters().GetFlag(GBE::CpuFlag::C));
+        CHECK(!cpu->GetRegisters().GetFlag(GBE::CpuFlag::Z));
+        CHECK(!cpu->GetRegisters().GetFlag(GBE::CpuFlag::H));
+        CHECK(cpu->GetRegisters().GetFlag(GBE::CpuFlag::C));
     }
 
     TEST_CASE("Run")
@@ -925,21 +927,21 @@ GBE_TEST_SUITE(Cpu)
         // At this point, A = 24
 
         // push program to memory
-        memory.CopyBuffer(0, program.data(), program.size());
+        memory->CopyBuffer(0, program.data(), program.size());
 
-        cpu.GetRegisters().SetReg16(GBE::Reg16::PC, 0);
-        cpu.GetRegisters().SetReg16(GBE::Reg16::SP, 0xFFFF);
+        cpu->GetRegisters().SetReg16(GBE::Reg16::PC, 0);
+        cpu->GetRegisters().SetReg16(GBE::Reg16::SP, 0xFFFF);
 
         // execute while pc is not at the end of the program
-        while (cpu.GetRegisters().GetReg16(GBE::Reg16::PC) < program.size())
+        while (cpu->GetRegisters().GetReg16(GBE::Reg16::PC) < program.size())
         {
             GBE::InstructionResult result{};
-            cpu.Run(memory, result);
+            cpu->Run(result);
         }
 
         // assert
         CHECK_EQ(
-            cpu.GetRegisters().GetReg8(GBE::Reg8::A),
+            cpu->GetRegisters().GetReg8(GBE::Reg8::A),
             24
         );
     }
@@ -957,7 +959,7 @@ GBE_TEST_SUITE(Cpu)
         vBlankHandler.push_back(0xD9);
 
         // push handeler to memory
-        memory.CopyBuffer(0x40, vBlankHandler.data(), vBlankHandler.size());
+        memory->CopyBuffer(0x40, vBlankHandler.data(), vBlankHandler.size());
 
         // main program
         std::vector<uint8_t> program{};
@@ -969,37 +971,37 @@ GBE_TEST_SUITE(Cpu)
         program.push_back(0x0);
 
         // push program to memory
-        memory.CopyBuffer(0x100, program.data(), program.size());
+        memory->CopyBuffer(0x100, program.data(), program.size());
 
         // setup registers
-        cpu.GetRegisters().SetReg8(GBE::Reg8::A, 0);
-        cpu.GetRegisters().SetReg16(GBE::Reg16::PC, 0x100);
-        cpu.GetRegisters().SetReg16(GBE::Reg16::SP, 0xF000);
+        cpu->GetRegisters().SetReg8(GBE::Reg8::A, 0);
+        cpu->GetRegisters().SetReg16(GBE::Reg16::PC, 0x100);
+        cpu->GetRegisters().SetReg16(GBE::Reg16::SP, 0xF000);
 
         // set interrupts flag
-        memory.Set(static_cast<uint16_t>(GBE::IORegister::IF), 3);
-        memory.Set(static_cast<uint16_t>(GBE::IORegister::IE), 1);
+        memory->Set(static_cast<uint16_t>(GBE::IORegister::IF), 3);
+        memory->Set(static_cast<uint16_t>(GBE::IORegister::IE), 1);
 
         // execute while pc is not at the end of the program
-        while (cpu.GetRegisters().GetReg16(GBE::Reg16::PC) < static_cast<uint16_t>(0x100) + program.size())
+        while (cpu->GetRegisters().GetReg16(GBE::Reg16::PC) < static_cast<uint16_t>(0x100) + program.size())
         {
             GBE::InstructionResult result{};
-            cpu.Run(memory, result);
+            cpu->Run(result);
         }
 
         // assert
         CHECK_EQ(
-            cpu.GetRegisters().GetReg8(GBE::Reg8::A),
+            cpu->GetRegisters().GetReg8(GBE::Reg8::A),
             5
         );
 
         CHECK_EQ(
-            memory.Get(static_cast<uint16_t>(GBE::IORegister::IF)),
+            memory->Get(static_cast<uint16_t>(GBE::IORegister::IF)),
             2
         );
 
         CHECK(
-            cpu.GetIME()
+            cpu->GetIME()
         );
     }
 
@@ -1015,7 +1017,7 @@ GBE_TEST_SUITE(Cpu)
         vBlankHandler.push_back(0xD9);
 
         // push handeler to memory
-        memory.CopyBuffer(0x40, vBlankHandler.data(), vBlankHandler.size());
+        memory->CopyBuffer(0x40, vBlankHandler.data(), vBlankHandler.size());
 
         // lcd handeler
         std::vector<uint8_t> lcdHandler{};
@@ -1025,7 +1027,7 @@ GBE_TEST_SUITE(Cpu)
         lcdHandler.push_back(0xD9);
 
         // push handeler to memory
-        memory.CopyBuffer(0x48, lcdHandler.data(), lcdHandler.size());
+        memory->CopyBuffer(0x48, lcdHandler.data(), lcdHandler.size());
 
         // main program
         std::vector<uint8_t> program{};
@@ -1035,43 +1037,43 @@ GBE_TEST_SUITE(Cpu)
         program.push_back(0x0);
 
         // push program to memory
-        memory.CopyBuffer(0x100, program.data(), program.size());
+        memory->CopyBuffer(0x100, program.data(), program.size());
 
         // setup registers
-        cpu.GetRegisters().SetReg8(GBE::Reg8::A, 0);
-        cpu.GetRegisters().SetReg8(GBE::Reg8::B, 0);
-        cpu.GetRegisters().SetReg16(GBE::Reg16::PC, 0x100);
-        cpu.GetRegisters().SetReg16(GBE::Reg16::SP, 0xF000);
+        cpu->GetRegisters().SetReg8(GBE::Reg8::A, 0);
+        cpu->GetRegisters().SetReg8(GBE::Reg8::B, 0);
+        cpu->GetRegisters().SetReg16(GBE::Reg16::PC, 0x100);
+        cpu->GetRegisters().SetReg16(GBE::Reg16::SP, 0xF000);
 
         // set interrupts flag
-        memory.Set(static_cast<uint16_t>(GBE::IORegister::IF), 3);
-        memory.Set(static_cast<uint16_t>(GBE::IORegister::IE), 3);
+        memory->Set(static_cast<uint16_t>(GBE::IORegister::IF), 3);
+        memory->Set(static_cast<uint16_t>(GBE::IORegister::IE), 3);
 
         // execute while pc is not at the end of the program
-        while (cpu.GetRegisters().GetReg16(GBE::Reg16::PC) < static_cast<uint16_t>(0x100) + program.size())
+        while (cpu->GetRegisters().GetReg16(GBE::Reg16::PC) < static_cast<uint16_t>(0x100) + program.size())
         {
             GBE::InstructionResult result{};
-            cpu.Run(memory, result);
+            cpu->Run(result);
         }
 
         // assert
         CHECK_EQ(
-            cpu.GetRegisters().GetReg8(GBE::Reg8::A),
+            cpu->GetRegisters().GetReg8(GBE::Reg8::A),
             5
         );
 
         CHECK_EQ(
-            cpu.GetRegisters().GetReg8(GBE::Reg8::B),
+            cpu->GetRegisters().GetReg8(GBE::Reg8::B),
             5
         );
 
         CHECK_EQ(
-            memory.Get(static_cast<uint16_t>(GBE::IORegister::IF)),
+            memory->Get(static_cast<uint16_t>(GBE::IORegister::IF)),
             0
         );
 
         CHECK(
-            cpu.GetIME()
+            cpu->GetIME()
         );
     }
 }

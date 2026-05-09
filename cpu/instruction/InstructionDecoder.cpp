@@ -13,9 +13,15 @@ namespace GBE
         if (instr.GetType() != InstructionType::NONE)
             return instr;
 
-        
         // read block instruction (inspired by: https://gbdev.io/pandocs/CPU_Instruction_Set.html)
         // block id is the last 2 bits (6 and 7)
+
+        // invalid by default
+        instr.SetType(InstructionType::INVALID);
+        instr.SetSize(1);
+        instr.SetMethod(&Cpu::Nop);
+
+        // decode !!
         instr.SetOpcode(opcode);
         uint8_t blockId = opcode >> 6;
 
@@ -211,9 +217,6 @@ namespace GBE
             instr.SetMethod(&Cpu::JumpRelativeCC_Imm8);
             return;
         }
-
-        // if no instruction was found throw an error that the instruction is unrecognized
-        _ThrowInvalidInstruction();
     }
 
     void InstructionDecoder::_DecodeBlock1(Instruction &instr)
@@ -291,8 +294,6 @@ namespace GBE
             instr.SetMethod(&Cpu::ExecAluOpA_R8<&Alu::Cmp8, false>);
             return;
         }
-
-        _ThrowInvalidInstruction();
     }
 
     void InstructionDecoder::_DecodeBlock3(Instruction &instr)
@@ -498,8 +499,6 @@ namespace GBE
             instr.SetMethod(&Cpu::PushR16Stk);
             return;
         }
-
-        _ThrowInvalidInstruction();
     }
 
     void InstructionDecoder::_DecodePrefixInstruction(Instruction &instr)

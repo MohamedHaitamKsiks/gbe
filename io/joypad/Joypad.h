@@ -3,6 +3,7 @@
 #include "memory/MemoryArea.h"
 #include "memory/MemoryMap.h"
 
+#include "util/Class.h"
 #include "io/interrupts/InterruptManager.h"
 
 #include <cstdint>
@@ -39,6 +40,8 @@ namespace GBE
     class Joypad: public MemoryArea
     {
     public:
+        GBE_CLASS_NO_COPY_NO_MOVE(Joypad)
+
         Joypad(const std::shared_ptr<InterruptManager>& interruptManager);
         ~Joypad();
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include "Assembly.h"
+#include <array>
 
 #include "Operand.h"
 #include "InstructionType.h"
@@ -114,7 +114,7 @@ namespace GBE
             return m_Size;
         }
 
-        inline void SetMethod(void (Cpu::*method)(const Instruction &istr, Memory &memory, InstructionResult &result))
+        inline void SetMethod(void (Cpu::*method)(const Instruction &istr, InstructionResult &result))
         {
             m_Method = method;
         }
@@ -124,7 +124,6 @@ namespace GBE
             return m_Method;
         }
 
-
     private:
         std::array<Operand, 3> m_Operands{{}};
         size_t m_OperandsCount = 0;
@@ -133,6 +132,6 @@ namespace GBE
         InstructionType m_Type = InstructionType::NONE;
         uint16_t m_Size = 1;
 
-        void (Cpu::*m_Method)(const Instruction &istr, Memory &memory, InstructionResult &result) = nullptr;
+        void (Cpu::*m_Method)(const Instruction &istr, InstructionResult &result) = nullptr;
     };
 } // namespace GBE

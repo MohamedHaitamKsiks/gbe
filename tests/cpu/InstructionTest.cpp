@@ -1,12 +1,15 @@
 #include "GBETestSuite.h"
 
+#include <vector>
+
+#include "cpu/instruction/Operand.h"
 #include "cpu/instruction/Instruction.h"
 
 GBE_TEST_SUITE(Instruction)
 {
     TEST_CASE("AddOperand")
     {   
-        // arrange
+        // arrange 
         GBE::Instruction instr{};
         std::vector<GBE::OperandType> expectedTypes = {
             GBE::OperandType::R8,

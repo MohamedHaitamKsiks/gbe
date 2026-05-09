@@ -5,7 +5,7 @@
 #include <string>
 #include <memory>
 #include "Renderer.h"
-#include "frontend/gui/GuiLayer.h"
+#include "frontend/gui/GuiManager.h"
 
 class SDL_Window;
 

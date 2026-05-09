@@ -44,7 +44,7 @@ namespace GBE
     class LcdControl : public MemoryArea
     {
     public:
-        LcdControl();
+        LcdControl(const std::shared_ptr<ObjectAttributesMemory>& oam);
         ~LcdControl() = default;
 
         void Init() override;
@@ -102,8 +102,10 @@ namespace GBE
 
 
         // do the transfer of DMA from memory to oam memory
-        void Tick(const Memory& memory, const std::shared_ptr<ObjectAttributesMemory>& oam, uint32_t dots);
+        void Tick(const Memory& memory, uint32_t dots);
     private:
+        std::shared_ptr<ObjectAttributesMemory> m_Oam = nullptr;
+
         uint8_t m_Control = 0x91;
         uint8_t m_Status = 0;
 

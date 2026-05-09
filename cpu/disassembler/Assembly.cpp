@@ -4,19 +4,21 @@
 
 #include <sstream>
 #include <iomanip>
+#include <print>
 
 #include <magic_enum.hpp>
 
 namespace GBE
 {
-    void Assembly::SetAddress(uint16_t address)
+    uint16_t Assembly::GetNextInstructionAddress() const
     {
-        m_Address = address;
-    }
+        for (const auto &nextAddress : m_NextAddresses)
+        {
+            if (!nextAddress.IsJump)
+                return nextAddress.Address;
+        }
 
-    void Assembly::SetOpcode(uint8_t opcode)
-    {
-        m_Opcode = opcode;
+        return m_Address;
     }
 
     void Assembly::SetOperation(InstructionType op)
@@ -39,6 +41,15 @@ namespace GBE
             break;
         case OperandType::R16_STK:
             _AddR16Stk(op.Get<OperandR16Stk>());
+            break;
+        case OperandType::BIT3:
+            _AddBit3(op.Get<OperandBit3>());
+            break;
+        case OperandType::COND:
+            _AddCond(op.Get<OperandCond>());
+            break;
+        case OperandType::TGT3:
+            _AddTgt3(op.Get<OperandTgt3>());
             break;
         default:
             break;
@@ -78,19 +89,39 @@ namespace GBE
     {
         _AddOperand(magic_enum::enum_name(r16stk));
     }
-    void Assembly::AddImm8(uint8_t imm8, bool isAddress)
+
+    void Assembly::_AddCond(OperandCond cc)
+    {
+        _AddOperand(magic_enum::enum_name(cc));
+    }
+
+    void Assembly::_AddBit3(OperandBit3 bit3)
+    {
+        _AddOperand(Binary::ToHex(bit3.Value));
+    }
+
+    void Assembly::_AddTgt3(OperandTgt3 tgt3)
+    {
+        _AddOperand(Binary::ToHex(tgt3.Value * 8));
+    }
+
+    void Assembly::AddImm8(uint8_t imm8, bool isAddress, bool isSigned)
     {
         std::stringstream ss;
         if (isAddress) 
             ss << "[";
 
-        ss << Binary::ToHex(imm8);
+        if (isSigned)
+            ss << static_cast<int>(static_cast<int8_t>(imm8));
+        else
+            ss << Binary::ToHex(imm8);
 
         if (isAddress) 
             ss << "]";
 
         _AddOperand(ss.str());
     }
+
     void Assembly::AddImm16(uint16_t imm16, bool isAddress)
     {
         std::stringstream ss;
@@ -105,14 +136,16 @@ namespace GBE
         _AddOperand(ss.str());
     }
 
-    std::string Assembly::ToString() const
-    {
+    const std::string& Assembly::ToString() const
+    {   
+        if (m_CachedString.size() > 0)
+            return m_CachedString;
+
         std::stringstream ss;
-        // address
-        ss << Binary::ToHex(m_Address) << ": ";
 
         // operation
         ss << m_Operation;
+
         // operands
         if (m_Operands.size() > 0)
             ss << " ";
@@ -125,11 +158,9 @@ namespace GBE
             ss << m_Operands[i];
         }
 
-        // opcode
-        ss << std::setfill(' ') << std::setw(34 - ss.str().size());
-        ss << "; (" << Binary::ToHex(m_Opcode) << ")";
+        m_CachedString = ss.str();
 
-        return ss.str();
+        return m_CachedString;
     }
 
 } // namespace GBE

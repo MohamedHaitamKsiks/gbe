@@ -2,6 +2,7 @@
 
 #include "memory/Memory.h"
 
+#include "instruction/Instruction.h"
 #include "instruction/InstructionResult.h"
 
 #include "alu/AluResult.h"
@@ -11,10 +12,10 @@
 
 namespace GBE
 {
-    void Cpu::_AddToDestSP_Imm8(Reg16 dest, Memory &memory, InstructionResult &result)
+    void Cpu::_AddToDestSP_Imm8(Reg16 dest, InstructionResult &result)
     {
         // fetch
-        uint8_t imm8 = GetImm8(memory, result);
+        uint8_t imm8 = GetImm8(result);
 
         uint16_t a = m_Regs.GetReg16(Reg16::SP);
         int8_t e = static_cast<int8_t>(imm8);
@@ -29,12 +30,12 @@ namespace GBE
         result.Cycles++;
     }
 
-    void Cpu::AddSP_Imm8(const Instruction &instr, Memory &memory, InstructionResult &result)
+    void Cpu::AddSP_Imm8(const Instruction &instr, InstructionResult &result)
     {
-        _AddToDestSP_Imm8(Reg16::SP, memory, result);
+        _AddToDestSP_Imm8(Reg16::SP, result);
     }
 
-    void Cpu::AddHL_R16(const Instruction &instr, Memory &memory, InstructionResult &result)
+    void Cpu::AddHL_R16(const Instruction &instr, InstructionResult &result)
     {
         // fetch
         auto r16 = instr.GetOperand<OperandR16>(1);
@@ -52,7 +53,7 @@ namespace GBE
         m_Regs.SetFlags(aluResult.AffectedFlags, aluResult.Flags);
     }
 
-    void Cpu::ComplementA(const Instruction &instr, Memory &memory, InstructionResult &result)
+    void Cpu::ComplementA(const Instruction &instr, InstructionResult &result)
     {
         // fetch
         uint8_t a = m_Regs.GetReg8(Reg8::A);
@@ -65,7 +66,7 @@ namespace GBE
         m_Regs.SetFlag(CpuFlag::N, true);
     }
 
-    void Cpu::ExecAluOpR16(Alu::OperationDest16 op, const Instruction &instr, Memory &memory, InstructionResult &result)
+    void Cpu::ExecAluOpR16(Alu::OperationDest16 op, const Instruction &instr, InstructionResult &result)
     {
         // fetch
         auto r16 = instr.GetOperand<OperandR16>(0);
@@ -80,18 +81,18 @@ namespace GBE
         SetOperandR16(r16, aluResult.Result16, result);
     }
 
-    void Cpu::ExecAluOpR8(Alu::OperationDest8 op, const Instruction &instr, Memory &memory, InstructionResult &result)
+    void Cpu::ExecAluOpR8(Alu::OperationDest8 op, const Instruction &instr, InstructionResult &result)
     {
         // fetch
         auto r8 = instr.GetOperand<OperandR8>(0);
-        uint8_t value = GetOperandR8(r8, memory, result);
+        uint8_t value = GetOperandR8(r8, result);
 
         // execute
         AluResult aluResult{};
         op(value, aluResult);
 
         // result
-        SetOperandR8(r8, aluResult.Result8, memory, result);
+        SetOperandR8(r8, aluResult.Result8, result);
         m_Regs.SetFlags(aluResult.AffectedFlags, aluResult.Flags);
     }
 
@@ -109,33 +110,33 @@ namespace GBE
         m_Regs.SetFlags(aluResult.AffectedFlags, aluResult.Flags);
     }
 
-    void Cpu::ExecAluOpA_R8(Alu::OperationDestSrc8 op, bool addCarry, const Instruction &instr, Memory &memory, InstructionResult &result)
+    void Cpu::ExecAluOpA_R8(Alu::OperationDestSrc8 op, bool addCarry, const Instruction &instr, InstructionResult &result)
     {
         // operands
         auto [a, r8] = instr.GetOperands<OperandR8, OperandR8>();
         GBE_ASSERT(a == OperandR8::A);
 
         // fetch
-        uint8_t value = GetOperandR8(r8, memory, result);
+        uint8_t value = GetOperandR8(r8, result);
 
         // execute
         _ExecAluOpA(op, value, addCarry);
     }
 
-    void Cpu::ExecAluOpA_Imm8(Alu::OperationDestSrc8 op, bool addCarry, const Instruction &instr, Memory &memory, InstructionResult &result)
+    void Cpu::ExecAluOpA_Imm8(Alu::OperationDestSrc8 op, bool addCarry, const Instruction &instr, InstructionResult &result)
     {
         // operands
         auto [a, imm8] = instr.GetOperands<OperandR8, OperandImm8>();
         GBE_ASSERT(a == OperandR8::A);
 
         // fetch
-        uint8_t value = GetImm8(memory, result);
+        uint8_t value = GetImm8(result);
 
         // execute
         _ExecAluOpA(op, value, addCarry);
     }
 
-    void Cpu::RotateR8(Alu::OperationRotateSrc op, ShiftDirection direction,  const Instruction &instr, Memory &memory, InstructionResult &result)
+    void Cpu::RotateR8(Alu::OperationRotateSrc op, ShiftDirection direction,  const Instruction &instr, InstructionResult &result)
     {
         // fetch
         OperandR8 r8 = OperandR8::A;
@@ -147,7 +148,7 @@ namespace GBE
             checkZero = true;
         }
 
-        uint8_t value = GetOperandR8(r8, memory, result);
+        uint8_t value = GetOperandR8(r8, result);
         uint8_t carry = _GetCarry();
 
         // run alu rotation op
@@ -161,17 +162,17 @@ namespace GBE
         );
 
         // save result
-        SetOperandR8(r8, aluResult.Result8, memory, result);
+        SetOperandR8(r8, aluResult.Result8, result);
         m_Regs.SetFlags(aluResult.AffectedFlags, aluResult.Flags);
     }
 
-    void Cpu::ShiftR8(ShiftDirection direction, bool isLogical, const Instruction &instr, Memory &memory, InstructionResult &result)
+    void Cpu::ShiftR8(ShiftDirection direction, bool isLogical, const Instruction &instr, InstructionResult &result)
     {
         // operands
-        auto                              [r8] = instr.GetOperands<OperandR8>();
+        auto [r8] = instr.GetOperands<OperandR8>();
 
         // fetch
-        uint8_t value = GetOperandR8(r8, memory, result);
+        uint8_t value = GetOperandR8(r8, result);
         uint8_t carry = _GetCarry();
 
         // run alu rotation op
@@ -184,17 +185,17 @@ namespace GBE
         );
 
         // save result
-        SetOperandR8(r8, aluResult.Result8, memory, result);
+        SetOperandR8(r8, aluResult.Result8, result);
         m_Regs.SetFlags(aluResult.AffectedFlags, aluResult.Flags);
     }
 
-    void Cpu::SwapR8(const Instruction &instr, Memory &memory, InstructionResult &result)
+    void Cpu::SwapR8(const Instruction &instr, InstructionResult &result)
     {
         // operands
         auto [r8] = instr.GetOperands<OperandR8>();
 
         // fetch
-        uint8_t value = GetOperandR8(r8, memory, result);
+        uint8_t value = GetOperandR8(r8, result);
 
         // run alu swap op
         AluResult aluResult{};
@@ -204,16 +205,16 @@ namespace GBE
         );
 
         // save result
-        SetOperandR8(r8, aluResult.Result8, memory, result);
+        SetOperandR8(r8, aluResult.Result8, result);
         m_Regs.SetFlags(aluResult.AffectedFlags, aluResult.Flags);
     }
 
-    void Cpu::TestBitR8(const Instruction &instr, Memory &memory, InstructionResult &result)
+    void Cpu::TestBitR8(const Instruction &instr, InstructionResult &result)
     {
         // fetch
          auto [bit, r8] = instr.GetOperands<OperandBit3, OperandR8>();
 
-        uint8_t value = GetOperandR8(r8, memory, result);
+        uint8_t value = GetOperandR8(r8, result);
 
         // execute
         AluResult aluResult{};
@@ -223,35 +224,35 @@ namespace GBE
         m_Regs.SetFlags(aluResult.AffectedFlags, aluResult.Flags);
     }
 
-    void Cpu::SetBitR8(const Instruction &instr, Memory &memory, InstructionResult &result)
+    void Cpu::SetBitR8(const Instruction &instr, InstructionResult &result)
     {
         // fetch
         auto [bit, r8] = instr.GetOperands<OperandBit3, OperandR8>();
 
-        uint8_t value = GetOperandR8(r8, memory, result);
+        uint8_t value = GetOperandR8(r8, result);
 
         // execute
         AluResult aluResult{};
         Alu::SetBit(bit.Value, value, aluResult);
 
         // result
-        SetOperandR8(r8, aluResult.Result8, memory, result);
+        SetOperandR8(r8, aluResult.Result8, result);
         m_Regs.SetFlags(aluResult.AffectedFlags, aluResult.Flags);
     }
 
-    void Cpu::ResetBitR8(const Instruction &instr, Memory &memory, InstructionResult &result)
+    void Cpu::ResetBitR8(const Instruction &instr, InstructionResult &result)
     {
         // fetch
         auto [bit, r8] = instr.GetOperands<OperandBit3, OperandR8>();
 
-        uint8_t value = GetOperandR8(r8, memory, result);
+        uint8_t value = GetOperandR8(r8, result);
 
         // execute
         AluResult aluResult{};
         Alu::ResetBit(bit.Value, value, aluResult);
 
         // result
-        SetOperandR8(r8, aluResult.Result8, memory, result);
+        SetOperandR8(r8, aluResult.Result8, result);
         m_Regs.SetFlags(aluResult.AffectedFlags, aluResult.Flags);
     }
 } // namespace GBE

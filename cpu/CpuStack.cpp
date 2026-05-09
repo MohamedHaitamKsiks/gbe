@@ -1,12 +1,15 @@
 #include "Cpu.h"
 
-#include "memory/Memory.h"
+
+#include "instruction/Instruction.h"
 #include "instruction/InstructionResult.h"
+
+#include "memory/Memory.h"
 
 namespace GBE
 {
 
-    void Cpu::Push(uint16_t value, Memory &memory, InstructionResult &result)
+    void Cpu::Push(uint16_t value, InstructionResult &result)
     {
         // decrement stack pointer
         uint16_t stack = m_Regs.GetReg16(Reg16::SP);
@@ -14,17 +17,17 @@ namespace GBE
         m_Regs.SetReg16(Reg16::SP, stack);
 
         // load
-        memory.Set16(stack, value);
+        m_Memory->Set16(stack, value);
 
         // add cycles
         result.Cycles += 3;
     }
 
-    uint16_t Cpu::Pop(Memory &memory, InstructionResult &result)
+    uint16_t Cpu::Pop(InstructionResult &result)
     {
         // get top
         uint16_t stack = m_Regs.GetReg16(Reg16::SP);
-        uint16_t top = memory.Get16(stack);
+        uint16_t top = m_Memory->Get16(stack);
 
         // increment stack
         stack += 2;
@@ -37,27 +40,27 @@ namespace GBE
         return top;
     }
 
-    uint16_t Cpu::Top(Memory &memory)
+    uint16_t Cpu::Top()
     {
         uint16_t stack = m_Regs.GetReg16(Reg16::SP);
-        return memory.Get16(stack);
+        return m_Memory->Get16(stack);
     }
 
-    void Cpu::PushR16Stk(const Instruction &instr, Memory &memory, InstructionResult &result)
+    void Cpu::PushR16Stk(const Instruction &instr, InstructionResult &result)
     {
         // fetch
         auto [r16stk] = instr.GetOperands<OperandR16Stk>();
         uint16_t value = GetOperandR16Stk(r16stk, result);
 
         // execute
-        Push(value, memory, result);
+        Push(value, result);
     }
 
-    void Cpu::PopR16Stk(const Instruction &instr, Memory &memory, InstructionResult &result)
+    void Cpu::PopR16Stk(const Instruction &instr, InstructionResult &result)
     {
         // execute
         auto [r16stk] = instr.GetOperands<OperandR16Stk>();
-        uint16_t top = Pop(memory, result);
+        uint16_t top = Pop(result);
 
         // result
         SetOperandR16Stk(r16stk, top, result);

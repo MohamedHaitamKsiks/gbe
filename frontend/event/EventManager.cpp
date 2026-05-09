@@ -3,24 +3,27 @@
 #include <SDL3/SDL.h>
 
 #include "frontend/rendering/Window.h"
-#include "frontend/gui/GuiLayer.h"
+#include "frontend/gui/GuiManager.h"
 #include "io/joypad/Joypad.h"
+#include "gameboy/Gameboy.h"
 #include "util/Assert.h"
 
 namespace GBE
 {
-    EventManager::EventManager(std::shared_ptr<Window> window, std::shared_ptr<Joypad> joypad, std::shared_ptr<GuiLayer> guiLayer):
+    EventManager::EventManager(std::shared_ptr<Window> window, std::shared_ptr<Gameboy> gameboy, std::shared_ptr<GuiManager> GuiManager):
         m_Window(window),
-        m_Joypad(joypad),
-        m_GuiLayer(guiLayer)
+        m_Gameboy(gameboy),
+        m_GuiManager(GuiManager)
     {
         GBE_ASSERT(m_Window);
-        GBE_ASSERT(m_Joypad);
-        GBE_ASSERT(m_GuiLayer);
+        GBE_ASSERT(m_Gameboy);
+        GBE_ASSERT(m_GuiManager);
     }
 
     void EventManager::ProcessEvents()
     {
+        Joypad& joypad = m_Gameboy->GetJoypad();
+
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
@@ -32,7 +35,7 @@ namespace GBE
             }
 
             // gui layer events
-            if (m_GuiLayer->ProcessEvent(event))
+            if (m_GuiManager->ProcessEvent(event))
                 continue;
 
             // process joypad events
@@ -75,7 +78,7 @@ namespace GBE
             }
 
             if (doQueueEvent)
-                m_Joypad->QueueJoypadEvent(joypadEvent);
+                joypad.QueueJoypadEvent(joypadEvent);
         }
     }
 

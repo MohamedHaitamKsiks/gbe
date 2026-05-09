@@ -1,7 +1,11 @@
 #include "Renderer.h"
 
 #include "Window.h"
+
+#include "io/graphics/lcd/LcdPalette.h"
 #include "io/graphics/Ppu.h"
+#include "gameboy/Gameboy.h"
+
 #include "util/Assert.h"
 
 #include <SDL3/SDL.h>
@@ -9,12 +13,12 @@
 
 namespace GBE
 {
-    Renderer::Renderer(std::shared_ptr<Window> window, std::shared_ptr<Ppu> ppu): 
+    Renderer::Renderer(std::shared_ptr<Window> window, std::shared_ptr<Gameboy> gb): 
         m_Window(window),
-        m_Ppu(ppu)
+        m_GB(gb)
     {
         GBE_ASSERT(m_Window);
-        GBE_ASSERT(m_Ppu);
+        GBE_ASSERT(m_GB);
 
         // create sdl renderer
         SDL_Window* sdlWindow = window->GetSDLWindow();
@@ -27,7 +31,7 @@ namespace GBE
         m_ColorPalette.push_back({52, 104, 86});
         m_ColorPalette.push_back({8, 24, 32});
 
-        assert(m_ColorPalette.size() == LCD_COLORS_NUMBER);
+        GBE_ASSERT(m_ColorPalette.size() == LCD_COLORS_NUMBER);
 
         // create texture
         m_SDLTexture = SDL_CreateTexture(
@@ -92,8 +96,10 @@ namespace GBE
 
     void Renderer::_UpdateTexture()
     {
+        Ppu& ppu = m_GB->GetPpu();
+
         // update texture
-        const auto &lcdScreen = m_Ppu->GetLcdScreen();
+        const auto &lcdScreen = ppu.GetLcdScreen();
         for (int y = 0; y < LCD_SCREEN_HEIGHT; y++)
         {
             for (int x = 0; x < LCD_SCREEN_WIDTH; x++)

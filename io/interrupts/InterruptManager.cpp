@@ -26,7 +26,14 @@ namespace GBE
     {
         m_InterruptFlag |= 1 << static_cast<uint8_t>(interrupt);
     }
-    
+
+    uint16_t InterruptManager::GetHandler(InterruptFlag flag)
+    {
+        uint8_t flagBit = static_cast<uint8_t>(flag);
+        uint16_t handler = 0x40 + 0x8 * static_cast<uint16_t>(flagBit);
+        return handler;
+    }
+
     void InterruptManager::_SetImp(uint16_t address, uint8_t value)
     {
         constexpr uint8_t interruptMask = 0b00011111;

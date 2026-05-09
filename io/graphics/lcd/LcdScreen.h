@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <array>
 
+#include "util/Class.h"
+
 namespace GBE
 {
     constexpr uint8_t LCD_SCREEN_WIDTH = 160;
@@ -12,6 +14,8 @@ namespace GBE
     class LcdScreen
     {
     public:
+        GBE_CLASS_NO_COPY_NO_MOVE(LcdScreen)
+
         using Pixels = std::array<uint8_t, LCD_SCREEN_WIDTH * LCD_SCREEN_HEIGHT>;
 
         LcdScreen() = default;  

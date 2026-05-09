@@ -2,7 +2,7 @@
 
 #include "util/Assert.h"
 #include "gameboy/Gameboy.h"
-
+#include "cartridge/Cartridge.h"
 
 #define GBE_ADD_TEST_ROM(testName, successAddress) \
 TEST_CASE(testName) \

@@ -7,18 +7,19 @@
 #include <coroutine>
 
 #include "lcd/LcdScreen.h"
-#include "lcd/LcdControl.h"
-#include "lcd/LcdPalettesMemory.h"
-#include "vram/Vram.h"
-#include "oam/ObjectAttributesMemory.h"
-
 #include "PixelFIFO.h"
 
-#include "io/interrupts/InterruptManager.h"
-#include "util/Signal.h"
+#include "util/Class.h"
 
 namespace GBE
 {
+    class InterruptManager;
+    class Memory;
+    class Vram;
+    class ObjectAttributesMemory;
+    class LcdControl;
+    class LcdPalettesMemory;
+
     enum class PpuMode
     {
         OAM_SCAN = 2, 
@@ -39,9 +40,15 @@ namespace GBE
     class Ppu
     {
     public:
-        using VBlankSignal = Signal<const LcdScreen&>;
+        GBE_CLASS_NO_COPY_NO_MOVE(Ppu)
 
-        Ppu(std::shared_ptr<InterruptManager> interruptManager);
+        Ppu(
+            const std::shared_ptr<Vram>& vram, 
+            const std::shared_ptr<ObjectAttributesMemory>& oam,
+            const std::shared_ptr<LcdPalettesMemory>& palettes,
+            const std::shared_ptr<LcdControl>& lcdControl,
+            const std::shared_ptr<InterruptManager>& interruptManager
+        );
         ~Ppu();
 
         // init 
@@ -49,29 +56,6 @@ namespace GBE
 
         // tick ppu n dots
         void Tick(uint32_t dots);
-
-        // get vram
-        inline const std::shared_ptr<Vram>& GetVram() const
-        {
-            return m_Vram;
-        }
-
-        // get oam
-        inline const std::shared_ptr<ObjectAttributesMemory>& GetOam() const
-        {
-            return m_Oam;
-        }
-
-        // get lcd control register
-        inline const std::shared_ptr<LcdControl>& GetLcdControl() const
-        {
-            return m_LcdControl;
-        }
-
-        // get lcd palettes
-        inline const std::shared_ptr<LcdPalettesMemory>& GetLcdPalettes() const        {
-            return m_Palettes;
-        }
 
         // get screen
         inline const LcdScreen& GetLcdScreen() const
@@ -84,19 +68,12 @@ namespace GBE
             return m_DotsCounter;
         }
 
-        inline VBlankSignal& GetVBlankSignal() 
-        {
-            return m_VBlankSignal;
-        }
-
         inline PpuMode GetPpuMode() const
         {
             return m_PpuMode;
         }
 
     private:
-        VBlankSignal m_VBlankSignal{};
-
         // dot counter
         uint32_t m_FrameCounter = 0;
         uint32_t m_DotsCounter = 0;
@@ -104,19 +81,12 @@ namespace GBE
         uint32_t m_WaitDots = 0;
         uint32_t m_HBlankWaitDots = 0;
 
-
-        // 8 KiB Video Ram
-        std::shared_ptr<Vram> m_Vram{nullptr};
-
-        // Object Attribute Memory
-        std::shared_ptr<ObjectAttributesMemory> m_Oam{nullptr};
-
-        // pallettes
-        std::shared_ptr<LcdPalettesMemory> m_Palettes{nullptr};
-
-        // LCD Control
-        std::shared_ptr<LcdControl> m_LcdControl{nullptr};
-        std::shared_ptr<InterruptManager> m_InterruptManager;
+        // memory 
+        std::shared_ptr<Vram> m_Vram = nullptr;
+        std::shared_ptr<ObjectAttributesMemory> m_Oam = nullptr;
+        std::shared_ptr<LcdPalettesMemory> m_Palettes = nullptr;
+        std::shared_ptr<LcdControl> m_LcdControl = nullptr;
+        std::shared_ptr<InterruptManager> m_InterruptManager = nullptr;
 
         // ppu mode 
         PpuMode m_PpuMode;
@@ -157,7 +127,5 @@ namespace GBE
 
         void _FetchBackgroundFIFO();
         void _FetchObjectsFIFO();
-        void _Fetch();
-
     };
 } // namespace GBE
