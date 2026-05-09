@@ -30,7 +30,7 @@ namespace GBE
             .StartAddress   = static_cast<uint16_t>(m_MaxSectionStart), 
             .EndAddress     = static_cast<uint16_t>(m_MaxSectionEnd)
         };
-        
+
         disassembler.Disassemble(m_StartPC, maxSection);
     }
 
@@ -43,6 +43,8 @@ namespace GBE
         static constexpr ImVec4 defaultColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
         static constexpr ImVec4 selectColor = ImVec4(1.0f, 0.5f, 0.5f, 1.0f);
 
+        if (pc == assembly.GetAddress())
+            ImGui::SetScrollHereY();
         const ImVec4& currentColor = (pc == assembly.GetAddress()) ? selectColor : defaultColor;
 
         ImGui::TextColored(currentColor, "%s : %s", 

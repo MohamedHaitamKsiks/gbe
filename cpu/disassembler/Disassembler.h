@@ -58,7 +58,7 @@ namespace GBE
 
         void _ComputeAssemblySections();
 
-        void _CreateAssembly(uint16_t address, const Instruction& instr, Assembly& assembly);
+        void _CreateAssembly(uint16_t address, const Instruction &instr, Assembly &assembly, bool isPrefix);
         void _AddOperands(uint16_t address, const Instruction& instr, Assembly& assembly);
         void _AddJumpOrCallNextAddress(uint16_t address, const Instruction &instr, Assembly &assembly);
         void _AddJumpRelativeNextAddress(uint16_t address, const Instruction &instr, Assembly &assembly);

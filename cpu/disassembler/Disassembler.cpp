@@ -117,14 +117,14 @@ namespace GBE
             uint8_t prefixOpcode = m_Memory->Get(address + 1);
             const Instruction &prefixInstr = m_Decoder->DecodePrefix(prefixOpcode);
 
-            _CreateAssembly(address, prefixInstr, assembly);
+            _CreateAssembly(address, prefixInstr, assembly, true);
             return;
         }
 
-        _CreateAssembly(address, instr, assembly);
+        _CreateAssembly(address, instr, assembly, false);
     }
 
-    void Disassembler::_CreateAssembly(uint16_t address, const Instruction &instr, Assembly &assembly)
+    void Disassembler::_CreateAssembly(uint16_t address, const Instruction &instr, Assembly &assembly, bool isPrefix)
     {
         assembly.SetAddress(address);
 
@@ -144,6 +144,10 @@ namespace GBE
             return;
 
         uint16_t a = address + instr.GetSize();
+        
+        if (isPrefix)
+            a++;
+
         Assembly::NextAddress nextInsrtAddress{
             .Address    = a,
             .IsJump     = false
@@ -162,7 +166,7 @@ namespace GBE
             {
                 if (instr.GetType() == InstructionType::JR)
                     return;
-                    
+
                 uint8_t imm8 = m_Memory->Get(address + 1);
                 assembly.AddImm8(imm8, operand.IsAddress());
                 break;
@@ -216,7 +220,7 @@ namespace GBE
                 int8_t signedOffset8 = static_cast<int8_t>(offset8);
                 int16_t signedOffset16 = static_cast<int16_t>(signedOffset8);
 
-                uint16_t jumpAddress16 = address + signedOffset16;
+                uint16_t jumpAddress16 = address + 2 + signedOffset16;
                 Assembly::NextAddress jumpAddress{
                     .Address = jumpAddress16,
                     .IsJump = true
