@@ -3,41 +3,41 @@ project(gbe LANGUAGES CXX C)
 
 
 # Set C++ standard
-
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # params
 option(TEST "Enable tests" OFF)
 option(COVERAGE "Enable coverage" OFF)
 
 # enable coverage for test
 if (COVERAGE)
-    enable_testing()
-    include(CTest)
+  enable_testing()
+  include(CTest)
 endif()
 
 #add debendencies
 add_subdirectory(dependencies/doctest)
 add_subdirectory(dependencies/magic_enum)
 
-set(GBE_LIBRARIES 
+set(GBE_LIBRARIES
     magic_enum
     doctest
 )
 
 #add modules
 if (TEST)
-    include(tests/tests.cmake)
-    include_directories(tests)
+  include(tests/tests.cmake)
+  include_directories(tests)
 else()
-    # Add SDL3 as subdirectory (builds it as part of your project)
-    # Disable SDL3 tests, examples, and other unnecessary components
-    add_subdirectory(dependencies/SDL3 EXCLUDE_FROM_ALL)
+  # Add SDL3 as subdirectory (builds it as part of your project)
+  # Disable SDL3 tests, examples, and other unnecessary components
+  add_subdirectory(dependencies/SDL3 EXCLUDE_FROM_ALL)
 
-    set(IMGUI_DIR ${CMAKE_CURRENT_LIST_DIR}/dependencies/imgui)
-    add_library(imgui STATIC
+  set(IMGUI_DIR ${CMAKE_CURRENT_LIST_DIR}/dependencies/imgui)
+  add_library(imgui STATIC
         ${IMGUI_DIR}/imgui.cpp
         ${IMGUI_DIR}/imgui_draw.cpp
         ${IMGUI_DIR}/imgui_tables.cpp
@@ -45,15 +45,15 @@ else()
         ${IMGUI_DIR}/backends/imgui_impl_sdl3.cpp
         ${IMGUI_DIR}/backends/imgui_impl_sdlrenderer3.cpp
     )
-    target_include_directories(imgui PUBLIC ${IMGUI_DIR} ${IMGUI_DIR}/backends)
-    target_link_libraries(imgui PUBLIC SDL3::SDL3)
+  target_include_directories(imgui PUBLIC ${IMGUI_DIR} ${IMGUI_DIR}/backends)
+  target_link_libraries(imgui PUBLIC SDL3::SDL3)
 
-    set (GBE_LIBRARIES ${GBE_LIBRARIES}
+  set (GBE_LIBRARIES ${GBE_LIBRARIES}
         SDL3::SDL3
         imgui
     )
 
-    include(frontend/frontend.cmake)
+  include(frontend/frontend.cmake)
 endif()
 
 include(cpu/cpu.cmake)
@@ -72,9 +72,9 @@ add_library(gbelib STATIC
 
 # Define the executable
 if (TEST)
-    set (MAIN_SOURCE platforms/tests/main.cpp)
+  set (MAIN_SOURCE platforms/tests/main.cpp)
 else()
-    set (MAIN_SOURCE platforms/desktop/main.cpp)
+  set (MAIN_SOURCE platforms/desktop/main.cpp)
 endif()
 
 include_directories(.)
@@ -96,8 +96,8 @@ target_link_libraries(gbe
 
 # add coverage
 if (COVERAGE)
-    target_compile_options(gbe PRIVATE -coverage)
-    target_link_options(gbe PRIVATE -coverage)
-    
-    add_test(NAME gbe_coverarge COMMAND gbe)
+  target_compile_options(gbe PRIVATE -coverage)
+  target_link_options(gbe PRIVATE -coverage)
+
+  add_test(NAME gbe_coverarge COMMAND gbe)
 endif()

@@ -3,7 +3,9 @@
 #include "Assembly.h"
 #include "memory/Memory.h"
 #include "cpu/instruction/InstructionDecoder.h"
+#include <unordered_set>
 #include <cstdint>
+#include <print>
 
 namespace GBE
 {
@@ -16,9 +18,91 @@ namespace GBE
     {
     }
 
-    void Disassembler::Disassemble(uint16_t startAddress)
+    void Disassembler::Disassemble(uint16_t startAddress, const AssemblySection &secion)
     {
+        // clear all ?
+        m_IsDisassembled.fill(false);
+        m_JumpAddresses.clear();
+        m_AssemblySections.clear();
+        m_MaxSection = secion;
+        
 
+        // recursive diassemble from start address
+        _Disassemble(startAddress);
+        m_JumpAddresses.insert(startAddress);
+
+        // retrieve assembly sections
+        // they are contiguous section of instruction 
+        // connected by non-jump next addresses
+        _ComputeAssemblySections();
+    }
+
+    void Disassembler::_Disassemble(uint16_t address)
+    {
+        bool isDisassembled = m_IsDisassembled.at(address);
+        if (isDisassembled)
+            return;
+
+        m_IsDisassembled[address] = true;
+
+        Assembly& assembly = m_AssemblyInstructions.at(address);
+        DisassembleInstruction(address, assembly);
+
+        const auto& asmNextAddresses = assembly.GetNextAddresses();
+        for (const auto& asmNextAddress: asmNextAddresses)
+        {
+            uint16_t    nextAddress = asmNextAddress.Address;
+            if (nextAddress < m_MaxSection.StartAddress || nextAddress > m_MaxSection.EndAddress)
+                continue;
+
+            if (m_IsDisassembled[nextAddress]) // avoid useless recursions
+                continue;
+
+            if (asmNextAddress.IsJump)    
+                m_JumpAddresses.insert(nextAddress);
+
+            _Disassemble(nextAddress);
+        }
+    }
+
+    void Disassembler::_ComputeAssemblySections()
+    {
+        for (uint16_t address: m_JumpAddresses)
+        {
+            // since sections are "contiguous" 
+            // we only need to check if address in present in the last section
+            // if yes we don't process it
+            if (m_AssemblySections.size() > 0)
+            {
+                auto itEndSection = m_AssemblySections.end();
+                itEndSection--;
+                AssemblySection& lastSection = itEndSection->second;
+    
+                if (address >= lastSection.StartAddress && address <= lastSection.EndAddress)
+                    continue;
+            }
+
+            // create section
+            AssemblySection& section = m_AssemblySections[address];
+            section.StartAddress = address;
+            section.EndAddress = address;
+
+            uint16_t currentAddress = address;
+            while (currentAddress <= UINT16_MAX)
+            {
+                if (!m_IsDisassembled[currentAddress])
+                    break;
+
+                Assembly& assembly = m_AssemblyInstructions[currentAddress];
+                uint16_t nextAddress = assembly.GetNextInstructionAddress();
+
+                if (nextAddress <= currentAddress)
+                    break;
+
+                currentAddress = nextAddress;
+                section.EndAddress = nextAddress;
+            }
+        }
     }
 
     void Disassembler::DisassembleInstruction(uint16_t address, Assembly &assembly)
@@ -59,8 +143,9 @@ namespace GBE
         if (_IsNonConditionalJumpOrReturn(instr))
             return;
 
+        uint16_t a = address + instr.GetSize();
         Assembly::NextAddress nextInsrtAddress{
-            .Address    = address + instr.GetSize(),
+            .Address    = a,
             .IsJump     = false
         };
         assembly.AddNextAddress(nextInsrtAddress);

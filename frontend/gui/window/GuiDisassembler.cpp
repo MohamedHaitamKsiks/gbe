@@ -1,8 +1,9 @@
 #include "GuiDisassembler.h"
 
 #include "imgui.h"
-
 #include "gameboy/Gameboy.h"
+
+#include <print>
 
 namespace GBE
 {
@@ -21,36 +22,20 @@ namespace GBE
     {
     }
 
-    /*void GuiDisassembler::_Disassemble()
+    void GuiDisassembler::_Disassemble()
     {
-        m_AsmInstrutions.clear();
+        Disassembler& disassembler = m_Gameboy->GetDisassembler();
+        uint16_t startPC = static_cast<uint16_t>(m_StartPC);
+        AssemblySection maxSection = {
+            .StartAddress   = static_cast<uint16_t>(m_MaxSectionStart), 
+            .EndAddress     = static_cast<uint16_t>(m_MaxSectionEnd)
+        };
+        
+        std::println("disassemble at {} {} {}", startPC, maxSection.StartAddress, maxSection.EndAddress);
+        disassembler.Disassemble(m_StartPC, maxSection);
+    }
 
-        Cpu &cpu = m_Gameboy->GetCpu();
-        const Memory& memory = m_Gameboy->GetMemory();
-        const InstructionDecoder &decoder = cpu.GetDecoder();
-
-        uint16_t pc = static_cast<uint16_t>(m_StartPC);
-
-        for (size_t i = 0; i < 100; i++)
-        {
-            Assembly assembly{};
-            Disassembler::Disassemble(
-                pc,
-                memory,
-                decoder,
-                assembly
-            );
-
-            m_AsmInstrutions[pc] = assembly;
-            const auto& nextAddr = assembly.GetNextAddresses();
-            if (nextAddr.size() == 0)
-                break;
-
-            pc = nextAddr.at(0);
-        }
-    }*/
-
-   /*
+   
     void GuiDisassembler::_RenderAssembly(const Assembly &assembly)
     {
         Cpu &cpu = m_Gameboy->GetCpu();
@@ -67,25 +52,55 @@ namespace GBE
         );
         
     }
-    */
+    
 
     void GuiDisassembler::_RenderWindow()
     {
+        Disassembler &disassembler = m_Gameboy->GetDisassembler();
+
         ImGui::Text("0x");
         ImGui::SameLine();
         ImGui::InputInt("Start PC", &m_StartPC, 1, 100, ImGuiInputTextFlags_CharsHexadecimal);
 
+        ImGui::Text("Assembly section: ");
+
+        ImGui::PushID("#MaxSectionStart");
+        ImGui::InputInt("", &m_MaxSectionStart, 1, 100, ImGuiInputTextFlags_CharsHexadecimal);
+        ImGui::PopID();
+
+        ImGui::PushID("#MaxSectionEnd");
+        ImGui::InputInt("", &m_MaxSectionEnd, 1, 100, ImGuiInputTextFlags_CharsHexadecimal);
+        ImGui::PopID();
+
         if (ImGui::Button("Disassemble!"))
         {
-            // _Disassemble();
+            _Disassemble();
         }
 
         ImGui::Separator();
         ImGui::BeginChild("Instructions: ");
-        // for (const auto&[pc, assembly] : m_AsmInstrutions)
-        // {
-        //     _RenderAssembly(assembly);
-        // }
+
+        for (const auto& [address, section] : disassembler.GetAssemblySections())
+        {
+            ImGui::Separator();
+            ImGui::Text("%s :", Binary::ToHex(address).c_str());
+
+            uint16_t currentAddress = address;
+            while (currentAddress <= section.EndAddress)
+            {
+                const Assembly& assembly = disassembler.GetAssemblyInstruction(currentAddress);
+                _RenderAssembly(assembly);
+
+                uint16_t nextAddress = assembly.GetNextInstructionAddress();
+                if (nextAddress <= currentAddress)
+                    break;
+
+                currentAddress = nextAddress;
+            }
+
+            ImGui::Separator();
+        }
+
         ImGui::EndChild();
     }
 

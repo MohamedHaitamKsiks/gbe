@@ -10,6 +10,16 @@
 
 namespace GBE
 {
+    uint16_t Assembly::GetNextInstructionAddress() const
+    {
+        for (const auto &nextAddress : m_NextAddresses)
+        {
+            if (!nextAddress.IsJump)
+                return nextAddress.Address;
+        }
+
+        return m_Address;
+    }
 
     void Assembly::SetOperation(InstructionType op)
     {

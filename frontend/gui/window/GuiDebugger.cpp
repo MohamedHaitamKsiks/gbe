@@ -72,7 +72,7 @@ namespace GBE
 
         ImGui::Text("0x");
         ImGui::SameLine();
-        ImGui::InputInt("", &m_NewBpAddress, 1, 100, ImGuiInputTextFlags_CharsHexadecimal);
+        ImGui::InputInt("##", &m_NewBpAddress, 1, 100, ImGuiInputTextFlags_CharsHexadecimal);
         ImGui::SameLine();
         if (ImGui::Button("Add"))
         {

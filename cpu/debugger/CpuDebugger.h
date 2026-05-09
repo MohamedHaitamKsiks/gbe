@@ -11,7 +11,7 @@ namespace GBE
         CpuDebugger();
         ~CpuDebugger() = default;
         
-        CpuDebugger(const CpuDebugger&) = delete;
+        CpuDebugger(const CpuDebugger&) = delete;               
         CpuDebugger& operator=(const CpuDebugger&) = delete;
 
         void Init();

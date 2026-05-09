@@ -45,6 +45,7 @@ Makefile
 .ninja_log
 .ninja_deps
 compile_commands.json
+.clangd
 
 # VSCode / tooling
 bin/
@@ -58,3 +59,4 @@ Testing/
 
 # Local assets not for source control
 assets/games/
+imgui.ini

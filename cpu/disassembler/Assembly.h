@@ -45,6 +45,9 @@ namespace GBE
         {
             return m_NextAddresses;
         }
+
+        // get non jump next instruiction address
+        uint16_t GetNextInstructionAddress() const;
         
         void SetOperation(InstructionType op);
         void AddOperand(Operand op);
