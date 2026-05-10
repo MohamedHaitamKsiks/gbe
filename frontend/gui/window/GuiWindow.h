@@ -9,6 +9,8 @@
 namespace GBE
 {
     class Gameboy;
+    class Renderer;
+    class Window;
 
     class GuiWindow: public GuiLayer
     {

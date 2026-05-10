@@ -17,7 +17,6 @@ namespace GBE
         GuiWindow(window, renderer, gameboy)
     {
         SetName("Debugger");
-        SetVisible(true);
     }
 
     GuiDebugger::~GuiDebugger()
