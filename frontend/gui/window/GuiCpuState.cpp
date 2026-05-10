@@ -17,7 +17,6 @@ namespace GBE
         GuiWindow(window, renderer, gameboy)
     {
         SetName("Cpu State");
-        SetVisible(true);
     }
 
     void GuiCpuState::_RenderWindow()

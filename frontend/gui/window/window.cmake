@@ -3,6 +3,7 @@ set (GBE_HEADERS ${GBE_HEADERS}
     ${CMAKE_CURRENT_LIST_DIR}/GuiDebugger.h
     ${CMAKE_CURRENT_LIST_DIR}/GuiCpuState.h
     ${CMAKE_CURRENT_LIST_DIR}/GuiDisassembler.h
+    ${CMAKE_CURRENT_LIST_DIR}/GuiMemoryDump.h
 )
 
 set(GBE_SOURCES ${GBE_SOURCES}
@@ -10,4 +11,5 @@ set(GBE_SOURCES ${GBE_SOURCES}
     ${CMAKE_CURRENT_LIST_DIR}/GuiDebugger.cpp
     ${CMAKE_CURRENT_LIST_DIR}/GuiCpuState.cpp
     ${CMAKE_CURRENT_LIST_DIR}/GuiDisassembler.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/GuiMemoryDump.cpp
 )

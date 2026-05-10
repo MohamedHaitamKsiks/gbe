@@ -1,7 +1,9 @@
 #include "GuiDisassembler.h"
 
-#include "imgui.h"
+#include "frontend/gui/GuiUtils.h"
 #include "gameboy/Gameboy.h"
+
+#include "imgui.h"
 
 #include <print>
 
@@ -15,7 +17,10 @@ namespace GBE
         GuiWindow(window, renderer, gameboy)
     {
         SetName("Disassembler");
-        SetVisible(true);
+
+        m_StartPC = 0x100;
+        m_MaxSection[0] = 0x0;
+        m_MaxSection[1] = 0x7FFF;
     }
 
     GuiDisassembler::~GuiDisassembler()
@@ -27,8 +32,8 @@ namespace GBE
         Disassembler& disassembler = m_Gameboy->GetDisassembler();
         uint16_t startPC = static_cast<uint16_t>(m_StartPC);
         AssemblySection maxSection = {
-            .StartAddress   = static_cast<uint16_t>(m_MaxSectionStart), 
-            .EndAddress     = static_cast<uint16_t>(m_MaxSectionEnd)
+            .StartAddress   = static_cast<uint16_t>(m_MaxSection[0]), 
+            .EndAddress     = static_cast<uint16_t>(m_MaxSection[1])
         };
 
         disassembler.Disassemble(m_StartPC, maxSection);
@@ -45,6 +50,7 @@ namespace GBE
 
         if (pc == assembly.GetAddress())
             ImGui::SetScrollHereY();
+            
         const ImVec4& currentColor = (pc == assembly.GetAddress()) ? selectColor : defaultColor;
 
         ImGui::TextColored(currentColor, "%s : %s", 
@@ -58,19 +64,12 @@ namespace GBE
     void GuiDisassembler::_RenderWindow()
     {
         Disassembler &disassembler = m_Gameboy->GetDisassembler();
-
-        ImGui::Text("0x");
-        ImGui::SameLine();
-        ImGui::InputInt("Start PC", &m_StartPC, 1, 100, ImGuiInputTextFlags_CharsHexadecimal);
-
+        GuiUtils::InputHex("Start PC", &m_StartPC, 1);
+       
         ImGui::Text("Assembly section: ");
 
-        ImGui::PushID("#MaxSectionStart");
-        ImGui::InputInt("", &m_MaxSectionStart, 1, 100, ImGuiInputTextFlags_CharsHexadecimal);
-        ImGui::PopID();
-
-        ImGui::PushID("#MaxSectionEnd");
-        ImGui::InputInt("", &m_MaxSectionEnd, 1, 100, ImGuiInputTextFlags_CharsHexadecimal);
+        ImGui::PushID("#DisassemblyMaxSection");
+        GuiUtils::InputHex("Section", m_MaxSection.begin(), m_MaxSection.size());
         ImGui::PopID();
 
         if (ImGui::Button("Disassemble!"))

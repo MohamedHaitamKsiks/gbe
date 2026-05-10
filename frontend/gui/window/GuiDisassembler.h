@@ -2,6 +2,8 @@
 
 #include <map>
 #include <memory>
+#include <array>
+#include <cstdint>
 
 #include "GuiWindow.h"
 
@@ -18,9 +20,8 @@ namespace GBE
         );
         ~GuiDisassembler();
     private:
-        int m_StartPC = 0x100;
-        int m_MaxSectionStart = 0x0;
-        int m_MaxSectionEnd = 0x7FFF;
+        uint16_t m_StartPC = 0x100;
+        std::array<uint16_t, 2> m_MaxSection = {};
 
         void _RenderWindow() override;
         void _Disassemble();

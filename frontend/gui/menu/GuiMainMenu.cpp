@@ -11,6 +11,7 @@
 #include "frontend/gui/window/GuiDebugger.h"
 #include "frontend/gui/window/GuiCpuState.h"
 #include "frontend/gui/window/GuiDisassembler.h"
+#include "frontend/gui/window/GuiMemoryDump.h"
 
 namespace GBE
 {
@@ -22,10 +23,13 @@ namespace GBE
         GuiLayer(window, renderer, gameboy)
     {
         constexpr std::string_view cpuCategory = "CPU";
+        constexpr std::string_view memoryCategory = "Memory";
 
         _AddWindow<GuiDebugger>(cpuCategory);
         _AddWindow<GuiCpuState>(cpuCategory);
         _AddWindow<GuiDisassembler>(cpuCategory);
+
+        _AddWindow<GuiMemoryDump>(memoryCategory);
     }
 
     GuiMainMenu::~GuiMainMenu()
